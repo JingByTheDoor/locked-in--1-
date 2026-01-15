@@ -1,0 +1,128 @@
+extends CharacterBody2D
+
+signal died(context: String)
+signal damaged(amount: int, context: String)
+
+@export var move_speed: float = 180.0
+@export var sprint_multiplier: float = 1.5
+@export var interact_radius: float = 48.0
+@export var idle_animation_name: StringName = &"idle"
+@export var walk_animation_name: StringName = &"walk"
+@export var aim_rotation_offset_degrees: float = 0.0
+
+@onready var visuals: Node2D = $Visuals
+@onready var sprite: AnimatedSprite2D = $Visuals/AnimatedSprite2D
+@onready var interact_area: Area2D = $InteractArea
+@onready var interact_shape: CollisionShape2D = $InteractArea/CollisionShape2D
+
+var is_dead: bool = false
+
+func _ready() -> void:
+	_sync_hp()
+	_apply_interact_radius()
+	_update_animation(Vector2.ZERO)
+
+func _physics_process(_delta: float) -> void:
+	if is_dead:
+		velocity = Vector2.ZERO
+		return
+	var input_vector := Input.get_vector("move_left", "move_right", "move_up", "move_down")
+	var speed := move_speed
+	if Input.is_action_pressed("sprint"):
+		speed *= sprint_multiplier
+	velocity = input_vector * speed
+	move_and_slide()
+	_update_animation(input_vector)
+	_update_aim()
+
+func _unhandled_input(event: InputEvent) -> void:
+	if is_dead:
+		return
+	if event.is_action_pressed("interact"):
+		_try_interact()
+
+func _update_aim() -> void:
+	if visuals == null:
+		return
+	var to_mouse := get_global_mouse_position() - global_position
+	if to_mouse.length_squared() < 0.001:
+		return
+	visuals.rotation = to_mouse.angle() + deg_to_rad(aim_rotation_offset_degrees)
+
+func _update_animation(input_vector: Vector2) -> void:
+	if sprite == null:
+		return
+	var frames := sprite.sprite_frames
+	if frames == null:
+		return
+	var anim_name := idle_animation_name
+	if input_vector.length() > 0.1:
+		anim_name = walk_animation_name
+	if frames.has_animation(anim_name):
+		if sprite.animation != anim_name or not sprite.is_playing():
+			sprite.play(anim_name)
+	elif not sprite.is_playing():
+		sprite.play()
+
+func apply_damage(amount: int, context: String = "") -> void:
+	if is_dead:
+		return
+	GameState.player_hp = clampi(GameState.player_hp - amount, 0, GameState.player_max_hp)
+	damaged.emit(amount, context)
+	if GameState.player_hp <= 0:
+		_handle_death(context)
+
+func heal(amount: int) -> void:
+	if is_dead:
+		return
+	GameState.player_hp = clampi(GameState.player_hp + amount, 0, GameState.player_max_hp)
+
+func _handle_death(context: String) -> void:
+	if is_dead:
+		return
+	is_dead = true
+	died.emit(context)
+
+func _sync_hp() -> void:
+	if GameState.player_max_hp <= 0:
+		GameState.player_max_hp = 100
+	GameState.player_hp = clampi(GameState.player_hp, 0, GameState.player_max_hp)
+
+func _apply_interact_radius() -> void:
+	if interact_shape == null:
+		return
+	if interact_shape.shape is CircleShape2D:
+		var circle := interact_shape.shape as CircleShape2D
+		circle.radius = interact_radius
+
+func _try_interact() -> void:
+	if interact_area == null:
+		return
+	var target := _find_best_interactable()
+	if target == null:
+		return
+	if target.has_method("interact"):
+		target.call("interact", self)
+		return
+	var parent := target.get_parent()
+	if parent != null and parent.has_method("interact"):
+		parent.call("interact", self)
+
+func _find_best_interactable() -> Node:
+	var nearest: Node = null
+	var nearest_dist := INF
+	for area in interact_area.get_overlapping_areas():
+		if not area.is_in_group("interactable") and not area.has_method("interact"):
+			continue
+		var dist := global_position.distance_to(area.global_position)
+		if dist < nearest_dist:
+			nearest_dist = dist
+			nearest = area
+	for body in interact_area.get_overlapping_bodies():
+		if not body.is_in_group("interactable") and not body.has_method("interact"):
+			continue
+		var dist := global_position.distance_to(body.global_position)
+		if dist < nearest_dist:
+			nearest_dist = dist
+			nearest = body
+	return nearest

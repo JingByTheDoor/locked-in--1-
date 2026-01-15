@@ -13,3 +13,8 @@ config_version=5
 config/name="Locked in #1#"
 config/features=PackedStringArray("4.5", "Forward Plus")
 config/icon="res://icon.svg"
+run/main_scene="res://Scenes/Main.tscn"
+
+[autoload]
+
+GameState="*res://Scripts/GameState.gd"
