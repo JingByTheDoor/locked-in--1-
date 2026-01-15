@@ -14,8 +14,10 @@ signal damaged(amount: int, context: String)
 @onready var sprite: AnimatedSprite2D = $Visuals/AnimatedSprite2D
 @onready var interact_area: Area2D = $InteractArea
 @onready var interact_shape: CollisionShape2D = $InteractArea/CollisionShape2D
+@onready var vision_cone: Node2D = get_node_or_null("VisionCone")
 
 var is_dead: bool = false
+var _aim_angle: float = 0.0
 
 func _ready() -> void:
 	_sync_hp()
@@ -47,7 +49,10 @@ func _update_aim() -> void:
 	var to_mouse := get_global_mouse_position() - global_position
 	if to_mouse.length_squared() < 0.001:
 		return
-	visuals.rotation = to_mouse.angle() + deg_to_rad(aim_rotation_offset_degrees)
+	_aim_angle = to_mouse.angle()
+	visuals.rotation = _aim_angle + deg_to_rad(aim_rotation_offset_degrees)
+	if vision_cone != null:
+		vision_cone.rotation = _aim_angle
 
 func _update_animation(input_vector: Vector2) -> void:
 	if sprite == null:

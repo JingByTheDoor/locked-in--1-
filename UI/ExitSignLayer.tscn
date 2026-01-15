@@ -1,0 +1,12 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Texture2D" path="res://icon.svg" id="1"]
+
+[node name="ExitSignLayer" type="CanvasLayer"]
+layer = 8
+follow_viewport = true
+
+[node name="ExitSign" type="Sprite2D" parent="."]
+texture = ExtResource("1")
+position = Vector2(320, -120)
+scale = Vector2(0.4, 0.4)

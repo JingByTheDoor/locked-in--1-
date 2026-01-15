@@ -1,0 +1,27 @@
+[gd_scene load_steps=4 format=3 uid="uid://cara0s7t3nq75"]
+
+[ext_resource type="Script" uid="uid://vhk2ssibrkqp" path="res://Scripts/VisionMask.gd" id="1"]
+[ext_resource type="Shader" uid="uid://de6ajudk7wrrf" path="res://VFX/VisionMask.gdshader" id="2"]
+
+[sub_resource type="ShaderMaterial" id="1"]
+shader = ExtResource("2")
+shader_parameter/player_screen_pos = Vector2(0, 0)
+shader_parameter/aim_dir = Vector2(1, 0)
+shader_parameter/cone_angle = 1.0472
+shader_parameter/cone_angle_softness = 0.1745
+shader_parameter/cone_length = 320.0
+shader_parameter/cone_softness = 48.0
+shader_parameter/base_darkness = 0.85
+shader_parameter/viewport_size = Vector2(1280, 720)
+
+[node name="VisionMask" type="CanvasLayer"]
+layer = 6
+script = ExtResource("1")
+
+[node name="ColorRect" type="ColorRect" parent="."]
+material = SubResource("1")
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+mouse_filter = 2
+color = Color(0, 0, 0, 1)
