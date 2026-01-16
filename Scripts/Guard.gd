@@ -20,6 +20,9 @@ enum State {
 @export var hearing_multiplier: float = 2.5
 @export var min_hearing_radius: float = 600.0
 @export var max_hearing_radius: float = 1400.0
+@export var alert_hit_points: int = 3
+@export var knockback_decay: float = 600.0
+@export var knockback_resistance: float = 1.0
 @export var patrol_path: NodePath
 @export var player_path: NodePath
 @export var idle_animation_name: StringName = &"idle"
@@ -46,11 +49,14 @@ var _player: Node2D
 var _attack_timer: float = 0.0
 var _lose_timer: float = 0.0
 var _aim_angle: float = 0.0
+var _current_alert_hp: int = 3
+var _knockback_velocity: Vector2 = Vector2.ZERO
 
 func _ready() -> void:
 	_resolve_player()
 	_cache_patrol_points()
 	_update_animation(Vector2.ZERO)
+	_current_alert_hp = max(1, alert_hit_points)
 	if SoundBus != null:
 		SoundBus.sound_emitted.connect(_on_sound_emitted)
 
@@ -124,9 +130,11 @@ func _physics_process(delta: float) -> void:
 				move_dir = to_target.normalized()
 
 	velocity = move_dir * speed
+	velocity += _knockback_velocity
 	move_and_slide()
 	_update_animation(move_dir)
 	_apply_state_debug_color()
+	_knockback_velocity = _knockback_velocity.move_toward(Vector2.ZERO, knockback_decay * delta)
 
 func _process(_delta: float) -> void:
 	if GameState.debug_show_vision or GameState.debug_show_sound:
@@ -197,6 +205,30 @@ func _try_attack() -> void:
 		_player.call("apply_damage", attack_damage, "guard")
 	attacked.emit(_player, attack_damage)
 	_attack_timer = attack_cooldown
+
+func apply_damage(amount: int, context: String = "") -> void:
+	if amount <= 0:
+		return
+	if state == State.PATROL:
+		_die(context)
+		return
+	_current_alert_hp -= amount
+	if _current_alert_hp <= 0:
+		_die(context)
+		return
+	state = State.CHASE
+	_lose_timer = 0.0
+
+func apply_knockback(direction: Vector2, strength: float) -> void:
+	if strength <= 0.0:
+		return
+	var dir := direction
+	if dir.length_squared() < 0.001:
+		return
+	_knockback_velocity += dir.normalized() * (strength / max(knockback_resistance, 0.1))
+
+func _die(_context: String) -> void:
+	queue_free()
 
 func _on_sound_emitted(event: SoundEvent) -> void:
 	if event == null:

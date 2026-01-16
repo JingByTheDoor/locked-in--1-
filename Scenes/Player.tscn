@@ -1,8 +1,9 @@
-[gd_scene load_steps=14 format=3 uid="uid://x4khlkw6qu05"]
+[gd_scene load_steps=16 format=3 uid="uid://x4khlkw6qu05"]
 
 [ext_resource type="Script" uid="uid://btcv2iprnmnd4" path="res://Scripts/Player.gd" id="1"]
 [ext_resource type="Texture2D" uid="uid://cx1pbb1jbp3uf" path="res://Guy Walking COMPLETE.png" id="2_kyqiw"]
 [ext_resource type="Script" uid="uid://d23fs4q1yb1dt" path="res://Scripts/VisionCone.gd" id="3"]
+[ext_resource type="PackedScene" path="res://VFX/HitSplat.tscn" id="4"]
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_gntrk"]
 atlas = ExtResource("2_kyqiw")
@@ -82,9 +83,13 @@ radius = 12.0
 [sub_resource type="CircleShape2D" id="3"]
 radius = 48.0
 
+[sub_resource type="CircleShape2D" id="4"]
+radius = 48.0
+
 [node name="Player" type="CharacterBody2D"]
 script = ExtResource("1")
 aim_rotation_offset_degrees = 90.0
+hit_vfx_scene = ExtResource("4")
 
 [node name="Visuals" type="Node2D" parent="."]
 
@@ -108,6 +113,15 @@ rotation_smoothing_enabled = true
 [node name="CollisionShape2D" type="CollisionShape2D" parent="InteractArea"]
 position = Vector2(0, -1)
 shape = SubResource("3")
+
+[node name="AttackArea" type="Area2D" parent="."]
+monitoring = false
+monitorable = false
+collision_layer = 0
+collision_mask = 1
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="AttackArea"]
+shape = SubResource("4")
 
 [node name="VisionCone" type="Node2D" parent="."]
 script = ExtResource("3")
