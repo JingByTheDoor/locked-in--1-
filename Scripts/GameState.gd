@@ -17,6 +17,11 @@ enum PhaseState {
 }
 
 const SAVE_PATH := "user://savegame.json"
+const CARRY_RANK_MIN: int = 1
+const CARRY_RANK_MAX: int = 5
+const GRADE_MIN: int = 1
+const GRADE_MAX: int = 5
+const DEFAULT_GRADES: Array[int] = [1, 2, 3]
 
 var run_state: RunState = RunState.MAIN_MENU
 var phase_state: PhaseState = PhaseState.QUIET
@@ -24,16 +29,31 @@ var night_index: int = 1
 
 var player_max_hp: int = 100
 var player_hp: int = 100
+var player_carry_rank: int = 1
 
 var resources: Dictionary = {
 	"scrap": 0,
+	"wood": 0,
+	"ammo": 0,
+	"food": 0,
 	"fuel": 0,
 	"meds": 0
+}
+var food_grades: Dictionary = {
+	"1": 0,
+	"2": 0,
+	"3": 0
+}
+var fuel_grades: Dictionary = {
+	"1": 0,
+	"2": 0,
+	"3": 0
 }
 
 var base_damage: float = 0.0
 var global_pressure: float = 0.0
 var global_pressure_floor: float = 0.0
+var escape_only: bool = false
 
 var debug_show_vision: bool = false
 var debug_show_sound: bool = false
@@ -41,6 +61,8 @@ var debug_print_pressure: bool = false
 
 func _ready() -> void:
 	_ensure_input_map()
+	_ensure_resource_defaults()
+	_normalize_carry_rank()
 
 func _input(event: InputEvent) -> void:
 	if event.is_action_pressed("debug_toggle_vision"):
@@ -59,10 +81,14 @@ func get_save_data() -> Dictionary:
 		"night_index": night_index,
 		"player_max_hp": player_max_hp,
 		"player_hp": player_hp,
+		"player_carry_rank": player_carry_rank,
 		"resources": resources.duplicate(true),
+		"food_grades": food_grades.duplicate(true),
+		"fuel_grades": fuel_grades.duplicate(true),
 		"base_damage": base_damage,
 		"global_pressure": global_pressure,
-		"global_pressure_floor": global_pressure_floor
+		"global_pressure_floor": global_pressure_floor,
+		"escape_only": escape_only
 	}
 
 func apply_save_data(data: Dictionary) -> void:
@@ -77,16 +103,54 @@ func apply_save_data(data: Dictionary) -> void:
 	if data.has("player_hp"):
 		player_hp = int(data["player_hp"])
 		player_hp = clampi(player_hp, 0, player_max_hp)
+	if data.has("player_carry_rank"):
+		player_carry_rank = clampi(int(data["player_carry_rank"]), CARRY_RANK_MIN, CARRY_RANK_MAX)
 	if data.has("resources") and typeof(data["resources"]) == TYPE_DICTIONARY:
 		resources = data["resources"].duplicate(true)
+	if data.has("food_grades") and typeof(data["food_grades"]) == TYPE_DICTIONARY:
+		food_grades = data["food_grades"].duplicate(true)
+	if data.has("fuel_grades") and typeof(data["fuel_grades"]) == TYPE_DICTIONARY:
+		fuel_grades = data["fuel_grades"].duplicate(true)
 	if data.has("base_damage"):
 		base_damage = float(data["base_damage"])
 	if data.has("global_pressure"):
 		global_pressure = float(data["global_pressure"])
 	if data.has("global_pressure_floor"):
 		global_pressure_floor = float(data["global_pressure_floor"])
+	if data.has("escape_only"):
+		escape_only = bool(data["escape_only"])
 	if global_pressure < global_pressure_floor:
 		global_pressure = global_pressure_floor
+	_ensure_resource_defaults()
+	_normalize_carry_rank()
+
+func add_resource(name: String, amount: int) -> void:
+	if amount == 0:
+		return
+	var current: int = 0
+	if resources.has(name):
+		current = int(resources[name])
+	resources[name] = max(current + amount, 0)
+
+func add_food(grade: int, amount: int) -> void:
+	if amount == 0:
+		return
+	var key := _grade_key(grade)
+	var current: int = 0
+	if food_grades.has(key):
+		current = int(food_grades[key])
+	food_grades[key] = max(current + amount, 0)
+	add_resource("food", amount)
+
+func add_fuel(grade: int, amount: int) -> void:
+	if amount == 0:
+		return
+	var key := _grade_key(grade)
+	var current: int = 0
+	if fuel_grades.has(key):
+		current = int(fuel_grades[key])
+	fuel_grades[key] = max(current + amount, 0)
+	add_resource("fuel", amount)
 
 func save_run() -> bool:
 	var file := FileAccess.open(SAVE_PATH, FileAccess.WRITE)
@@ -150,6 +214,30 @@ func _ensure_input_map() -> void:
 func _print_pressure_tier() -> void:
 	print("Pressure tier:", _phase_state_name(phase_state), "Global pressure:", global_pressure)
 
+func _ensure_resource_defaults() -> void:
+	var defaults: Dictionary = {
+		"scrap": 0,
+		"wood": 0,
+		"ammo": 0,
+		"food": 0,
+		"fuel": 0,
+		"meds": 0
+	}
+	for key in defaults.keys():
+		if not resources.has(key):
+			resources[key] = defaults[key]
+	_ensure_grade_defaults(food_grades)
+	_ensure_grade_defaults(fuel_grades)
+
+func _ensure_grade_defaults(grade_dict: Dictionary) -> void:
+	for grade in DEFAULT_GRADES:
+		var key := _grade_key(grade)
+		if not grade_dict.has(key):
+			grade_dict[key] = 0
+
+func _normalize_carry_rank() -> void:
+	player_carry_rank = clampi(player_carry_rank, CARRY_RANK_MIN, CARRY_RANK_MAX)
+
 func _phase_state_name(state: PhaseState) -> String:
 	match state:
 		PhaseState.QUIET:
@@ -200,3 +288,7 @@ func _has_mouse_event(events: Array[InputEvent], button: int) -> bool:
 		if ev is InputEventMouseButton and ev.button_index == button:
 			return true
 	return false
+
+func _grade_key(grade: int) -> String:
+	var clamped := clampi(grade, GRADE_MIN, GRADE_MAX)
+	return str(clamped)

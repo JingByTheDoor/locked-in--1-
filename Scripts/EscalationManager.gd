@@ -21,6 +21,12 @@ extends Node2D
 @export var overlay_path: NodePath
 @export var tension_player_path: NodePath
 @export var heartbeat_player_path: NodePath
+@export var message_hud_path: NodePath
+@export var hunted_message: String = "HUNTED: escape or die"
+@export var hunter_scene: PackedScene
+@export var hunter_spawn_min_distance: float = 320.0
+@export var hunter_spawn_radius: float = 640.0
+@export var hunter_spawn_attempts: int = 6
 
 @export var debug_noise_color: Color = Color(1.0, 0.3, 0.3, 0.35)
 @export var debug_noise_radius_min: float = 30.0
@@ -33,10 +39,15 @@ var has_local_noise: bool = false
 var _overlay: Node = null
 var _tension_player: AudioStreamPlayer = null
 var _heartbeat_player: AudioStreamPlayer = null
+var _message_hud: Node = null
 var _spike_timer: float = 0.0
 var _last_phase: int = -1
+var _hunted_locked: bool = false
+var _hunter_instance: Node2D = null
+var _rng: RandomNumberGenerator = RandomNumberGenerator.new()
 
 func _ready() -> void:
+	_rng.randomize()
 	_resolve_nodes()
 	if SoundBus != null:
 		SoundBus.sound_emitted.connect(_on_sound_emitted)
@@ -108,6 +119,12 @@ func _update_pressure_floor() -> void:
 		GameState.global_pressure_floor = floor_target
 
 func _update_phase_state(_delta: float) -> void:
+	if GameState.phase_state != GameState.PhaseState.HUNTED:
+		GameState.escape_only = false
+	if GameState.phase_state == GameState.PhaseState.HUNTED:
+		if not _hunted_locked:
+			_enter_hunted()
+		return
 	var next_phase: int = GameState.PhaseState.QUIET
 	if GameState.global_pressure >= hunted_pressure_threshold and _spike_timer >= hunted_spike_time:
 		next_phase = GameState.PhaseState.HUNTED
@@ -115,7 +132,10 @@ func _update_phase_state(_delta: float) -> void:
 		next_phase = GameState.PhaseState.PRESSURE
 	elif local_noise_value >= investigate_threshold:
 		next_phase = GameState.PhaseState.INVESTIGATE
-	GameState.phase_state = next_phase
+	if next_phase == GameState.PhaseState.HUNTED:
+		_enter_hunted()
+	else:
+		GameState.phase_state = next_phase
 	if GameState.debug_print_pressure and _last_phase != next_phase:
 		_last_phase = next_phase
 		print("Phase:", _phase_name(next_phase), "Global:", "%.2f" % GameState.global_pressure, "Local:", "%.2f" % local_noise_value)
@@ -155,6 +175,7 @@ func _resolve_nodes() -> void:
 	_overlay = get_node_or_null(overlay_path)
 	_tension_player = get_node_or_null(tension_player_path) as AudioStreamPlayer
 	_heartbeat_player = get_node_or_null(heartbeat_player_path) as AudioStreamPlayer
+	_message_hud = get_node_or_null(message_hud_path)
 
 func _update_spike_timer(delta: float, noise_value: float) -> float:
 	var timer: float = _spike_timer
@@ -176,3 +197,47 @@ func _phase_name(phase: int) -> String:
 			return "HUNTED"
 		_:
 			return "UNKNOWN"
+
+func _enter_hunted() -> void:
+	GameState.phase_state = GameState.PhaseState.HUNTED
+	GameState.escape_only = true
+	_hunted_locked = true
+	if _message_hud != null and hunted_message != "":
+		if _message_hud.has_method("show_message"):
+			_message_hud.call("show_message", hunted_message, 3.0)
+	_spawn_hunter()
+
+func _spawn_hunter() -> void:
+	if hunter_scene == null:
+		return
+	if _hunter_instance != null and is_instance_valid(_hunter_instance):
+		return
+	var parent: Node = get_parent()
+	if parent == null:
+		return
+	var hunter := hunter_scene.instantiate()
+	if hunter == null:
+		return
+	var spawn_pos: Vector2 = global_position
+	var player: Node2D = get_tree().get_first_node_in_group("player") as Node2D
+	if player != null:
+		spawn_pos = _pick_spawn_position(player.global_position)
+	parent.add_child(hunter)
+	if hunter is Node2D:
+		_hunter_instance = hunter as Node2D
+		_hunter_instance.global_position = spawn_pos
+	if hunter.has_method("set"):
+		hunter.set("player_path", NodePath("../Player"))
+
+func _pick_spawn_position(origin: Vector2) -> Vector2:
+	var best_pos: Vector2 = origin + Vector2.RIGHT * hunter_spawn_min_distance
+	var best_dist: float = 0.0
+	var attempts: int = max(hunter_spawn_attempts, 1)
+	for i in range(attempts):
+		var angle: float = _rng.randf_range(0.0, TAU)
+		var dist: float = _rng.randf_range(hunter_spawn_min_distance, hunter_spawn_radius)
+		var candidate: Vector2 = origin + Vector2.RIGHT.rotated(angle) * dist
+		if dist > best_dist:
+			best_dist = dist
+			best_pos = candidate
+	return best_pos

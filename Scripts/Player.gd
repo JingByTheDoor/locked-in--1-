@@ -32,6 +32,10 @@ signal damaged(amount: int, context: String)
 @export var sprint_sound_radius: float = 360.0
 @export var walk_sound_loudness: float = 0.35
 @export var sprint_sound_loudness: float = 0.8
+@export var carry_rank_min: int = 1
+@export var carry_rank_max: int = 5
+@export var carry_speed_step: float = 0.1
+@export var carry_noise_step: float = 0.15
 
 @onready var visuals: Node2D = $Visuals
 @onready var sprite: AnimatedSprite2D = $Visuals/AnimatedSprite2D
@@ -57,10 +61,13 @@ var _attack_cooldown_timer: float = 0.0
 var _attack_hit_ids: Dictionary = {}
 var _attack_hit_enemy: bool = false
 var _attack_hit_wall: bool = false
+var _carry_rank: int = 1
+var _is_hiding: bool = false
 
 func _ready() -> void:
 	add_to_group("player")
 	_sync_hp()
+	_sync_carry_rank()
 	_apply_interact_radius()
 	_setup_attack_area()
 	_update_animation(Vector2.ZERO)
@@ -70,7 +77,7 @@ func _physics_process(delta: float) -> void:
 		velocity = Vector2.ZERO
 		return
 	var input_vector := Input.get_vector("move_left", "move_right", "move_up", "move_down")
-	var speed := move_speed
+	var speed := move_speed * _get_carry_speed_multiplier()
 	var is_sprinting := Input.is_action_pressed("sprint")
 	if is_sprinting:
 		speed *= sprint_multiplier
@@ -262,6 +269,37 @@ func heal(amount: int) -> void:
 		return
 	GameState.player_hp = clampi(GameState.player_hp + amount, 0, GameState.player_max_hp)
 
+func add_carry_rank(amount: int) -> void:
+	if amount == 0:
+		return
+	set_carry_rank(_carry_rank + amount)
+
+func set_carry_rank(value: int) -> void:
+	_carry_rank = clampi(value, carry_rank_min, carry_rank_max)
+	GameState.player_carry_rank = _carry_rank
+
+func get_carry_rank() -> int:
+	return _carry_rank
+
+func get_interaction_noise_multiplier() -> float:
+	var rank_offset: int = max(_carry_rank - carry_rank_min, 0)
+	return 1.0 + float(rank_offset) * carry_noise_step
+
+func toggle_hiding() -> void:
+	set_hiding(not _is_hiding)
+
+func set_hiding(value: bool) -> void:
+	_is_hiding = value
+	if _is_hiding:
+		if not is_in_group("hiding"):
+			add_to_group("hiding")
+	else:
+		if is_in_group("hiding"):
+			remove_from_group("hiding")
+
+func is_hiding() -> bool:
+	return _is_hiding
+
 func _handle_death(context: String) -> void:
 	if is_dead:
 		return
@@ -272,6 +310,10 @@ func _sync_hp() -> void:
 	if GameState.player_max_hp <= 0:
 		GameState.player_max_hp = 100
 	GameState.player_hp = clampi(GameState.player_hp, 0, GameState.player_max_hp)
+
+func _sync_carry_rank() -> void:
+	_carry_rank = clampi(GameState.player_carry_rank, carry_rank_min, carry_rank_max)
+	GameState.player_carry_rank = _carry_rank
 
 func _apply_interact_radius() -> void:
 	if interact_shape == null:
@@ -311,3 +353,8 @@ func _find_best_interactable() -> Node:
 			nearest_dist = dist
 			nearest = body
 	return nearest
+
+func _get_carry_speed_multiplier() -> float:
+	var rank_offset: int = max(_carry_rank - carry_rank_min, 0)
+	var mult: float = 1.0 - float(rank_offset) * carry_speed_step
+	return clampf(mult, 0.3, 1.0)

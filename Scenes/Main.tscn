@@ -1,4 +1,4 @@
-[gd_scene load_steps=11 format=3 uid="uid://cv0kmglile0l7"]
+[gd_scene load_steps=12 format=3 uid="uid://cv0kmglile0l7"]
 
 [ext_resource type="PackedScene" uid="uid://x4khlkw6qu05" path="res://Scenes/Player.tscn" id="1"]
 [ext_resource type="PackedScene" path="res://UI/MessageHud.tscn" id="2"]
@@ -10,6 +10,8 @@
 [ext_resource type="PackedScene" path="res://Scenes/Guard.tscn" id="7"]
 [ext_resource type="Script" path="res://Scripts/Main.gd" id="8"]
 [ext_resource type="Script" path="res://Scripts/EscalationManager.gd" id="9"]
+[ext_resource type="PackedScene" path="res://Scenes/Hunter.tscn" id="10"]
+[ext_resource type="PackedScene" path="res://UI/HuntedBanner.tscn" id="11"]
 
 [node name="Main" type="Node2D"]
 script = ExtResource("8")
@@ -93,6 +95,8 @@ script = ExtResource("9")
 overlay_path = NodePath("../ReadabilityOverlay")
 tension_player_path = NodePath("../AudioLayers/TensionLayer")
 heartbeat_player_path = NodePath("../AudioLayers/HeartbeatLayer")
+message_hud_path = NodePath("../MessageHud")
+hunter_scene = ExtResource("10")
 
 [node name="VisionMask" parent="." instance=ExtResource("3")]
 target_path = NodePath("../Player/VisionCone")
@@ -100,5 +104,7 @@ target_path = NodePath("../Player/VisionCone")
 [node name="ReadabilityOverlay" parent="." instance=ExtResource("4")]
 
 [node name="ExitSignLayer" parent="." instance=ExtResource("5")]
+
+[node name="HuntedBanner" parent="." instance=ExtResource("11")]
 
 [node name="MessageHud" parent="." instance=ExtResource("2")]
