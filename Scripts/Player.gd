@@ -27,6 +27,7 @@ var _aim_angle: float = 0.0
 var _sound_timer: float = 0.0
 
 func _ready() -> void:
+	add_to_group("player")
 	_sync_hp()
 	_apply_interact_radius()
 	_update_animation(Vector2.ZERO)

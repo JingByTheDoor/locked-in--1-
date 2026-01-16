@@ -1,8 +1,8 @@
 [gd_scene load_steps=14 format=3 uid="uid://x4khlkw6qu05"]
 
 [ext_resource type="Script" uid="uid://btcv2iprnmnd4" path="res://Scripts/Player.gd" id="1"]
-[ext_resource type="Script" path="res://Scripts/VisionCone.gd" id="3"]
 [ext_resource type="Texture2D" uid="uid://cx1pbb1jbp3uf" path="res://Guy Walking COMPLETE.png" id="2_kyqiw"]
+[ext_resource type="Script" uid="uid://d23fs4q1yb1dt" path="res://Scripts/VisionCone.gd" id="3"]
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_gntrk"]
 atlas = ExtResource("2_kyqiw")
@@ -90,6 +90,7 @@ aim_rotation_offset_degrees = 90.0
 
 [node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="Visuals"]
 position = Vector2(8, 14)
+scale = Vector2(0.8, 1)
 sprite_frames = SubResource("1")
 animation = &"Walk"
 frame_progress = 0.0074090785
@@ -98,6 +99,7 @@ frame_progress = 0.0074090785
 shape = SubResource("2")
 
 [node name="Camera2D" type="Camera2D" parent="."]
+zoom = Vector2(0.5, 0.5)
 position_smoothing_enabled = true
 rotation_smoothing_enabled = true
 
@@ -109,7 +111,10 @@ shape = SubResource("3")
 
 [node name="VisionCone" type="Node2D" parent="."]
 script = ExtResource("3")
-cone_angle_degrees = 90.0
-cone_length = 520.0
-require_line_of_sight = true
-occlusion_mask = 1
+cone_angle_degrees = 120.0
+cone_length = 900.0
+extra_length = 600.0
+show_cone = true
+cone_fill_color = Color(0.3, 0.9, 1, 0.12)
+cone_outline_color = Color(0.3, 0.9, 1, 0.35)
+cone_outline_width = 1.0
