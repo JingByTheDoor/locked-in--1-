@@ -33,6 +33,7 @@ var resources: Dictionary = {
 
 var base_damage: float = 0.0
 var global_pressure: float = 0.0
+var global_pressure_floor: float = 0.0
 
 var debug_show_vision: bool = false
 var debug_show_sound: bool = false
@@ -60,7 +61,8 @@ func get_save_data() -> Dictionary:
 		"player_hp": player_hp,
 		"resources": resources.duplicate(true),
 		"base_damage": base_damage,
-		"global_pressure": global_pressure
+		"global_pressure": global_pressure,
+		"global_pressure_floor": global_pressure_floor
 	}
 
 func apply_save_data(data: Dictionary) -> void:
@@ -81,6 +83,10 @@ func apply_save_data(data: Dictionary) -> void:
 		base_damage = float(data["base_damage"])
 	if data.has("global_pressure"):
 		global_pressure = float(data["global_pressure"])
+	if data.has("global_pressure_floor"):
+		global_pressure_floor = float(data["global_pressure_floor"])
+	if global_pressure < global_pressure_floor:
+		global_pressure = global_pressure_floor
 
 func save_run() -> bool:
 	var file := FileAccess.open(SAVE_PATH, FileAccess.WRITE)

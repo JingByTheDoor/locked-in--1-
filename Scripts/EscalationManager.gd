@@ -1,0 +1,178 @@
+extends Node2D
+
+@export var local_noise_decay: float = 0.4
+@export var local_noise_decay_investigate: float = 0.7
+@export var local_noise_gain: float = 0.35
+@export var local_noise_max: float = 1.0
+@export var local_noise_recenter_strength: float = 0.35
+@export var local_noise_reinforce_radius: float = 260.0
+
+@export var global_pressure_decay: float = 0.02
+@export var global_pressure_gain_per_anomaly: float = 0.08
+@export var global_pressure_gain_per_second: float = 0.03
+@export var global_pressure_floor_ratio: float = 0.35
+
+@export var investigate_threshold: float = 0.25
+@export var pressure_threshold: float = 0.6
+@export var hunted_pressure_threshold: float = 1.4
+@export var hunted_spike_threshold: float = 0.85
+@export var hunted_spike_time: float = 0.6
+
+@export var overlay_path: NodePath
+@export var tension_player_path: NodePath
+@export var heartbeat_player_path: NodePath
+
+@export var debug_noise_color: Color = Color(1.0, 0.3, 0.3, 0.35)
+@export var debug_noise_radius_min: float = 30.0
+@export var debug_noise_radius_max: float = 160.0
+
+var local_noise_position: Vector2 = Vector2.ZERO
+var local_noise_value: float = 0.0
+var has_local_noise: bool = false
+
+var _overlay: Node = null
+var _tension_player: AudioStreamPlayer = null
+var _heartbeat_player: AudioStreamPlayer = null
+var _spike_timer: float = 0.0
+var _last_phase: int = -1
+
+func _ready() -> void:
+	_resolve_nodes()
+	if SoundBus != null:
+		SoundBus.sound_emitted.connect(_on_sound_emitted)
+
+func _process(delta: float) -> void:
+	_update_local_noise(delta)
+	_update_global_pressure(delta)
+	_update_phase_state(delta)
+	_apply_phase_overlays()
+	_apply_phase_audio()
+	if GameState.debug_show_sound:
+		queue_redraw()
+
+func _draw() -> void:
+	if not GameState.debug_show_sound:
+		return
+	if not has_local_noise:
+		return
+	var local_pos: Vector2 = to_local(local_noise_position)
+	var radius: float = lerpf(debug_noise_radius_min, debug_noise_radius_max, local_noise_value)
+	draw_circle(local_pos, radius, debug_noise_color)
+
+func _on_sound_emitted(event: SoundEvent) -> void:
+	if event == null:
+		return
+	if event.sound_type != SoundEvent.SoundType.ANOMALOUS:
+		return
+	var gain: float = clampf(event.loudness * local_noise_gain, 0.0, local_noise_max)
+	if not has_local_noise:
+		local_noise_position = event.position
+		local_noise_value = clampf(local_noise_value + gain, 0.0, local_noise_max)
+		has_local_noise = true
+	else:
+		var dist: float = local_noise_position.distance_to(event.position)
+		var blend: float = local_noise_recenter_strength
+		if dist > local_noise_reinforce_radius:
+			blend = min(local_noise_recenter_strength * 1.5, 0.9)
+		local_noise_position = local_noise_position.lerp(event.position, blend)
+		local_noise_value = clampf(local_noise_value + gain, 0.0, local_noise_max)
+	GameState.global_pressure += global_pressure_gain_per_anomaly * event.loudness
+	_update_pressure_floor()
+
+func _update_local_noise(delta: float) -> void:
+	if not has_local_noise:
+		local_noise_value = 0.0
+		_spike_timer = max(0.0, _spike_timer - delta)
+		return
+	var decay: float = local_noise_decay
+	if local_noise_value >= investigate_threshold or GameState.phase_state != GameState.PhaseState.QUIET:
+		decay = local_noise_decay_investigate
+	local_noise_value = max(local_noise_value - decay * delta, 0.0)
+	if local_noise_value <= 0.001:
+		has_local_noise = false
+		local_noise_value = 0.0
+	_spike_timer = _update_spike_timer(delta, local_noise_value)
+
+func _update_global_pressure(delta: float) -> void:
+	if local_noise_value >= investigate_threshold:
+		var sustain_gain: float = global_pressure_gain_per_second * delta
+		if local_noise_value >= pressure_threshold:
+			sustain_gain *= 1.5
+		GameState.global_pressure += sustain_gain
+	GameState.global_pressure = max(GameState.global_pressure - global_pressure_decay * delta, GameState.global_pressure_floor)
+	_update_pressure_floor()
+
+func _update_pressure_floor() -> void:
+	var floor_target: float = GameState.global_pressure * global_pressure_floor_ratio
+	if floor_target > GameState.global_pressure_floor:
+		GameState.global_pressure_floor = floor_target
+
+func _update_phase_state(_delta: float) -> void:
+	var next_phase: int = GameState.PhaseState.QUIET
+	if GameState.global_pressure >= hunted_pressure_threshold and _spike_timer >= hunted_spike_time:
+		next_phase = GameState.PhaseState.HUNTED
+	elif local_noise_value >= pressure_threshold or GameState.global_pressure >= pressure_threshold:
+		next_phase = GameState.PhaseState.PRESSURE
+	elif local_noise_value >= investigate_threshold:
+		next_phase = GameState.PhaseState.INVESTIGATE
+	GameState.phase_state = next_phase
+	if GameState.debug_print_pressure and _last_phase != next_phase:
+		_last_phase = next_phase
+		print("Phase:", _phase_name(next_phase), "Global:", "%.2f" % GameState.global_pressure, "Local:", "%.2f" % local_noise_value)
+
+func _apply_phase_overlays() -> void:
+	if _overlay == null:
+		return
+	if not _overlay.has_method("set_phase_intensity"):
+		return
+	var phase_intensity: float = _compute_phase_intensity()
+	_overlay.call("set_phase_intensity", phase_intensity, GameState.phase_state)
+
+func _apply_phase_audio() -> void:
+	var intensity: float = _compute_phase_intensity()
+	_apply_audio_player(_tension_player, intensity)
+	var heartbeat_intensity: float = intensity
+	if GameState.phase_state == GameState.PhaseState.HUNTED:
+		heartbeat_intensity = 1.0
+	_apply_audio_player(_heartbeat_player, heartbeat_intensity)
+
+func _apply_audio_player(player: AudioStreamPlayer, intensity: float) -> void:
+	if player == null:
+		return
+	if player.stream == null:
+		return
+	if not player.playing:
+		player.play()
+	var clamped: float = clampf(intensity, 0.0, 1.0)
+	player.volume_db = lerpf(-30.0, -6.0, clamped)
+
+func _compute_phase_intensity() -> float:
+	var pressure_norm: float = clampf(GameState.global_pressure / max(hunted_pressure_threshold, 0.01), 0.0, 1.0)
+	var local_norm: float = clampf(local_noise_value, 0.0, 1.0)
+	return max(pressure_norm, local_norm)
+
+func _resolve_nodes() -> void:
+	_overlay = get_node_or_null(overlay_path)
+	_tension_player = get_node_or_null(tension_player_path) as AudioStreamPlayer
+	_heartbeat_player = get_node_or_null(heartbeat_player_path) as AudioStreamPlayer
+
+func _update_spike_timer(delta: float, noise_value: float) -> float:
+	var timer: float = _spike_timer
+	if noise_value >= hunted_spike_threshold:
+		timer += delta
+	else:
+		timer = max(0.0, timer - delta)
+	return timer
+
+func _phase_name(phase: int) -> String:
+	match phase:
+		GameState.PhaseState.QUIET:
+			return "QUIET"
+		GameState.PhaseState.INVESTIGATE:
+			return "INVESTIGATE"
+		GameState.PhaseState.PRESSURE:
+			return "PRESSURE"
+		GameState.PhaseState.HUNTED:
+			return "HUNTED"
+		_:
+			return "UNKNOWN"

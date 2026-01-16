@@ -1,4 +1,4 @@
-[gd_scene load_steps=10 format=3 uid="uid://cv0kmglile0l7"]
+[gd_scene load_steps=11 format=3 uid="uid://cv0kmglile0l7"]
 
 [ext_resource type="PackedScene" uid="uid://x4khlkw6qu05" path="res://Scenes/Player.tscn" id="1"]
 [ext_resource type="PackedScene" path="res://UI/MessageHud.tscn" id="2"]
@@ -9,6 +9,7 @@
 [ext_resource type="PackedScene" path="res://VFX/SoundRippleManager.tscn" id="6"]
 [ext_resource type="PackedScene" path="res://Scenes/Guard.tscn" id="7"]
 [ext_resource type="Script" path="res://Scripts/Main.gd" id="8"]
+[ext_resource type="Script" path="res://Scripts/EscalationManager.gd" id="9"]
 
 [node name="Main" type="Node2D"]
 script = ExtResource("8")
@@ -17,6 +18,14 @@ script = ExtResource("8")
 
 [node name="Guard" parent="." instance=ExtResource("7")]
 position = Vector2(240, 40)
+
+[node name="Guard2" parent="." instance=ExtResource("7")]
+position = Vector2(-140, 140)
+patrol_path = NodePath("../PatrolPath2")
+
+[node name="Guard3" parent="." instance=ExtResource("7")]
+position = Vector2(520, -120)
+patrol_path = NodePath("../PatrolPath3")
 
 [node name="PatrolPath" type="Node2D" parent="."]
 position = Vector2(68, 0)
@@ -34,12 +43,56 @@ position = Vector2(360, -40)
 [node name="PointD" type="Node2D" parent="PatrolPath"]
 position = Vector2(200, -40)
 
+[node name="PatrolPath2" type="Node2D" parent="."]
+position = Vector2(-180, 120)
+
+[node name="PointA2" type="Node2D" parent="PatrolPath2"]
+position = Vector2(-40, 40)
+
+[node name="PointB2" type="Node2D" parent="PatrolPath2"]
+position = Vector2(60, 40)
+
+[node name="PointC2" type="Node2D" parent="PatrolPath2"]
+position = Vector2(60, -60)
+
+[node name="PointD2" type="Node2D" parent="PatrolPath2"]
+position = Vector2(-40, -60)
+
+[node name="PatrolPath3" type="Node2D" parent="."]
+position = Vector2(520, -120)
+
+[node name="PointA3" type="Node2D" parent="PatrolPath3"]
+position = Vector2(-80, 0)
+
+[node name="PointB3" type="Node2D" parent="PatrolPath3"]
+position = Vector2(80, 0)
+
+[node name="PointC3" type="Node2D" parent="PatrolPath3"]
+position = Vector2(80, -120)
+
+[node name="PointD3" type="Node2D" parent="PatrolPath3"]
+position = Vector2(-80, -120)
+
 [node name="HatDiagonal" type="Sprite2D" parent="PatrolPath"]
 position = Vector2(-739.99994, -323.00003)
 scale = Vector2(0.5420466, 0.47966403)
 texture = ExtResource("3_50glp")
 
 [node name="SoundRippleManager" parent="." instance=ExtResource("6")]
+
+[node name="AudioLayers" type="Node" parent="."]
+
+[node name="TensionLayer" type="AudioStreamPlayer" parent="AudioLayers"]
+volume_db = -30.0
+
+[node name="HeartbeatLayer" type="AudioStreamPlayer" parent="AudioLayers"]
+volume_db = -30.0
+
+[node name="EscalationManager" type="Node2D" parent="."]
+script = ExtResource("9")
+overlay_path = NodePath("../ReadabilityOverlay")
+tension_player_path = NodePath("../AudioLayers/TensionLayer")
+heartbeat_player_path = NodePath("../AudioLayers/HeartbeatLayer")
 
 [node name="VisionMask" parent="." instance=ExtResource("3")]
 target_path = NodePath("../Player/VisionCone")
