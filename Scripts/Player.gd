@@ -9,6 +9,12 @@ signal damaged(amount: int, context: String)
 @export var idle_animation_name: StringName = &"idle"
 @export var walk_animation_name: StringName = &"walk"
 @export var aim_rotation_offset_degrees: float = 0.0
+@export var walk_sound_interval: float = 0.55
+@export var sprint_sound_interval: float = 0.35
+@export var walk_sound_radius: float = 220.0
+@export var sprint_sound_radius: float = 360.0
+@export var walk_sound_loudness: float = 0.35
+@export var sprint_sound_loudness: float = 0.8
 
 @onready var visuals: Node2D = $Visuals
 @onready var sprite: AnimatedSprite2D = $Visuals/AnimatedSprite2D
@@ -18,24 +24,27 @@ signal damaged(amount: int, context: String)
 
 var is_dead: bool = false
 var _aim_angle: float = 0.0
+var _sound_timer: float = 0.0
 
 func _ready() -> void:
 	_sync_hp()
 	_apply_interact_radius()
 	_update_animation(Vector2.ZERO)
 
-func _physics_process(_delta: float) -> void:
+func _physics_process(delta: float) -> void:
 	if is_dead:
 		velocity = Vector2.ZERO
 		return
 	var input_vector := Input.get_vector("move_left", "move_right", "move_up", "move_down")
 	var speed := move_speed
-	if Input.is_action_pressed("sprint"):
+	var is_sprinting := Input.is_action_pressed("sprint")
+	if is_sprinting:
 		speed *= sprint_multiplier
 	velocity = input_vector * speed
 	move_and_slide()
 	_update_animation(input_vector)
 	_update_aim()
+	_update_movement_sound(delta, input_vector, is_sprinting)
 
 func _unhandled_input(event: InputEvent) -> void:
 	if is_dead:
@@ -68,6 +77,25 @@ func _update_animation(input_vector: Vector2) -> void:
 			sprite.play(anim_name)
 	elif not sprite.is_playing():
 		sprite.play()
+
+func _update_movement_sound(delta: float, input_vector: Vector2, is_sprinting: bool) -> void:
+	if input_vector.length() < 0.1:
+		_sound_timer = 0.0
+		return
+	var interval := walk_sound_interval
+	var radius := walk_sound_radius
+	var loudness := walk_sound_loudness
+	var sound_type := SoundEvent.SoundType.EXPECTED
+	if is_sprinting:
+		interval = sprint_sound_interval
+		radius = sprint_sound_radius
+		loudness = sprint_sound_loudness
+		sound_type = SoundEvent.SoundType.ANOMALOUS
+	_sound_timer -= delta
+	if _sound_timer > 0.0:
+		return
+	_sound_timer = max(interval, 0.05)
+	SoundBus.emit_sound_at(global_position, loudness, radius, sound_type, self)
 
 func apply_damage(amount: int, context: String = "") -> void:
 	if is_dead:
