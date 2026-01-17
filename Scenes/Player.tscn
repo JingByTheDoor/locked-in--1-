@@ -4,6 +4,7 @@
 [ext_resource type="Texture2D" uid="uid://cx1pbb1jbp3uf" path="res://Guy Walking COMPLETE.png" id="2_kyqiw"]
 [ext_resource type="Script" uid="uid://d23fs4q1yb1dt" path="res://Scripts/VisionCone.gd" id="3"]
 [ext_resource type="PackedScene" path="res://VFX/HitSplat.tscn" id="4"]
+[ext_resource type="PackedScene" path="res://VFX/GunMuzzleFlash.tscn" id="5"]
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_gntrk"]
 atlas = ExtResource("2_kyqiw")
@@ -90,6 +91,7 @@ radius = 48.0
 script = ExtResource("1")
 aim_rotation_offset_degrees = 90.0
 hit_vfx_scene = ExtResource("4")
+gun_muzzle_flash_scene = ExtResource("5")
 
 [node name="Visuals" type="Node2D" parent="."]
 

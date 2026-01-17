@@ -32,6 +32,17 @@ signal damaged(amount: int, context: String)
 @export var sprint_sound_radius: float = 360.0
 @export var walk_sound_loudness: float = 0.35
 @export var sprint_sound_loudness: float = 0.8
+@export var gun_enabled: bool = true
+@export var gun_damage: int = 999
+@export var gun_range: float = 900.0
+@export var gun_fire_cooldown: float = 0.45
+@export var gun_knockback: float = 220.0
+@export var gun_shot_loudness: float = 2.6
+@export var gun_shot_radius: float = 1600.0
+@export var gun_empty_message: String = "No ammo."
+@export var gun_collision_mask: int = 1
+@export var gun_muzzle_offset: float = 18.0
+@export var gun_muzzle_flash_scene: PackedScene
 @export var carry_rank_min: int = 1
 @export var carry_rank_max: int = 5
 @export var carry_speed_step: float = 0.1
@@ -63,6 +74,8 @@ var _attack_hit_enemy: bool = false
 var _attack_hit_wall: bool = false
 var _carry_rank: int = 1
 var _is_hiding: bool = false
+var _repair_locked: bool = false
+var _gun_cooldown_timer: float = 0.0
 
 func _ready() -> void:
 	add_to_group("player")
@@ -75,6 +88,13 @@ func _ready() -> void:
 func _physics_process(delta: float) -> void:
 	if is_dead:
 		velocity = Vector2.ZERO
+		return
+	_gun_cooldown_timer = max(0.0, _gun_cooldown_timer - delta)
+	if _repair_locked:
+		velocity = Vector2.ZERO
+		move_and_slide()
+		_update_animation(Vector2.ZERO)
+		_update_aim()
 		return
 	var input_vector := Input.get_vector("move_left", "move_right", "move_up", "move_down")
 	var speed := move_speed * _get_carry_speed_multiplier()
@@ -91,10 +111,14 @@ func _physics_process(delta: float) -> void:
 func _unhandled_input(event: InputEvent) -> void:
 	if is_dead:
 		return
+	if _repair_locked:
+		return
 	if event.is_action_pressed("interact"):
 		_try_interact()
 	elif event.is_action_pressed("attack"):
 		_start_attack()
+	elif event.is_action_pressed("gun_fire"):
+		_try_fire_gun()
 
 func _update_aim() -> void:
 	if visuals == null:
@@ -224,6 +248,11 @@ func _emit_sound(sound_type: int, loudness: float, radius: float) -> void:
 		return
 	SoundBus.emit_sound_at(global_position, loudness, radius, sound_type, self)
 
+func _emit_gun_sound() -> void:
+	if SoundBus == null:
+		return
+	SoundBus.emit_sound_at(global_position, gun_shot_loudness, gun_shot_radius, SoundEvent.SoundType.ANOMALOUS, self, "gun")
+
 func _spawn_hit_vfx(position: Vector2, is_enemy: bool) -> void:
 	if hit_vfx_scene == null:
 		return
@@ -300,6 +329,9 @@ func set_hiding(value: bool) -> void:
 func is_hiding() -> bool:
 	return _is_hiding
 
+func set_repair_lock(locked: bool) -> void:
+	_repair_locked = locked
+
 func _handle_death(context: String) -> void:
 	if is_dead:
 		return
@@ -335,6 +367,78 @@ func _try_interact() -> void:
 	if parent != null and parent.has_method("interact"):
 		parent.call("interact", self)
 
+func _try_fire_gun() -> void:
+	if not gun_enabled:
+		return
+	if _gun_cooldown_timer > 0.0:
+		return
+	var ammo: int = 0
+	if GameState.resources.has("ammo"):
+		ammo = int(GameState.resources["ammo"])
+	if ammo <= 0:
+		_show_message(gun_empty_message)
+		return
+	GameState.add_resource("ammo", -1)
+	_gun_cooldown_timer = max(gun_fire_cooldown, 0.05)
+	var aim_dir: Vector2 = Vector2.RIGHT.rotated(_aim_angle)
+	var muzzle_pos: Vector2 = global_position + aim_dir * gun_muzzle_offset
+	_spawn_muzzle_flash(muzzle_pos, _aim_angle)
+	_emit_gun_sound()
+	_fire_gun_ray(muzzle_pos, aim_dir)
+
+func _fire_gun_ray(from: Vector2, direction: Vector2) -> void:
+	var space_state: PhysicsDirectSpaceState2D = get_world_2d().direct_space_state
+	var params: PhysicsRayQueryParameters2D = PhysicsRayQueryParameters2D.new()
+	params.from = from
+	params.to = from + direction.normalized() * gun_range
+	params.collision_mask = gun_collision_mask
+	params.collide_with_areas = true
+	params.collide_with_bodies = true
+	params.exclude = _build_gun_exclude_list()
+	var hit: Dictionary = space_state.intersect_ray(params)
+	if hit.is_empty():
+		return
+	var collider: Object = hit.get("collider")
+	var hit_pos: Vector2 = hit.get("position", from)
+	var is_enemy: bool = false
+	if collider is Node:
+		var node := collider as Node
+		if node.has_method("apply_damage"):
+			node.call("apply_damage", gun_damage, "gun")
+			is_enemy = true
+		if node.has_method("apply_knockback"):
+			node.call("apply_knockback", direction, gun_knockback)
+	_spawn_hit_vfx(hit_pos, is_enemy)
+
+func _spawn_muzzle_flash(position: Vector2, rotation_angle: float) -> void:
+	if gun_muzzle_flash_scene == null:
+		return
+	var flash: Node = gun_muzzle_flash_scene.instantiate()
+	if flash == null:
+		return
+	var parent: Node = get_parent()
+	if parent != null:
+		parent.add_child(flash)
+	else:
+		add_child(flash)
+	if flash is Node2D:
+		var node2d := flash as Node2D
+		node2d.global_position = position
+		node2d.global_rotation = rotation_angle
+
+func _build_gun_exclude_list() -> Array:
+	var exclude: Array = []
+	_append_collision_objects(exclude, self)
+	return exclude
+
+func _append_collision_objects(exclude: Array, node: Node) -> void:
+	if node is CollisionObject2D:
+		exclude.append(node)
+	var children: Array = node.get_children()
+	for child in children:
+		if child is Node:
+			_append_collision_objects(exclude, child)
+
 func _find_best_interactable() -> Node:
 	var nearest: Node = null
 	var nearest_dist := INF
@@ -358,3 +462,10 @@ func _get_carry_speed_multiplier() -> float:
 	var rank_offset: int = max(_carry_rank - carry_rank_min, 0)
 	var mult: float = 1.0 - float(rank_offset) * carry_speed_step
 	return clampf(mult, 0.3, 1.0)
+
+func _show_message(text: String) -> void:
+	if text == "":
+		return
+	var hud: Node = get_tree().get_first_node_in_group("message_hud")
+	if hud != null and hud.has_method("show_message"):
+		hud.call("show_message", text, 1.2)

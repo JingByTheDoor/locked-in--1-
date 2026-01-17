@@ -11,7 +11,11 @@ enum SoundType {
 @export var radius: float = 200.0
 @export var position: Vector2 = Vector2.ZERO
 @export var source_path: NodePath
+@export var tag: String = ""
 @export var timestamp_msec: int = 0
 
 func is_anomalous() -> bool:
 	return sound_type == SoundType.ANOMALOUS
+
+func has_tag(value: String) -> bool:
+	return tag == value

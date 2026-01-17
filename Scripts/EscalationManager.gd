@@ -11,6 +11,9 @@ extends Node2D
 @export var global_pressure_gain_per_anomaly: float = 0.08
 @export var global_pressure_gain_per_second: float = 0.03
 @export var global_pressure_floor_ratio: float = 0.35
+@export var gun_pressure_boost: float = 0.6
+@export var gun_local_noise_boost: float = 0.7
+@export var gun_spike_timer_boost: float = 0.6
 
 @export var investigate_threshold: float = 0.25
 @export var pressure_threshold: float = 0.6
@@ -88,6 +91,10 @@ func _on_sound_emitted(event: SoundEvent) -> void:
 		local_noise_position = local_noise_position.lerp(event.position, blend)
 		local_noise_value = clampf(local_noise_value + gain, 0.0, local_noise_max)
 	GameState.global_pressure += global_pressure_gain_per_anomaly * event.loudness
+	if event.tag == "gun":
+		local_noise_value = clampf(local_noise_value + gun_local_noise_boost, 0.0, local_noise_max)
+		_spike_timer = min(_spike_timer + gun_spike_timer_boost, hunted_spike_time + gun_spike_timer_boost)
+		GameState.global_pressure += gun_pressure_boost * event.loudness
 	_update_pressure_floor()
 
 func _update_local_noise(delta: float) -> void:

@@ -237,6 +237,10 @@ func _ensure_input_map() -> void:
 	_ensure_action("aim")
 	_add_default_mouse_events("aim", [MOUSE_BUTTON_RIGHT])
 
+	_ensure_action("gun_fire")
+	_add_default_mouse_events("gun_fire", [MOUSE_BUTTON_RIGHT])
+	_add_default_key_events("gun_fire", [KEY_F])
+
 	_ensure_action("pause")
 	_add_default_key_events("pause", [KEY_ESCAPE])
 

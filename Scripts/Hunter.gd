@@ -20,6 +20,7 @@ enum State {
 @export var hearing_multiplier: float = 2.0
 @export var hearing_min_radius: float = 220.0
 @export var hearing_max_radius: float = 2000.0
+@export var gun_pull_radius: float = 5000.0
 @export var hiding_discovery_chance: float = 0.35
 @export var hiding_check_interval: float = 0.4
 @export var door_delay_default: float = 0.6
@@ -147,6 +148,8 @@ func _on_sound_emitted(event: SoundEvent) -> void:
 		return
 	var dist: float = global_position.distance_to(event.position)
 	var hearing_radius: float = clampf(event.radius * hearing_multiplier, hearing_min_radius, hearing_max_radius)
+	if event.tag == "gun":
+		hearing_radius = max(hearing_radius, gun_pull_radius)
 	if dist > hearing_radius:
 		return
 	last_heard_position = event.position
