@@ -6,8 +6,8 @@ signal damaged(amount: int, context: String)
 @export var move_speed: float = 180.0
 @export var sprint_multiplier: float = 1.5
 @export var interact_radius: float = 48.0
-@export var idle_animation_name: StringName = &"idle"
-@export var walk_animation_name: StringName = &"walk"
+@export var idle_animation_name: StringName = &"Idle"
+@export var walk_animation_name: StringName = &"Walk"
 @export var aim_rotation_offset_degrees: float = 0.0
 @export var attack_arc_degrees: float = 160.0
 @export var attack_range: float = 80.0

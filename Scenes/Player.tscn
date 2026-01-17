@@ -1,10 +1,14 @@
-[gd_scene load_steps=16 format=3 uid="uid://x4khlkw6qu05"]
+[gd_scene load_steps=18 format=3 uid="uid://x4khlkw6qu05"]
 
 [ext_resource type="Script" uid="uid://btcv2iprnmnd4" path="res://Scripts/Player.gd" id="1"]
 [ext_resource type="Texture2D" uid="uid://cx1pbb1jbp3uf" path="res://Guy Walking COMPLETE.png" id="2_kyqiw"]
 [ext_resource type="Script" uid="uid://d23fs4q1yb1dt" path="res://Scripts/VisionCone.gd" id="3"]
 [ext_resource type="PackedScene" path="res://VFX/HitSplat.tscn" id="4"]
 [ext_resource type="PackedScene" path="res://VFX/GunMuzzleFlash.tscn" id="5"]
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_yoq75"]
+atlas = ExtResource("2_kyqiw")
+region = Rect2(0, 0, 179, 153)
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_gntrk"]
 atlas = ExtResource("2_kyqiw")
@@ -36,6 +40,14 @@ region = Rect2(0, 153, 179, 153)
 
 [sub_resource type="SpriteFrames" id="1"]
 animations = [{
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_yoq75")
+}],
+"loop": true,
+"name": &"Idle",
+"speed": 5.0
+}, {
 "frames": [{
 "duration": 1.0,
 "texture": SubResource("AtlasTexture_gntrk")
@@ -99,8 +111,8 @@ gun_muzzle_flash_scene = ExtResource("5")
 position = Vector2(8, 14)
 scale = Vector2(0.8, 1)
 sprite_frames = SubResource("1")
-animation = &"Walk"
-frame_progress = 0.0074090785
+animation = &"Idle"
+frame_progress = 0.10416737
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="."]
 shape = SubResource("2")
@@ -117,20 +129,16 @@ position = Vector2(0, -1)
 shape = SubResource("3")
 
 [node name="AttackArea" type="Area2D" parent="."]
+collision_layer = 0
 monitoring = false
 monitorable = false
-collision_layer = 0
-collision_mask = 1
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="AttackArea"]
 shape = SubResource("4")
 
 [node name="VisionCone" type="Node2D" parent="."]
 script = ExtResource("3")
-cone_angle_degrees = 120.0
 cone_length = 900.0
 extra_length = 600.0
-show_cone = true
 cone_fill_color = Color(0.3, 0.9, 1, 0.12)
 cone_outline_color = Color(0.3, 0.9, 1, 0.35)
-cone_outline_width = 1.0
