@@ -15,6 +15,7 @@ enum State {
 @export var hearing_multiplier: float = 2.2
 @export var min_hearing_radius: float = 700.0
 @export var max_hearing_radius: float = 1600.0
+@export var alert_hit_points: int = 3
 @export var alarm_cooldown: float = 10.0
 @export var alarm_loudness: float = 2.4
 @export var alarm_radius: float = 2000.0
@@ -53,12 +54,14 @@ var _lose_timer: float = 0.0
 var _aim_angle: float = 0.0
 var _alarm_timer: float = 0.0
 var _footstep_timer: float = 0.0
+var _current_alert_hp: int = 3
 
 func _ready() -> void:
 	add_to_group("enemy")
 	_resolve_player()
 	_cache_patrol_points()
 	_update_animation(Vector2.ZERO)
+	_current_alert_hp = max(1, alert_hit_points)
 	if SoundBus != null:
 		SoundBus.sound_emitted.connect(_on_sound_emitted)
 
@@ -169,6 +172,19 @@ func _apply_state_debug_color() -> void:
 		State.ALERT:
 			sprite.modulate = alert_color
 
+func apply_damage(amount: int, _context: String = "") -> void:
+	if amount <= 0:
+		return
+	if state == State.PATROL:
+		_die()
+		return
+	_current_alert_hp -= amount
+	if _current_alert_hp <= 0:
+		_die()
+		return
+	state = State.ALERT
+	_lose_timer = 0.0
+
 func _try_alarm() -> void:
 	if _alarm_timer > 0.0:
 		return
@@ -177,6 +193,9 @@ func _try_alarm() -> void:
 	_spawn_alarm_pulse()
 	_play_one_shot(alarm_stream, alarm_volume_db)
 	_alarm_timer = max(alarm_cooldown, 0.1)
+
+func _die() -> void:
+	queue_free()
 
 func _spawn_alarm_pulse() -> void:
 	if alarm_vfx_scene == null:
