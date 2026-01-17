@@ -6,6 +6,7 @@ extends Area2D
 
 func _ready() -> void:
 	add_to_group("interactable")
+	add_to_group("hiding_spot")
 
 func interact(player: Node) -> void:
 	if player == null:

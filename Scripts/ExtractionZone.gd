@@ -14,6 +14,7 @@ var _extracting: bool = false
 var _player: Node = null
 
 func _ready() -> void:
+	add_to_group("exit")
 	add_to_group("interactable")
 	_timer = Timer.new()
 	_timer.one_shot = true

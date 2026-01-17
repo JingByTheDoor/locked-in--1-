@@ -43,7 +43,7 @@ size = Vector2(80, 80)
 [sub_resource type="RectangleShape2D" id="8"]
 size = Vector2(120, 60)
 
-[node name="ScavengeRun" type="Node2D"]
+[node name="ScavengeRun_B" type="Node2D"]
 script = ExtResource("1")
 
 [node name="MapRules" type="Node" parent="."]
@@ -229,27 +229,27 @@ modulate = Color(0.35, 0.3, 0.2, 1)
 
 [node name="ExitSignWorld" type="Sprite2D" parent="Map"]
 texture = ExtResource("15")
-position = Vector2(520, -320)
+position = Vector2(520, 320)
 scale = Vector2(0.4, 0.4)
 modulate = Color(0.35, 1, 0.55, 1)
 
 [node name="ExitSignWorld2" type="Sprite2D" parent="Map"]
 texture = ExtResource("15")
-position = Vector2(-520, 320)
+position = Vector2(-520, -320)
 scale = Vector2(0.4, 0.4)
 modulate = Color(0.35, 1, 0.55, 1)
 
 [node name="Player" parent="." instance=ExtResource("2")]
-position = Vector2(-520, 0)
+position = Vector2(0, 320)
 
 [node name="ExtractionZone" parent="." instance=ExtResource("4")]
-position = Vector2(520, -260)
+position = Vector2(520, 260)
 
 [node name="ExtractionZone2" parent="." instance=ExtResource("4")]
-position = Vector2(-520, 260)
+position = Vector2(-520, -260)
 
 [node name="LootScrap1" parent="." instance=ExtResource("5")]
-position = Vector2(-520, -260)
+position = Vector2(-420, -220)
 loot_type = 0
 amount = 3
 carry_rank_add = 1
@@ -258,7 +258,7 @@ carry_rank_add = 1
 modulate = Color(0.7, 0.7, 0.7, 1)
 
 [node name="LootWood1" parent="." instance=ExtResource("5")]
-position = Vector2(-420, 220)
+position = Vector2(420, 180)
 loot_type = 1
 amount = 2
 carry_rank_add = 1
@@ -267,7 +267,7 @@ carry_rank_add = 1
 modulate = Color(0.7, 0.5, 0.3, 1)
 
 [node name="LootAmmo1" parent="." instance=ExtResource("5")]
-position = Vector2(20, -260)
+position = Vector2(80, 240)
 loot_type = 4
 amount = 6
 carry_rank_add = 1
@@ -276,7 +276,7 @@ carry_rank_add = 1
 modulate = Color(0.6, 0.7, 1, 1)
 
 [node name="LootFood1" parent="." instance=ExtResource("5")]
-position = Vector2(420, 220)
+position = Vector2(-320, 200)
 loot_type = 3
 amount = 1
 grade = 2
@@ -286,7 +286,7 @@ carry_rank_add = 2
 modulate = Color(0.45, 0.9, 0.45, 1)
 
 [node name="LootFuel1" parent="." instance=ExtResource("5")]
-position = Vector2(120, 320)
+position = Vector2(260, -200)
 loot_type = 2
 amount = 1
 grade = 1
@@ -296,7 +296,7 @@ carry_rank_add = 2
 modulate = Color(0.95, 0.85, 0.2, 1)
 
 [node name="LootScrap2" parent="." instance=ExtResource("5")]
-position = Vector2(300, -140)
+position = Vector2(-100, -240)
 loot_type = 0
 amount = 2
 carry_rank_add = 1
@@ -305,55 +305,55 @@ carry_rank_add = 1
 modulate = Color(0.65, 0.65, 0.65, 1)
 
 [node name="BreakableCrate1" parent="." instance=ExtResource("17")]
-position = Vector2(-320, -120)
+position = Vector2(-260, 60)
 
 [node name="BreakableCrate2" parent="." instance=ExtResource("17")]
-position = Vector2(120, 80)
+position = Vector2(320, -100)
 
 [node name="BreakableGlass1" parent="." instance=ExtResource("17")]
-position = Vector2(420, -80)
+position = Vector2(-420, 80)
 break_color = Color(0.6, 0.8, 1, 0.9)
 intact_color = Color(0.55, 0.7, 0.9, 1)
 broken_color = Color(0.35, 0.4, 0.5, 1)
 
 [node name="HidingSpot1" parent="." instance=ExtResource("6")]
-position = Vector2(-520, 320)
+position = Vector2(-520, -320)
 
 [node name="Sprite2D" parent="HidingSpot1"]
 modulate = Color(0.4, 0.45, 0.55, 1)
 
 [node name="HidingSpot2" parent="." instance=ExtResource("6")]
-position = Vector2(540, -320)
+position = Vector2(520, 320)
 
 [node name="Sprite2D" parent="HidingSpot2"]
 modulate = Color(0.4, 0.45, 0.55, 1)
 
 [node name="UnfairRoom" type="Node2D" parent="."]
-position = Vector2(420, -220)
+position = Vector2(0, -260)
 groups = ["unfair_room"]
 
 [node name="GuardLeft" parent="." instance=ExtResource("3")]
-position = Vector2(-360, -200)
+position = Vector2(-360, 200)
 patrol_path = NodePath("../PatrolPathLeft")
 
 [node name="GuardCenter" parent="." instance=ExtResource("3")]
-position = Vector2(-40, -200)
+position = Vector2(120, -180)
 patrol_path = NodePath("../PatrolPathCenter")
 
 [node name="GuardRight" parent="." instance=ExtResource("3")]
-position = Vector2(340, 160)
+position = Vector2(360, -40)
 patrol_path = NodePath("../PatrolPathRight")
 
 [node name="GuardSouth" parent="." instance=ExtResource("3")]
-position = Vector2(120, 300)
+position = Vector2(-120, 300)
 patrol_path = NodePath("../PatrolPathSouth")
 
 [node name="WatcherA" parent="." instance=ExtResource("16")]
-position = Vector2(260, -40)
+position = Vector2(-260, -40)
 patrol_path = NodePath("../WatcherPath")
 
 [node name="PatrolPathLeft" type="Node2D" parent="."]
-position = Vector2(-450, -200)
+position = Vector2(-450, 200)
 
 [node name="PointA" type="Node2D" parent="PatrolPathLeft"]
 position = Vector2(-80, -80)
@@ -368,7 +368,7 @@ position = Vector2(80, 80)
 position = Vector2(-80, 80)
 
 [node name="PatrolPathCenter" type="Node2D" parent="."]
-position = Vector2(0, -180)
+position = Vector2(120, -200)
 
 [node name="PointA" type="Node2D" parent="PatrolPathCenter"]
 position = Vector2(-80, -60)
@@ -383,7 +383,7 @@ position = Vector2(80, 80)
 position = Vector2(-80, 80)
 
 [node name="PatrolPathRight" type="Node2D" parent="."]
-position = Vector2(360, 180)
+position = Vector2(360, -80)
 
 [node name="PointA" type="Node2D" parent="PatrolPathRight"]
 position = Vector2(-80, -80)
@@ -398,7 +398,7 @@ position = Vector2(120, 80)
 position = Vector2(-80, 80)
 
 [node name="PatrolPathSouth" type="Node2D" parent="."]
-position = Vector2(120, 300)
+position = Vector2(-120, 300)
 
 [node name="PointA" type="Node2D" parent="PatrolPathSouth"]
 position = Vector2(-60, -40)
@@ -413,7 +413,7 @@ position = Vector2(60, 40)
 position = Vector2(-60, 40)
 
 [node name="WatcherPath" type="Node2D" parent="."]
-position = Vector2(260, -40)
+position = Vector2(-260, -40)
 
 [node name="PointA" type="Node2D" parent="WatcherPath"]
 position = Vector2(-60, -40)
