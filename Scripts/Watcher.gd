@@ -49,6 +49,7 @@ var _aim_angle: float = 0.0
 var _alarm_timer: float = 0.0
 
 func _ready() -> void:
+	add_to_group("enemy")
 	_resolve_player()
 	_cache_patrol_points()
 	_update_animation(Vector2.ZERO)

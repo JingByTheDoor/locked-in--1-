@@ -166,6 +166,10 @@ func set_repair_state(repair_id: String, repaired: bool) -> void:
 func is_generator_active() -> bool:
 	return generator_on and generator_charge > GENERATOR_CHARGE_MIN
 
+func reset_phase_state() -> void:
+	phase_state = PhaseState.QUIET
+	escape_only = false
+
 func has_tutorial(key: String) -> bool:
 	if key == "":
 		return false

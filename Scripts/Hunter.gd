@@ -54,6 +54,7 @@ var _aim_angle: float = 0.0
 var _rng: RandomNumberGenerator = RandomNumberGenerator.new()
 
 func _ready() -> void:
+	add_to_group("enemy")
 	_rng.randomize()
 	_resolve_player()
 	if SoundBus != null:

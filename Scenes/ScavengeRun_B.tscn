@@ -49,6 +49,20 @@ script = ExtResource("1")
 [node name="MapRules" type="Node" parent="."]
 script = ExtResource("18")
 
+[node name="PlayerSpawns" type="Node2D" parent="."]
+
+[node name="SpawnA" type="Node2D" parent="PlayerSpawns"]
+position = Vector2(-520, 320)
+
+[node name="SpawnB" type="Node2D" parent="PlayerSpawns"]
+position = Vector2(-520, -320)
+
+[node name="SpawnC" type="Node2D" parent="PlayerSpawns"]
+position = Vector2(520, 320)
+
+[node name="SpawnD" type="Node2D" parent="PlayerSpawns"]
+position = Vector2(520, -320)
+
 [node name="Map" type="Node2D" parent="."]
 
 [node name="OuterWallTop" type="StaticBody2D" parent="Map"]

@@ -58,6 +58,7 @@ var _knockback_velocity: Vector2 = Vector2.ZERO
 var _callout_timer: float = 0.0
 
 func _ready() -> void:
+	add_to_group("enemy")
 	_resolve_player()
 	_cache_patrol_points()
 	_update_animation(Vector2.ZERO)

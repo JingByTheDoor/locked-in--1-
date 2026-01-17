@@ -9,6 +9,7 @@ var _lights_out: CanvasItem
 
 func _ready() -> void:
 	GameState.run_state = GameState.RunState.BASE
+	GameState.reset_phase_state()
 	_lights_out = get_node_or_null(lights_out_path) as CanvasItem
 	_update_lighting()
 	_show_startup_message()
