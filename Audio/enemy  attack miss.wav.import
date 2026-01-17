@@ -3,12 +3,12 @@
 importer="wav"
 type="AudioStreamWAV"
 uid="uid://dlqo4b2s6n0tu"
-path="res://.godot/imported/enemy  attack miss.wav-b78a4bf588aa0b260124d7db8ba7f71f.sample"
+path="res://.godot/imported/enemy  attack miss.wav-4f4109b23a039c34f383ecb79f18457b.sample"
 
 [deps]
 
 source_file="res://Audio/enemy  attack miss.wav"
-dest_files=["res://.godot/imported/enemy  attack miss.wav-b78a4bf588aa0b260124d7db8ba7f71f.sample"]
+dest_files=["res://.godot/imported/enemy  attack miss.wav-4f4109b23a039c34f383ecb79f18457b.sample"]
 
 [params]
 
@@ -22,4 +22,3 @@ edit/loop_mode=0
 edit/loop_begin=0
 edit/loop_end=-1
 compress/mode=2
-

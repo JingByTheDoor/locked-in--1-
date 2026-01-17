@@ -3,12 +3,12 @@
 importer="wav"
 type="AudioStreamWAV"
 uid="uid://bfbcurfee8ivg"
-path="res://.godot/imported/Guard Footsteps.wav-3c5cdabb8621a8ecd29b802922bb0feb.sample"
+path="res://.godot/imported/Guard Footsteps.wav-5e4b5e14bccdd7f5df61cbb7fc1a19ec.sample"
 
 [deps]
 
 source_file="res://Audio/Guard Footsteps.wav"
-dest_files=["res://.godot/imported/Guard Footsteps.wav-3c5cdabb8621a8ecd29b802922bb0feb.sample"]
+dest_files=["res://.godot/imported/Guard Footsteps.wav-5e4b5e14bccdd7f5df61cbb7fc1a19ec.sample"]
 
 [params]
 
@@ -22,4 +22,3 @@ edit/loop_mode=0
 edit/loop_begin=0
 edit/loop_end=-1
 compress/mode=2
-

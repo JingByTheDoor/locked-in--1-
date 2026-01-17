@@ -3,12 +3,12 @@
 importer="wav"
 type="AudioStreamWAV"
 uid="uid://csm8lhnmctvjf"
-path="res://.godot/imported/door smash 4.wav-a4dd2512bd17747b286770f015da7242.sample"
+path="res://.godot/imported/door smash 4.wav-1e0c4c0169309c737d6befc3ae470858.sample"
 
 [deps]
 
 source_file="res://Audio/door smash 4.wav"
-dest_files=["res://.godot/imported/door smash 4.wav-a4dd2512bd17747b286770f015da7242.sample"]
+dest_files=["res://.godot/imported/door smash 4.wav-1e0c4c0169309c737d6befc3ae470858.sample"]
 
 [params]
 
@@ -22,4 +22,3 @@ edit/loop_mode=0
 edit/loop_begin=0
 edit/loop_end=-1
 compress/mode=2
-

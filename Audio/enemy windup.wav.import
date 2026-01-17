@@ -3,12 +3,12 @@
 importer="wav"
 type="AudioStreamWAV"
 uid="uid://j5t4m18vi3qf"
-path="res://.godot/imported/enemy windup.wav-3ea0b405f56114cfb8342f25c4e9d29a.sample"
+path="res://.godot/imported/enemy windup.wav-2f46ef440bb4c1da40373cbb0a31431a.sample"
 
 [deps]
 
 source_file="res://Audio/enemy windup.wav"
-dest_files=["res://.godot/imported/enemy windup.wav-3ea0b405f56114cfb8342f25c4e9d29a.sample"]
+dest_files=["res://.godot/imported/enemy windup.wav-2f46ef440bb4c1da40373cbb0a31431a.sample"]
 
 [params]
 
@@ -22,4 +22,3 @@ edit/loop_mode=0
 edit/loop_begin=0
 edit/loop_end=-1
 compress/mode=2
-

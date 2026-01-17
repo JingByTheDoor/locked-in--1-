@@ -3,12 +3,12 @@
 importer="wav"
 type="AudioStreamWAV"
 uid="uid://bccuxmrxi5a01"
-path="res://.godot/imported/Enemy death.wav-908d451042b75310067f18b3617d3b10.sample"
+path="res://.godot/imported/Enemy death.wav-e17319ffc698cb78a03420c0bbe5f99b.sample"
 
 [deps]
 
 source_file="res://Audio/Enemy death.wav"
-dest_files=["res://.godot/imported/Enemy death.wav-908d451042b75310067f18b3617d3b10.sample"]
+dest_files=["res://.godot/imported/Enemy death.wav-e17319ffc698cb78a03420c0bbe5f99b.sample"]
 
 [params]
 
@@ -22,4 +22,3 @@ edit/loop_mode=0
 edit/loop_begin=0
 edit/loop_end=-1
 compress/mode=2
-

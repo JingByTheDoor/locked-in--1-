@@ -3,12 +3,12 @@
 importer="wav"
 type="AudioStreamWAV"
 uid="uid://d2f2dn43lu0b3"
-path="res://.godot/imported/HUNTER SPOTED YOU.wav-93adfbd3017377653fbf3e4af67bf074.sample"
+path="res://.godot/imported/HUNTER SPOTED YOU.wav-44d4dd276699d14774694324cb4c5358.sample"
 
 [deps]
 
 source_file="res://Audio/HUNTER SPOTED YOU.wav"
-dest_files=["res://.godot/imported/HUNTER SPOTED YOU.wav-93adfbd3017377653fbf3e4af67bf074.sample"]
+dest_files=["res://.godot/imported/HUNTER SPOTED YOU.wav-44d4dd276699d14774694324cb4c5358.sample"]
 
 [params]
 
@@ -22,4 +22,3 @@ edit/loop_mode=0
 edit/loop_begin=0
 edit/loop_end=-1
 compress/mode=2
-

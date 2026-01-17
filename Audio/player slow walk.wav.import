@@ -3,12 +3,12 @@
 importer="wav"
 type="AudioStreamWAV"
 uid="uid://c6l6xlcrejpn4"
-path="res://.godot/imported/player slow walk.wav-b95f84bc45e6a32a47b10972c00a6bec.sample"
+path="res://.godot/imported/player slow walk.wav-a126bd3506523414e32bc8c413c116e5.sample"
 
 [deps]
 
 source_file="res://Audio/player slow walk.wav"
-dest_files=["res://.godot/imported/player slow walk.wav-b95f84bc45e6a32a47b10972c00a6bec.sample"]
+dest_files=["res://.godot/imported/player slow walk.wav-a126bd3506523414e32bc8c413c116e5.sample"]
 
 [params]
 
@@ -22,4 +22,3 @@ edit/loop_mode=2
 edit/loop_begin=0
 edit/loop_end=-1
 compress/mode=2
-

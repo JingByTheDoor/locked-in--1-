@@ -3,12 +3,12 @@
 importer="wav"
 type="AudioStreamWAV"
 uid="uid://ofi0anutm4me"
-path="res://.godot/imported/ATTACK HIT 4.wav-5169089124ac35924145cfac237c532d.sample"
+path="res://.godot/imported/ATTACK HIT 4.wav-dcb69a6f00089dc15f0851edacf215d4.sample"
 
 [deps]
 
 source_file="res://Audio/ATTACK HIT 4.wav"
-dest_files=["res://.godot/imported/ATTACK HIT 4.wav-5169089124ac35924145cfac237c532d.sample"]
+dest_files=["res://.godot/imported/ATTACK HIT 4.wav-dcb69a6f00089dc15f0851edacf215d4.sample"]
 
 [params]
 
@@ -22,4 +22,3 @@ edit/loop_mode=0
 edit/loop_begin=0
 edit/loop_end=-1
 compress/mode=2
-

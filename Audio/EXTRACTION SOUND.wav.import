@@ -3,12 +3,12 @@
 importer="wav"
 type="AudioStreamWAV"
 uid="uid://d3qlc5lccusdf"
-path="res://.godot/imported/EXTRACTION SOUND.wav-d83655d3bad0c89ec9cb9f2e1f73cc86.sample"
+path="res://.godot/imported/EXTRACTION SOUND.wav-37be850bad8c01fb8d66274d94192bb0.sample"
 
 [deps]
 
 source_file="res://Audio/EXTRACTION SOUND.wav"
-dest_files=["res://.godot/imported/EXTRACTION SOUND.wav-d83655d3bad0c89ec9cb9f2e1f73cc86.sample"]
+dest_files=["res://.godot/imported/EXTRACTION SOUND.wav-37be850bad8c01fb8d66274d94192bb0.sample"]
 
 [params]
 
@@ -22,4 +22,3 @@ edit/loop_mode=0
 edit/loop_begin=0
 edit/loop_end=-1
 compress/mode=2
-

@@ -3,12 +3,12 @@
 importer="wav"
 type="AudioStreamWAV"
 uid="uid://df8ah5npskt5y"
-path="res://.godot/imported/TENSION LAYER.wav-703423a62fe03a62c9de735a220277d3.sample"
+path="res://.godot/imported/TENSION LAYER.wav-d0f3f76fe8383f4d72907d2228aee0f7.sample"
 
 [deps]
 
 source_file="res://Audio/TENSION LAYER.wav"
-dest_files=["res://.godot/imported/TENSION LAYER.wav-703423a62fe03a62c9de735a220277d3.sample"]
+dest_files=["res://.godot/imported/TENSION LAYER.wav-d0f3f76fe8383f4d72907d2228aee0f7.sample"]
 
 [params]
 
@@ -22,4 +22,3 @@ edit/loop_mode=2
 edit/loop_begin=0
 edit/loop_end=-1
 compress/mode=2
-

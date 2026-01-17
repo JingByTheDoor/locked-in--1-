@@ -3,12 +3,12 @@
 importer="wav"
 type="AudioStreamWAV"
 uid="uid://dfq384pjjnydf"
-path="res://.godot/imported/Bat swing hit object 1.wav-7c7303167e519223bc33930a47550230.sample"
+path="res://.godot/imported/Bat swing hit object 1.wav-1a96d1ccc7187767991c05c0db5ddc70.sample"
 
 [deps]
 
 source_file="res://Audio/Bat swing hit object 1.wav"
-dest_files=["res://.godot/imported/Bat swing hit object 1.wav-7c7303167e519223bc33930a47550230.sample"]
+dest_files=["res://.godot/imported/Bat swing hit object 1.wav-1a96d1ccc7187767991c05c0db5ddc70.sample"]
 
 [params]
 
@@ -22,4 +22,3 @@ edit/loop_mode=0
 edit/loop_begin=0
 edit/loop_end=-1
 compress/mode=2
-

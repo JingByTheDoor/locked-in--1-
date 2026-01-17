@@ -3,12 +3,12 @@
 importer="wav"
 type="AudioStreamWAV"
 uid="uid://bjgn3t4f0t8ns"
-path="res://.godot/imported/Fast Runing.wav-9df43fda37ed6317ff47d8fdbbb7b9ea.sample"
+path="res://.godot/imported/Fast Runing.wav-4c51ca867cf8f5c0935e6d47c0a42e43.sample"
 
 [deps]
 
 source_file="res://Audio/Fast Runing.wav"
-dest_files=["res://.godot/imported/Fast Runing.wav-9df43fda37ed6317ff47d8fdbbb7b9ea.sample"]
+dest_files=["res://.godot/imported/Fast Runing.wav-4c51ca867cf8f5c0935e6d47c0a42e43.sample"]
 
 [params]
 
@@ -22,4 +22,3 @@ edit/loop_mode=2
 edit/loop_begin=0
 edit/loop_end=-1
 compress/mode=2
-

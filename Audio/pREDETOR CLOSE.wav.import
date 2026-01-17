@@ -3,12 +3,12 @@
 importer="wav"
 type="AudioStreamWAV"
 uid="uid://dh170ckjy5ea5"
-path="res://.godot/imported/pREDETOR CLOSE.wav-9bebf697533eee5fd6340734da19bec5.sample"
+path="res://.godot/imported/pREDETOR CLOSE.wav-4fdf5824cd83f2697c9e69b47178ed24.sample"
 
 [deps]
 
 source_file="res://Audio/pREDETOR CLOSE.wav"
-dest_files=["res://.godot/imported/pREDETOR CLOSE.wav-9bebf697533eee5fd6340734da19bec5.sample"]
+dest_files=["res://.godot/imported/pREDETOR CLOSE.wav-4fdf5824cd83f2697c9e69b47178ed24.sample"]
 
 [params]
 
@@ -22,4 +22,3 @@ edit/loop_mode=0
 edit/loop_begin=0
 edit/loop_end=-1
 compress/mode=2
-

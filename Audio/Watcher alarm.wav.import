@@ -3,12 +3,12 @@
 importer="wav"
 type="AudioStreamWAV"
 uid="uid://j1tycalatk62"
-path="res://.godot/imported/Watcher alarm.wav-61bfb31334351ebf16c0723a7c4a8b7b.sample"
+path="res://.godot/imported/Watcher alarm.wav-b5b7714ab2533f52383eed523d2b2b93.sample"
 
 [deps]
 
 source_file="res://Audio/Watcher alarm.wav"
-dest_files=["res://.godot/imported/Watcher alarm.wav-61bfb31334351ebf16c0723a7c4a8b7b.sample"]
+dest_files=["res://.godot/imported/Watcher alarm.wav-b5b7714ab2533f52383eed523d2b2b93.sample"]
 
 [params]
 
@@ -22,4 +22,3 @@ edit/loop_mode=0
 edit/loop_begin=0
 edit/loop_end=-1
 compress/mode=2
-

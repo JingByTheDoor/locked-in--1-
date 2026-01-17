@@ -3,12 +3,12 @@
 importer="wav"
 type="AudioStreamWAV"
 uid="uid://b5kmrjm3d3e3m"
-path="res://.godot/imported/Enemy Presence Breathing.wav-39e74060803160300f142d40fe8720b7.sample"
+path="res://.godot/imported/Enemy Presence Breathing.wav-4da1ea22a678901d07ca358473ef187b.sample"
 
 [deps]
 
 source_file="res://Audio/Enemy Presence Breathing.wav"
-dest_files=["res://.godot/imported/Enemy Presence Breathing.wav-39e74060803160300f142d40fe8720b7.sample"]
+dest_files=["res://.godot/imported/Enemy Presence Breathing.wav-4da1ea22a678901d07ca358473ef187b.sample"]
 
 [params]
 
@@ -22,4 +22,3 @@ edit/loop_mode=0
 edit/loop_begin=0
 edit/loop_end=-1
 compress/mode=2
-
