@@ -1,4 +1,4 @@
-[gd_scene load_steps=26 format=3]
+[gd_scene load_steps=27 format=3]
 
 [ext_resource type="Script" path="res://Scripts/ScavengeRun.gd" id="1"]
 [ext_resource type="PackedScene" path="res://Scenes/Player.tscn" id="2"]
@@ -14,6 +14,7 @@
 [ext_resource type="PackedScene" path="res://UI/ExitSignLayer.tscn" id="10"]
 [ext_resource type="PackedScene" path="res://UI/HuntedBanner.tscn" id="11"]
 [ext_resource type="PackedScene" path="res://UI/MessageHud.tscn" id="12"]
+[ext_resource type="PackedScene" path="res://UI/InteractPrompt.tscn" id="19"]
 [ext_resource type="Script" path="res://Scripts/EscalationManager.gd" id="13"]
 [ext_resource type="PackedScene" path="res://Scenes/Hunter.tscn" id="14"]
 [ext_resource type="Texture2D" path="res://icon.svg" id="15"]
@@ -469,3 +470,5 @@ target_path = NodePath("../Player/VisionCone")
 [node name="HuntedBanner" parent="." instance=ExtResource("11")]
 
 [node name="MessageHud" parent="." instance=ExtResource("12")]
+
+[node name="InteractPrompt" parent="." instance=ExtResource("19")]

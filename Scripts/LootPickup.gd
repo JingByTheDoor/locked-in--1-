@@ -17,6 +17,7 @@ enum LootType {
 @export var pickup_radius: float = 140.0
 @export var pickup_anomaly: bool = false
 @export var deny_when_escape_only: bool = true
+@export var prompt_text: String = ""
 
 func _ready() -> void:
 	add_to_group("interactable")
@@ -27,6 +28,13 @@ func interact(player: Node) -> void:
 		return
 	_apply_pickup(player)
 	queue_free()
+
+func get_interact_prompt(_player: Node) -> String:
+	if deny_when_escape_only and GameState.escape_only:
+		return "Escape only."
+	if prompt_text != "":
+		return prompt_text
+	return "Press E to collect " + _loot_name()
 
 func _apply_pickup(player: Node) -> void:
 	match loot_type:
@@ -55,3 +63,18 @@ func _show_message(text: String) -> void:
 	var hud := get_tree().get_first_node_in_group("message_hud")
 	if hud != null and hud.has_method("show_message"):
 		hud.call("show_message", text, 1.5)
+
+func _loot_name() -> String:
+	match loot_type:
+		LootType.SCRAP:
+			return "scrap"
+		LootType.WOOD:
+			return "plank"
+		LootType.FUEL:
+			return "fuel"
+		LootType.FOOD:
+			return "food"
+		LootType.AMMO:
+			return "ammo"
+		_:
+			return "item"

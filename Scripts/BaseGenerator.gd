@@ -8,6 +8,10 @@ class_name BaseGenerator
 @export var no_fuel_message: String = "No fuel."
 @export var toggle_on_message: String = "Generator on."
 @export var toggle_off_message: String = "Generator off."
+@export var prompt_refuel: String = "Press E to refuel generator"
+@export var prompt_toggle_on: String = "Press E to turn generator on"
+@export var prompt_toggle_off: String = "Press E to turn generator off"
+@export var prompt_no_fuel: String = "No fuel"
 
 @onready var sprite: Sprite2D = $Sprite2D
 @onready var hum_player: AudioStreamPlayer2D = get_node_or_null("HumLoop") as AudioStreamPlayer2D
@@ -60,3 +64,12 @@ func _show_message(text: String) -> void:
 	var hud: Node = get_tree().get_first_node_in_group("message_hud")
 	if hud != null and hud.has_method("show_message"):
 		hud.call("show_message", text, 1.4)
+
+func get_interact_prompt(_player: Node) -> String:
+	if GameState.generator_charge < GameState.GENERATOR_CHARGE_MAX and _has_fuel():
+		return prompt_refuel
+	if GameState.generator_charge <= GameState.GENERATOR_CHARGE_MIN:
+		return prompt_no_fuel
+	if GameState.generator_on:
+		return prompt_toggle_off
+	return prompt_toggle_on

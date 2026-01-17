@@ -7,6 +7,9 @@ extends Node2D
 @export var open_loudness: float = 0.2
 @export var open_radius: float = 140.0
 @export var hunter_delay: float = 0.6
+@export var prompt_open: String = "Press E to open"
+@export var prompt_slam: String = "Press E to open (sprint to slam)"
+@export var prompt_slam_only: String = "Press E to slam"
 
 func _ready() -> void:
 	add_to_group("door")
@@ -32,3 +35,10 @@ func interact(_player: Node) -> void:
 
 func get_hunter_delay() -> float:
 	return hunter_delay
+
+func get_interact_prompt(_player: Node) -> String:
+	if slam_on_interact:
+		return prompt_slam_only
+	if slam_when_sprinting:
+		return prompt_slam
+	return prompt_open

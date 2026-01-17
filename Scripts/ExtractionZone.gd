@@ -8,6 +8,7 @@ class_name ExtractionZone
 @export var cancel_message: String = "Extraction canceled."
 @export var extraction_loudness: float = 1.2
 @export var extraction_radius: float = 520.0
+@export var prompt_text: String = "Press E to extract"
 
 var _timer: Timer
 var _extracting: bool = false
@@ -71,3 +72,6 @@ func _show_message(text: String, duration: float) -> void:
 	var hud := get_tree().get_first_node_in_group("message_hud")
 	if hud != null and hud.has_method("show_message"):
 		hud.call("show_message", text, duration)
+
+func get_interact_prompt(_player: Node) -> String:
+	return prompt_text

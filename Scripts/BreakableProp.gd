@@ -21,6 +21,8 @@ var _broken: bool = false
 
 func _ready() -> void:
 	add_to_group("breakable")
+	if break_on_interact:
+		add_to_group("interactable")
 	_hp = max(1, max_hp)
 	_apply_visuals()
 
@@ -69,3 +71,10 @@ func _apply_visuals() -> void:
 	if _broken and broken_texture != null:
 		sprite.texture = broken_texture
 	sprite.modulate = broken_color if _broken else intact_color
+
+func get_interact_prompt(_player: Node) -> String:
+	if not break_on_interact:
+		return ""
+	if _broken:
+		return "Broken"
+	return "Press E to smash"

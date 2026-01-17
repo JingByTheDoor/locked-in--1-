@@ -43,6 +43,7 @@ signal damaged(amount: int, context: String)
 @export var gun_collision_mask: int = 1
 @export var gun_muzzle_offset: float = 18.0
 @export var gun_muzzle_flash_scene: PackedScene
+@export var default_prompt_text: String = "Press E to interact"
 @export var carry_rank_min: int = 1
 @export var carry_rank_max: int = 5
 @export var carry_speed_step: float = 0.1
@@ -458,6 +459,31 @@ func _find_best_interactable() -> Node:
 			nearest_dist = dist
 			nearest = body
 	return nearest
+
+func get_interact_prompt_text() -> String:
+	if interact_area == null:
+		return ""
+	var target: Node = _find_best_interactable()
+	if target == null:
+		return ""
+	var prompt: String = _get_prompt_for_node(target)
+	if prompt != "":
+		return prompt
+	var parent: Node = target.get_parent()
+	if parent != null:
+		prompt = _get_prompt_for_node(parent)
+	if prompt != "":
+		return prompt
+	return default_prompt_text
+
+func _get_prompt_for_node(node: Node) -> String:
+	if node == null:
+		return ""
+	if node.has_method("get_interact_prompt"):
+		return str(node.call("get_interact_prompt", self))
+	if node.has_method("get_prompt_text"):
+		return str(node.call("get_prompt_text", self))
+	return ""
 
 func _get_carry_speed_multiplier() -> float:
 	var rank_offset: int = max(_carry_rank - carry_rank_min, 0)

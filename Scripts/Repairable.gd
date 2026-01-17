@@ -17,6 +17,8 @@ class_name Repairable
 @export var damaged_texture: Texture2D
 @export var repaired_color: Color = Color(0.9, 0.9, 0.9, 1.0)
 @export var damaged_color: Color = Color(0.6, 0.25, 0.25, 1.0)
+@export var prompt_repair: String = "Press E to repair"
+@export var prompt_repaired: String = "Repaired"
 
 @onready var sprite: Sprite2D = $Sprite2D
 @onready var audio_player: AudioStreamPlayer2D = get_node_or_null("RepairSound") as AudioStreamPlayer2D
@@ -44,7 +46,7 @@ func interact(_player: Node) -> void:
 		return
 	if _repairing:
 		return
-	var repair_time := _get_repair_time()
+	var repair_time: float = _get_repair_time()
 	if repair_time <= 0.0:
 		_complete_repair()
 		return
@@ -149,3 +151,9 @@ func _show_message(text: String) -> void:
 	var hud: Node = get_tree().get_first_node_in_group("message_hud")
 	if hud != null and hud.has_method("show_message"):
 		hud.call("show_message", text, 1.6)
+
+func get_interact_prompt(_player: Node) -> String:
+	if is_repaired():
+		return prompt_repaired
+	var name: String = get_display_name()
+	return "%s %s (%d wood, %d scrap)" % [prompt_repair, name, cost_wood, cost_scrap]
