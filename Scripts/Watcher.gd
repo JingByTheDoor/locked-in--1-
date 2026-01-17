@@ -1,41 +1,35 @@
 extends CharacterBody2D
-class_name Guard
-
-signal attacked(target: Node, damage: int)
+class_name Watcher
 
 enum State {
 	PATROL,
 	INVESTIGATE,
-	CHASE
+	ALERT
 }
 
-@export var patrol_speed: float = 90.0
-@export var investigate_speed: float = 110.0
-@export var chase_speed: float = 130.0
+@export var patrol_speed: float = 75.0
+@export var investigate_speed: float = 90.0
+@export var alert_speed: float = 120.0
 @export var arrival_distance: float = 10.0
-@export var attack_range: float = 28.0
-@export var attack_damage: int = 15
-@export var attack_cooldown: float = 1.1
 @export var lose_interest_time: float = 2.5
-@export var hearing_multiplier: float = 2.5
-@export var min_hearing_radius: float = 600.0
-@export var max_hearing_radius: float = 1400.0
-@export var alert_hit_points: int = 3
-@export var knockback_decay: float = 600.0
-@export var knockback_resistance: float = 1.0
-@export var callout_enabled: bool = true
-@export var callout_cooldown: float = 6.0
-@export var callout_loudness: float = 1.2
-@export var callout_radius: float = 720.0
+@export var hearing_multiplier: float = 2.2
+@export var min_hearing_radius: float = 700.0
+@export var max_hearing_radius: float = 1600.0
+@export var alarm_cooldown: float = 10.0
+@export var alarm_loudness: float = 2.4
+@export var alarm_radius: float = 2000.0
+@export var alarm_vfx_scene: PackedScene
+@export var alarm_color: Color = Color(1.0, 0.4, 0.2, 0.95)
+@export var alarm_pulse_duration: float = 1.2
 @export var patrol_path: NodePath
 @export var player_path: NodePath
 @export var idle_animation_name: StringName = &"idle"
 @export var walk_animation_name: StringName = &"walk"
 @export var aim_rotation_offset_degrees: float = 0.0
 @export var debug_state_colors: bool = true
-@export var patrol_color: Color = Color(1.0, 1.0, 1.0, 1.0)
-@export var investigate_color: Color = Color(1.0, 0.85, 0.4, 1.0)
-@export var chase_color: Color = Color(1.0, 0.35, 0.35, 1.0)
+@export var patrol_color: Color = Color(0.9, 0.9, 1.0, 1.0)
+@export var investigate_color: Color = Color(1.0, 0.8, 0.4, 1.0)
+@export var alert_color: Color = Color(1.0, 0.45, 0.3, 1.0)
 
 @onready var visuals: Node2D = $Visuals
 @onready var sprite: AnimatedSprite2D = $Visuals/AnimatedSprite2D
@@ -50,39 +44,35 @@ var last_seen_position: Vector2 = Vector2.ZERO
 var has_last_seen: bool = false
 
 var _player: Node2D
-var _attack_timer: float = 0.0
 var _lose_timer: float = 0.0
 var _aim_angle: float = 0.0
-var _current_alert_hp: int = 3
-var _knockback_velocity: Vector2 = Vector2.ZERO
-var _callout_timer: float = 0.0
+var _alarm_timer: float = 0.0
 
 func _ready() -> void:
 	_resolve_player()
 	_cache_patrol_points()
 	_update_animation(Vector2.ZERO)
-	_current_alert_hp = max(1, alert_hit_points)
 	if SoundBus != null:
 		SoundBus.sound_emitted.connect(_on_sound_emitted)
 
 func _physics_process(delta: float) -> void:
-	_attack_timer = max(0.0, _attack_timer - delta)
-	_callout_timer = max(0.0, _callout_timer - delta)
-
+	_alarm_timer = max(0.0, _alarm_timer - delta)
 	var sees_player: bool = _can_see_player()
 	if sees_player:
-		_try_callout()
-		state = State.CHASE
+		if _player != null:
+			last_seen_position = _player.global_position
+		has_last_seen = true
+		state = State.ALERT
 		_lose_timer = 0.0
-	else:
-		if state == State.CHASE:
-			_lose_timer += delta
-			if _lose_timer >= lose_interest_time:
-				if has_last_seen:
-					last_heard_position = last_seen_position
-					has_last_heard = true
-				state = State.INVESTIGATE if has_last_heard else State.PATROL
-				_lose_timer = 0.0
+		_try_alarm()
+	elif state == State.ALERT:
+		_lose_timer += delta
+		if _lose_timer >= lose_interest_time:
+			if has_last_seen:
+				last_heard_position = last_seen_position
+				has_last_heard = true
+			state = State.INVESTIGATE if has_last_heard else State.PATROL
+			_lose_timer = 0.0
 
 	var target_pos: Vector2 = global_position
 	var has_target: bool = false
@@ -101,16 +91,15 @@ func _physics_process(delta: float) -> void:
 				speed = investigate_speed
 			else:
 				state = State.PATROL
-		State.CHASE:
+		State.ALERT:
 			if _player != null:
 				if sees_player:
 					target_pos = _player.global_position
 					has_target = true
-				else:
-					if has_last_seen:
-						target_pos = last_seen_position
-						has_target = true
-				speed = chase_speed
+				elif has_last_seen:
+					target_pos = last_seen_position
+					has_target = true
+				speed = alert_speed
 			else:
 				state = State.PATROL
 
@@ -120,50 +109,19 @@ func _physics_process(delta: float) -> void:
 		var dist: float = to_target.length()
 		if dist > 0.001:
 			_update_facing(to_target.normalized())
-		if state == State.CHASE:
-			if dist <= attack_range:
-				_try_attack()
-				move_dir = Vector2.ZERO
-			else:
-				move_dir = to_target.normalized()
+		if dist <= arrival_distance:
+			if state == State.PATROL:
+				_advance_patrol()
+			elif state == State.INVESTIGATE:
+				has_last_heard = false
+				state = State.PATROL
 		else:
-			if dist <= arrival_distance:
-				if state == State.PATROL:
-					_advance_patrol()
-				elif state == State.INVESTIGATE:
-					has_last_heard = false
-					state = State.PATROL
-			else:
-				move_dir = to_target.normalized()
+			move_dir = to_target.normalized()
 
 	velocity = move_dir * speed
-	velocity += _knockback_velocity
 	move_and_slide()
 	_update_animation(move_dir)
 	_apply_state_debug_color()
-	_knockback_velocity = _knockback_velocity.move_toward(Vector2.ZERO, knockback_decay * delta)
-
-func _process(_delta: float) -> void:
-	if GameState.debug_show_vision or GameState.debug_show_sound:
-		queue_redraw()
-
-func _draw() -> void:
-	if vision_cone != null and GameState.debug_show_vision:
-		var angle_deg: float = float(vision_cone.call("get_cone_angle_degrees"))
-		var length: float = float(vision_cone.call("get_cone_length"))
-		var half: float = deg_to_rad(angle_deg * 0.5)
-		var start_angle: float = vision_cone.rotation - half
-		var end_angle: float = vision_cone.rotation + half
-		var left: Vector2 = Vector2.RIGHT.rotated(start_angle) * length
-		var right: Vector2 = Vector2.RIGHT.rotated(end_angle) * length
-		var col := Color(0.2, 0.9, 1.0, 0.6)
-		draw_line(Vector2.ZERO, left, col, 1.0)
-		draw_line(Vector2.ZERO, right, col, 1.0)
-		draw_arc(Vector2.ZERO, length, start_angle, end_angle, 24, Color(0.2, 0.9, 1.0, 0.3), 1.0)
-	if GameState.debug_show_sound and has_last_heard:
-		var local: Vector2 = to_local(last_heard_position)
-		draw_line(Vector2.ZERO, local, Color(1.0, 0.2, 0.2, 0.5), 1.0)
-		draw_circle(local, 6.0, Color(1.0, 0.2, 0.2, 0.7))
 
 func _update_facing(direction: Vector2) -> void:
 	if direction.length_squared() < 0.001:
@@ -200,51 +158,28 @@ func _apply_state_debug_color() -> void:
 			sprite.modulate = patrol_color
 		State.INVESTIGATE:
 			sprite.modulate = investigate_color
-		State.CHASE:
-			sprite.modulate = chase_color
+		State.ALERT:
+			sprite.modulate = alert_color
 
-func _try_attack() -> void:
-	if _attack_timer > 0.0:
-		return
-	if _player == null:
-		return
-	if _player.has_method("apply_damage"):
-		_player.call("apply_damage", attack_damage, "guard")
-	attacked.emit(_player, attack_damage)
-	_attack_timer = attack_cooldown
-
-func _try_callout() -> void:
-	if not callout_enabled:
-		return
-	if _callout_timer > 0.0:
+func _try_alarm() -> void:
+	if _alarm_timer > 0.0:
 		return
 	if SoundBus != null:
-		SoundBus.emit_sound_at(global_position, callout_loudness, callout_radius, SoundEvent.SoundType.ANOMALOUS, self, "callout")
-	_callout_timer = max(callout_cooldown, 0.1)
+		SoundBus.emit_sound_at(global_position, alarm_loudness, alarm_radius, SoundEvent.SoundType.ANOMALOUS, self, "alarm")
+	_spawn_alarm_pulse()
+	_alarm_timer = max(alarm_cooldown, 0.1)
 
-func apply_damage(amount: int, context: String = "") -> void:
-	if amount <= 0:
+func _spawn_alarm_pulse() -> void:
+	if alarm_vfx_scene == null:
 		return
-	if state == State.PATROL:
-		_die(context)
+	var pulse: Node = alarm_vfx_scene.instantiate()
+	if pulse == null:
 		return
-	_current_alert_hp -= amount
-	if _current_alert_hp <= 0:
-		_die(context)
-		return
-	state = State.CHASE
-	_lose_timer = 0.0
-
-func apply_knockback(direction: Vector2, strength: float) -> void:
-	if strength <= 0.0:
-		return
-	var dir := direction
-	if dir.length_squared() < 0.001:
-		return
-	_knockback_velocity += dir.normalized() * (strength / max(knockback_resistance, 0.1))
-
-func _die(_context: String) -> void:
-	queue_free()
+	add_child(pulse)
+	if pulse is Node2D:
+		(pulse as Node2D).global_position = global_position
+	if pulse.has_method("setup"):
+		pulse.call("setup", alarm_radius, alarm_color, alarm_pulse_duration)
 
 func _on_sound_emitted(event: SoundEvent) -> void:
 	if event == null:
@@ -259,7 +194,7 @@ func _on_sound_emitted(event: SoundEvent) -> void:
 		return
 	last_heard_position = event.position
 	has_last_heard = true
-	if state != State.CHASE:
+	if state != State.ALERT:
 		state = State.INVESTIGATE
 
 func _can_see_player() -> bool:

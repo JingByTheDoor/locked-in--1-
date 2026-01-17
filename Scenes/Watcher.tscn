@@ -1,0 +1,50 @@
+[gd_scene load_steps=7 format=3]
+
+[ext_resource type="Script" path="res://Scripts/Watcher.gd" id="1"]
+[ext_resource type="Texture2D" path="res://icon.svg" id="2"]
+[ext_resource type="Script" path="res://Scripts/VisionCone.gd" id="3"]
+[ext_resource type="PackedScene" path="res://VFX/AlarmPulse.tscn" id="4"]
+
+[sub_resource type="SpriteFrames" id="1"]
+animations = [ {
+"frames": [ {
+"duration": 1.0,
+"texture": ExtResource("2")
+} ],
+"loop": true,
+"name": &"idle",
+"speed": 6.0
+}, {
+"frames": [ {
+"duration": 1.0,
+"texture": ExtResource("2")
+} ],
+"loop": true,
+"name": &"walk",
+"speed": 8.0
+} ]
+
+[sub_resource type="CircleShape2D" id="2"]
+radius = 12.0
+
+[node name="Watcher" type="CharacterBody2D"]
+script = ExtResource("1")
+alarm_vfx_scene = ExtResource("4")
+
+[node name="Visuals" type="Node2D" parent="."]
+
+[node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="Visuals"]
+sprite_frames = SubResource("1")
+animation = &"idle"
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+shape = SubResource("2")
+
+[node name="VisionCone" type="Node2D" parent="."]
+script = ExtResource("3")
+cone_angle_degrees = 110.0
+cone_length = 260.0
+auto_length_from_viewport = false
+extra_length = 0.0
+cone_fill_color = Color(1, 0.55, 0.3, 0.12)
+cone_outline_color = Color(1, 0.55, 0.3, 0.35)

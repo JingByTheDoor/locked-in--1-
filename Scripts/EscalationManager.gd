@@ -14,6 +14,13 @@ extends Node2D
 @export var gun_pressure_boost: float = 0.6
 @export var gun_local_noise_boost: float = 0.7
 @export var gun_spike_timer_boost: float = 0.6
+@export var major_event_window: float = 6.0
+@export var major_event_required: int = 2
+@export var major_event_pressure_threshold: float = 1.1
+@export var major_event_local_boost: float = 0.45
+@export var major_event_global_boost: float = 0.35
+@export var major_event_spike_timer_boost: float = 0.5
+@export var major_event_tags: Array[String] = ["alarm", "callout", "destruction"]
 
 @export var investigate_threshold: float = 0.25
 @export var pressure_threshold: float = 0.6
@@ -48,6 +55,8 @@ var _last_phase: int = -1
 var _hunted_locked: bool = false
 var _hunter_instance: Node2D = null
 var _rng: RandomNumberGenerator = RandomNumberGenerator.new()
+var _major_event_timer: float = 0.0
+var _major_event_count: int = 0
 
 func _ready() -> void:
 	_rng.randomize()
@@ -56,6 +65,7 @@ func _ready() -> void:
 		SoundBus.sound_emitted.connect(_on_sound_emitted)
 
 func _process(delta: float) -> void:
+	_update_major_event_timer(delta)
 	_update_local_noise(delta)
 	_update_global_pressure(delta)
 	_update_phase_state(delta)
@@ -95,6 +105,8 @@ func _on_sound_emitted(event: SoundEvent) -> void:
 		local_noise_value = clampf(local_noise_value + gun_local_noise_boost, 0.0, local_noise_max)
 		_spike_timer = min(_spike_timer + gun_spike_timer_boost, hunted_spike_time + gun_spike_timer_boost)
 		GameState.global_pressure += gun_pressure_boost * event.loudness
+	if _is_major_event(event):
+		_register_major_event(event)
 	_update_pressure_floor()
 
 func _update_local_noise(delta: float) -> void:
@@ -213,6 +225,40 @@ func _enter_hunted() -> void:
 		if _message_hud.has_method("show_message"):
 			_message_hud.call("show_message", hunted_message, 3.0)
 	_spawn_hunter()
+
+func _is_major_event(event: SoundEvent) -> bool:
+	if event.tag == "":
+		return false
+	for tag in major_event_tags:
+		if event.tag == tag:
+			return true
+	return false
+
+func _register_major_event(event: SoundEvent) -> void:
+	_apply_major_spike(event)
+	if _major_event_timer > 0.0:
+		_major_event_count += 1
+	else:
+		_major_event_count = 1
+	_major_event_timer = max(major_event_window, 0.1)
+	if GameState.global_pressure >= major_event_pressure_threshold and _major_event_count >= major_event_required:
+		if GameState.phase_state != GameState.PhaseState.HUNTED:
+			_enter_hunted()
+
+func _apply_major_spike(event: SoundEvent) -> void:
+	has_local_noise = true
+	local_noise_position = event.position
+	local_noise_value = max(local_noise_value, pressure_threshold + 0.05)
+	local_noise_value = clampf(local_noise_value + major_event_local_boost, 0.0, local_noise_max)
+	_spike_timer = min(_spike_timer + major_event_spike_timer_boost, hunted_spike_time + major_event_spike_timer_boost)
+	GameState.global_pressure += major_event_global_boost * event.loudness
+
+func _update_major_event_timer(delta: float) -> void:
+	if _major_event_timer <= 0.0:
+		return
+	_major_event_timer = max(_major_event_timer - delta, 0.0)
+	if _major_event_timer <= 0.0:
+		_major_event_count = 0
 
 func _spawn_hunter() -> void:
 	if hunter_scene == null:

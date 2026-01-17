@@ -1,4 +1,4 @@
-[gd_scene load_steps=23 format=3]
+[gd_scene load_steps=24 format=3]
 
 [ext_resource type="Script" path="res://Scripts/ScavengeRun.gd" id="1"]
 [ext_resource type="PackedScene" path="res://Scenes/Player.tscn" id="2"]
@@ -6,6 +6,7 @@
 [ext_resource type="PackedScene" path="res://Scenes/ExtractionZone.tscn" id="4"]
 [ext_resource type="PackedScene" path="res://Scenes/LootPickup.tscn" id="5"]
 [ext_resource type="PackedScene" path="res://Scenes/HidingSpot.tscn" id="6"]
+[ext_resource type="PackedScene" path="res://Scenes/Watcher.tscn" id="16"]
 [ext_resource type="PackedScene" path="res://VFX/SoundRippleManager.tscn" id="7"]
 [ext_resource type="PackedScene" path="res://VFX/VisionMask.tscn" id="8"]
 [ext_resource type="PackedScene" path="res://VFX/ReadabilityOverlay.tscn" id="9"]
@@ -317,6 +318,10 @@ patrol_path = NodePath("../PatrolPathRight")
 position = Vector2(120, 300)
 patrol_path = NodePath("../PatrolPathSouth")
 
+[node name="WatcherA" parent="." instance=ExtResource("16")]
+position = Vector2(260, -40)
+patrol_path = NodePath("../WatcherPath")
+
 [node name="PatrolPathLeft" type="Node2D" parent="."]
 position = Vector2(-450, -200)
 
@@ -375,6 +380,21 @@ position = Vector2(60, -40)
 position = Vector2(60, 40)
 
 [node name="PointD" type="Node2D" parent="PatrolPathSouth"]
+position = Vector2(-60, 40)
+
+[node name="WatcherPath" type="Node2D" parent="."]
+position = Vector2(260, -40)
+
+[node name="PointA" type="Node2D" parent="WatcherPath"]
+position = Vector2(-60, -40)
+
+[node name="PointB" type="Node2D" parent="WatcherPath"]
+position = Vector2(60, -40)
+
+[node name="PointC" type="Node2D" parent="WatcherPath"]
+position = Vector2(60, 40)
+
+[node name="PointD" type="Node2D" parent="WatcherPath"]
 position = Vector2(-60, 40)
 
 [node name="SoundRippleManager" parent="." instance=ExtResource("7")]

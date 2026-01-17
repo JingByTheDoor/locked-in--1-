@@ -10,6 +10,9 @@ class_name Repairable
 @export var day_repair_time: float = 0.0
 @export var night_repair_time: float = 2.5
 @export var breach_damage_message: String = "Breach!"
+@export var breach_loudness: float = 1.4
+@export var breach_radius: float = 900.0
+@export var breach_emit_sound: bool = true
 @export var repaired_texture: Texture2D
 @export var damaged_texture: Texture2D
 @export var repaired_color: Color = Color(0.9, 0.9, 0.9, 1.0)
@@ -87,6 +90,8 @@ func apply_breach_damage() -> void:
 	var was_repaired := is_repaired()
 	GameState.set_repair_state(_effective_id(), false)
 	_apply_state()
+	if breach_emit_sound and SoundBus != null:
+		SoundBus.emit_sound_at(global_position, breach_loudness, breach_radius, SoundEvent.SoundType.ANOMALOUS, self, "destruction")
 	if was_repaired and breach_damage_message != "":
 		_show_message(breach_damage_message)
 
