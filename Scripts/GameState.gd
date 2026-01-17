@@ -22,6 +22,10 @@ const CARRY_RANK_MAX: int = 5
 const GRADE_MIN: int = 1
 const GRADE_MAX: int = 5
 const DEFAULT_GRADES: Array[int] = [1, 2, 3]
+const GENERATOR_CHARGE_MIN: float = 0.0
+const GENERATOR_CHARGE_MAX: float = 100.0
+const GENERATOR_DRAIN_STEP: float = 1.0
+const GENERATOR_DRAIN_INTERVAL: float = 5.0
 
 var run_state: RunState = RunState.MAIN_MENU
 var phase_state: PhaseState = PhaseState.QUIET
@@ -54,15 +58,24 @@ var base_damage: float = 0.0
 var global_pressure: float = 0.0
 var global_pressure_floor: float = 0.0
 var escape_only: bool = false
+var generator_charge: float = 75.0
+var generator_on: bool = true
+var base_repairs: Dictionary = {}
 
 var debug_show_vision: bool = false
 var debug_show_sound: bool = false
 var debug_print_pressure: bool = false
+var _generator_drain_timer: float = 0.0
 
 func _ready() -> void:
 	_ensure_input_map()
 	_ensure_resource_defaults()
 	_normalize_carry_rank()
+	_normalize_generator()
+	set_process(true)
+
+func _process(delta: float) -> void:
+	_update_generator_drain(delta)
 
 func _input(event: InputEvent) -> void:
 	if event.is_action_pressed("debug_toggle_vision"):
@@ -88,7 +101,10 @@ func get_save_data() -> Dictionary:
 		"base_damage": base_damage,
 		"global_pressure": global_pressure,
 		"global_pressure_floor": global_pressure_floor,
-		"escape_only": escape_only
+		"escape_only": escape_only,
+		"generator_charge": generator_charge,
+		"generator_on": generator_on,
+		"base_repairs": base_repairs.duplicate(true)
 	}
 
 func apply_save_data(data: Dictionary) -> void:
@@ -119,10 +135,32 @@ func apply_save_data(data: Dictionary) -> void:
 		global_pressure_floor = float(data["global_pressure_floor"])
 	if data.has("escape_only"):
 		escape_only = bool(data["escape_only"])
+	if data.has("generator_charge"):
+		generator_charge = float(data["generator_charge"])
+	if data.has("generator_on"):
+		generator_on = bool(data["generator_on"])
+	if data.has("base_repairs") and typeof(data["base_repairs"]) == TYPE_DICTIONARY:
+		base_repairs = data["base_repairs"].duplicate(true)
 	if global_pressure < global_pressure_floor:
 		global_pressure = global_pressure_floor
 	_ensure_resource_defaults()
 	_normalize_carry_rank()
+	_normalize_generator()
+
+func get_repair_state(repair_id: String, default_repaired: bool = false) -> bool:
+	if repair_id == "":
+		return default_repaired
+	if base_repairs.has(repair_id):
+		return bool(base_repairs[repair_id])
+	return default_repaired
+
+func set_repair_state(repair_id: String, repaired: bool) -> void:
+	if repair_id == "":
+		return
+	base_repairs[repair_id] = repaired
+
+func is_generator_active() -> bool:
+	return generator_on and generator_charge > GENERATOR_CHARGE_MIN
 
 func add_resource(name: String, amount: int) -> void:
 	if amount == 0:
@@ -237,6 +275,26 @@ func _ensure_grade_defaults(grade_dict: Dictionary) -> void:
 
 func _normalize_carry_rank() -> void:
 	player_carry_rank = clampi(player_carry_rank, CARRY_RANK_MIN, CARRY_RANK_MAX)
+
+func _normalize_generator() -> void:
+	generator_charge = clampf(generator_charge, GENERATOR_CHARGE_MIN, GENERATOR_CHARGE_MAX)
+	if generator_charge <= GENERATOR_CHARGE_MIN:
+		generator_on = false
+
+func _update_generator_drain(delta: float) -> void:
+	if run_state != RunState.NIGHT:
+		_generator_drain_timer = 0.0
+		return
+	if not generator_on or generator_charge <= GENERATOR_CHARGE_MIN:
+		generator_on = false
+		return
+	_generator_drain_timer += delta
+	while _generator_drain_timer >= GENERATOR_DRAIN_INTERVAL:
+		_generator_drain_timer -= GENERATOR_DRAIN_INTERVAL
+		generator_charge = max(generator_charge - GENERATOR_DRAIN_STEP, GENERATOR_CHARGE_MIN)
+		if generator_charge <= GENERATOR_CHARGE_MIN:
+			generator_on = false
+			break
 
 func _phase_state_name(state: PhaseState) -> String:
 	match state:

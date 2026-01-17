@@ -1,0 +1,23 @@
+[gd_scene load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://Scripts/Repairable.gd" id="1"]
+[ext_resource type="Texture2D" path="res://icon.svg" id="2"]
+
+[sub_resource type="CircleShape2D" id="1"]
+radius = 22.0
+
+[node name="RepairableDoor" type="Area2D"]
+script = ExtResource("1")
+repair_type = "Door"
+cost_wood = 5
+cost_scrap = 3
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+shape = SubResource("1")
+
+[node name="Sprite2D" type="Sprite2D" parent="."]
+texture = ExtResource("2")
+scale = Vector2(0.5, 0.5)
+modulate = Color(0.7, 0.6, 0.4, 1)
+
+[node name="RepairSound" type="AudioStreamPlayer2D" parent="."]
