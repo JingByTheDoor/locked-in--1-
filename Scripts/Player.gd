@@ -385,6 +385,7 @@ func _try_fire_gun() -> void:
 	_spawn_muzzle_flash(muzzle_pos, _aim_angle)
 	_emit_gun_sound()
 	_fire_gun_ray(muzzle_pos, aim_dir)
+	GameState.show_tutorial_message("tutorial_gun", "Gunfire spikes pressure.", 2.0, get_tree().get_first_node_in_group("message_hud"))
 
 func _fire_gun_ray(from: Vector2, direction: Vector2) -> void:
 	var space_state: PhysicsDirectSpaceState2D = get_world_2d().direct_space_state

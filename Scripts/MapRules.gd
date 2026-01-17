@@ -17,9 +17,9 @@ func _ready() -> void:
 		missing.append("unfair rooms")
 	if missing.is_empty():
 		return
-	var message := "Map rules missing: " + ", ".join(missing)
+	var message: String = "Map rules missing: " + ", ".join(missing)
 	push_warning(message)
-	var hud := get_tree().get_first_node_in_group("message_hud")
+	var hud: Node = get_tree().get_first_node_in_group("message_hud")
 	if hud != null and hud.has_method("show_message"):
 		hud.call("show_message", message, 2.5)
 

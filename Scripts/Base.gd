@@ -3,6 +3,7 @@ extends Node2D
 @export var lights_out_path: NodePath = NodePath("LightsOut")
 @export var startup_message: String = "BASE: plan & repair"
 @export var startup_message_duration: float = 2.0
+@export var tutorial_message: String = "Repairs cost wood+scrap. Food heals here."
 
 var _lights_out: CanvasItem
 
@@ -11,6 +12,7 @@ func _ready() -> void:
 	_lights_out = get_node_or_null(lights_out_path) as CanvasItem
 	_update_lighting()
 	_show_startup_message()
+	_show_tutorial_message()
 
 func _process(_delta: float) -> void:
 	_update_lighting()
@@ -26,3 +28,8 @@ func _show_startup_message() -> void:
 	var hud: Node = get_node_or_null("MessageHud")
 	if hud != null and hud.has_method("show_message"):
 		hud.call("show_message", startup_message, startup_message_duration)
+
+func _show_tutorial_message() -> void:
+	if tutorial_message == "":
+		return
+	GameState.show_tutorial_message("tutorial_base", tutorial_message, 2.5, get_node_or_null("MessageHud") as Node)

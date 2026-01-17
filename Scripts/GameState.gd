@@ -61,6 +61,7 @@ var escape_only: bool = false
 var generator_charge: float = 75.0
 var generator_on: bool = true
 var base_repairs: Dictionary = {}
+var tutorial_flags: Dictionary = {}
 
 var debug_show_vision: bool = false
 var debug_show_sound: bool = false
@@ -104,7 +105,8 @@ func get_save_data() -> Dictionary:
 		"escape_only": escape_only,
 		"generator_charge": generator_charge,
 		"generator_on": generator_on,
-		"base_repairs": base_repairs.duplicate(true)
+		"base_repairs": base_repairs.duplicate(true),
+		"tutorial_flags": tutorial_flags.duplicate(true)
 	}
 
 func apply_save_data(data: Dictionary) -> void:
@@ -141,6 +143,8 @@ func apply_save_data(data: Dictionary) -> void:
 		generator_on = bool(data["generator_on"])
 	if data.has("base_repairs") and typeof(data["base_repairs"]) == TYPE_DICTIONARY:
 		base_repairs = data["base_repairs"].duplicate(true)
+	if data.has("tutorial_flags") and typeof(data["tutorial_flags"]) == TYPE_DICTIONARY:
+		tutorial_flags = data["tutorial_flags"].duplicate(true)
 	if global_pressure < global_pressure_floor:
 		global_pressure = global_pressure_floor
 	_ensure_resource_defaults()
@@ -161,6 +165,31 @@ func set_repair_state(repair_id: String, repaired: bool) -> void:
 
 func is_generator_active() -> bool:
 	return generator_on and generator_charge > GENERATOR_CHARGE_MIN
+
+func has_tutorial(key: String) -> bool:
+	if key == "":
+		return false
+	if tutorial_flags.has(key):
+		return bool(tutorial_flags[key])
+	return false
+
+func mark_tutorial(key: String) -> void:
+	if key == "":
+		return
+	tutorial_flags[key] = true
+
+func show_tutorial_message(key: String, text: String, duration: float = 2.0, hud: Node = null) -> void:
+	if key != "" and has_tutorial(key):
+		return
+	if text == "":
+		return
+	var target: Node = hud
+	if target == null:
+		target = get_tree().get_first_node_in_group("message_hud")
+	if target != null and target.has_method("show_message"):
+		target.call("show_message", text, duration)
+	if key != "":
+		mark_tutorial(key)
 
 func add_resource(name: String, amount: int) -> void:
 	if amount == 0:

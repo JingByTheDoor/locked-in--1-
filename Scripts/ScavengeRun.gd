@@ -4,11 +4,13 @@ extends Node2D
 @export var player_path: NodePath = NodePath("Player")
 @export var startup_message: String = "SCAVENGE: stay quiet"
 @export var startup_message_duration: float = 2.0
+@export var tutorial_message: String = "Noise draws attention. Extract when ready."
 
 func _ready() -> void:
 	GameState.run_state = GameState.RunState.SCAVENGE
 	_connect_player()
 	_show_startup_message()
+	_show_tutorial_message()
 
 func _connect_player() -> void:
 	var player: Node = get_node_or_null(player_path)
@@ -26,6 +28,11 @@ func _on_player_died(_context: String) -> void:
 func _show_startup_message() -> void:
 	if startup_message == "":
 		return
-	var hud := get_node_or_null("MessageHud")
+	var hud: Node = get_node_or_null("MessageHud")
 	if hud != null and hud.has_method("show_message"):
 		hud.call("show_message", startup_message, startup_message_duration)
+
+func _show_tutorial_message() -> void:
+	if tutorial_message == "":
+		return
+	GameState.show_tutorial_message("tutorial_scavenge", tutorial_message, 2.5, get_node_or_null("MessageHud") as Node)

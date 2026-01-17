@@ -38,6 +38,13 @@ extends Node2D
 @export var hunter_spawn_radius: float = 640.0
 @export var hunter_spawn_attempts: int = 6
 
+@export var alarm_message: String = "Alarm raised — pressure surges."
+@export var callout_message: String = "Callout heard — pressure rises."
+@export var destruction_message: String = "Destruction echoes — pressure rises."
+@export var investigate_message: String = "Something is investigating."
+@export var pressure_message: String = "Pressure rising."
+@export var hunted_message_once: String = "SOMETHING IS COMING."
+
 @export var debug_noise_color: Color = Color(1.0, 0.3, 0.3, 0.35)
 @export var debug_noise_radius_min: float = 30.0
 @export var debug_noise_radius_max: float = 160.0
@@ -138,6 +145,7 @@ func _update_pressure_floor() -> void:
 		GameState.global_pressure_floor = floor_target
 
 func _update_phase_state(_delta: float) -> void:
+	var prev_phase: int = GameState.phase_state
 	if GameState.phase_state != GameState.PhaseState.HUNTED:
 		GameState.escape_only = false
 	if GameState.phase_state == GameState.PhaseState.HUNTED:
@@ -155,6 +163,8 @@ func _update_phase_state(_delta: float) -> void:
 		_enter_hunted()
 	else:
 		GameState.phase_state = next_phase
+	if prev_phase != GameState.phase_state:
+		_show_phase_message(GameState.phase_state)
 	if GameState.debug_print_pressure and _last_phase != next_phase:
 		_last_phase = next_phase
 		print("Phase:", _phase_name(next_phase), "Global:", "%.2f" % GameState.global_pressure, "Local:", "%.2f" % local_noise_value)
@@ -221,10 +231,21 @@ func _enter_hunted() -> void:
 	GameState.phase_state = GameState.PhaseState.HUNTED
 	GameState.escape_only = true
 	_hunted_locked = true
+	if hunted_message_once != "":
+		GameState.show_tutorial_message("phase_hunted", hunted_message_once, 2.4, _message_hud)
 	if _message_hud != null and hunted_message != "":
 		if _message_hud.has_method("show_message"):
 			_message_hud.call("show_message", hunted_message, 3.0)
 	_spawn_hunter()
+
+func _show_phase_message(phase: int) -> void:
+	match phase:
+		GameState.PhaseState.INVESTIGATE:
+			if investigate_message != "":
+				GameState.show_tutorial_message("phase_investigate", investigate_message, 2.0, _message_hud)
+		GameState.PhaseState.PRESSURE:
+			if pressure_message != "":
+				GameState.show_tutorial_message("phase_pressure", pressure_message, 2.0, _message_hud)
 
 func _is_major_event(event: SoundEvent) -> bool:
 	if event.tag == "":
@@ -245,6 +266,14 @@ func _register_major_event(event: SoundEvent) -> void:
 		if GameState.phase_state != GameState.PhaseState.HUNTED:
 			_enter_hunted()
 
+func _show_major_event_message(event: SoundEvent) -> void:
+	if event.tag == "alarm":
+		GameState.show_tutorial_message("cause_alarm", alarm_message, 2.0, _message_hud)
+	elif event.tag == "callout":
+		GameState.show_tutorial_message("cause_callout", callout_message, 2.0, _message_hud)
+	elif event.tag == "destruction":
+		GameState.show_tutorial_message("cause_destruction", destruction_message, 2.0, _message_hud)
+
 func _apply_major_spike(event: SoundEvent) -> void:
 	has_local_noise = true
 	local_noise_position = event.position
@@ -252,6 +281,7 @@ func _apply_major_spike(event: SoundEvent) -> void:
 	local_noise_value = clampf(local_noise_value + major_event_local_boost, 0.0, local_noise_max)
 	_spike_timer = min(_spike_timer + major_event_spike_timer_boost, hunted_spike_time + major_event_spike_timer_boost)
 	GameState.global_pressure += major_event_global_boost * event.loudness
+	_show_major_event_message(event)
 
 func _update_major_event_timer(delta: float) -> void:
 	if _major_event_timer <= 0.0:

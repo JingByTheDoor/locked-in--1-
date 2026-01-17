@@ -12,6 +12,13 @@ enum NightVariant {
 @export var calm_spawn_interval: float = 6.0
 @export var heavy_spawn_interval: float = 3.0
 @export var gun_response_spawns: int = 2
+@export var ramp_interval_nights: int = 2
+@export var ramp_spawn_increase: int = 1
+@export var ramp_interval_decrease: float = 0.25
+@export var ramp_heavy_spawn_multiplier: int = 2
+@export var ramp_gun_response_increase: int = 1
+@export var min_calm_interval: float = 2.5
+@export var min_heavy_interval: float = 1.5
 @export var base_scene_path: String = "res://Scenes/Base.tscn"
 @export var intruder_scene: PackedScene
 @export var spawn_points_path: NodePath = NodePath("SpawnPoints")
@@ -36,6 +43,7 @@ enum NightVariant {
 
 @export var calm_message: String = "Night: calm"
 @export var heavy_message: String = "Night: breaches likely"
+@export var tutorial_message: String = "Hold the line. Repairs lock you in."
 @export var lights_out_spawn_multiplier: float = 0.6
 
 var _rng: RandomNumberGenerator = RandomNumberGenerator.new()
@@ -50,6 +58,11 @@ var _spawn_timer: float = 0.0
 var _remaining_spawns: int = 0
 var _spawn_interval: float = 0.0
 var _finishing: bool = false
+var _ramped_calm_spawn_count: int = 0
+var _ramped_heavy_spawn_count: int = 0
+var _ramped_calm_interval: float = 0.0
+var _ramped_heavy_interval: float = 0.0
+var _gun_response_spawns: int = 0
 
 func _ready() -> void:
 	add_to_group("night_manager")
@@ -58,11 +71,13 @@ func _ready() -> void:
 	_resolve_nodes()
 	_update_lighting()
 	_cache_spawn_points()
+	_apply_difficulty_ramp()
 	_choose_variant()
 	_time_left = max(night_duration, 1.0)
 	_spawn_timer = 0.0
 	_update_hud()
 	_connect_player()
+	_show_tutorial_message()
 	if SoundBus != null:
 		SoundBus.sound_emitted.connect(_on_sound_emitted)
 
@@ -102,12 +117,12 @@ func _choose_variant() -> void:
 	adjusted_chance = clampf(adjusted_chance, 0.1, 0.8)
 	_variant = NightVariant.CALM if _rng.randf() <= adjusted_chance else NightVariant.BREACH_HEAVY
 	if _variant == NightVariant.CALM:
-		_remaining_spawns = max(calm_spawn_count, 0)
-		_spawn_interval = max(calm_spawn_interval, 0.2)
+		_remaining_spawns = max(_ramped_calm_spawn_count, 0)
+		_spawn_interval = max(_ramped_calm_interval, 0.2)
 		_show_message(calm_message)
 	else:
-		_remaining_spawns = max(heavy_spawn_count, 0)
-		_spawn_interval = max(heavy_spawn_interval, 0.2)
+		_remaining_spawns = max(_ramped_heavy_spawn_count, 0)
+		_spawn_interval = max(_ramped_heavy_interval, 0.2)
 		_show_message(heavy_message)
 
 func _update_spawns(delta: float) -> void:
@@ -230,5 +245,22 @@ func _on_sound_emitted(event: SoundEvent) -> void:
 		return
 	if event.tag != "gun":
 		return
-	for i in range(gun_response_spawns):
+	for i in range(_gun_response_spawns):
 		_spawn_intruder()
+
+func _apply_difficulty_ramp() -> void:
+	var steps: int = _get_ramp_steps()
+	_ramped_calm_spawn_count = calm_spawn_count + steps * ramp_spawn_increase
+	_ramped_heavy_spawn_count = heavy_spawn_count + steps * ramp_spawn_increase * ramp_heavy_spawn_multiplier
+	_ramped_calm_interval = max(calm_spawn_interval - float(steps) * ramp_interval_decrease, min_calm_interval)
+	_ramped_heavy_interval = max(heavy_spawn_interval - float(steps) * ramp_interval_decrease, min_heavy_interval)
+	_gun_response_spawns = gun_response_spawns + steps * ramp_gun_response_increase
+
+func _get_ramp_steps() -> int:
+	var interval: int = max(ramp_interval_nights, 1)
+	return int((GameState.night_index - 1) / interval)
+
+func _show_tutorial_message() -> void:
+	if tutorial_message == "":
+		return
+	GameState.show_tutorial_message("tutorial_night", tutorial_message, 2.5, get_node_or_null("MessageHud") as Node)
