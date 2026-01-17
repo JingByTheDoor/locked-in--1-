@@ -1,0 +1,8 @@
+[gd_scene load_steps=2 format=3 uid="uid://d0aekd8k83tr"]
+
+[ext_resource type="AudioStream" uid="uid://c6l6xlcrejpn4" path="res://player slow walk.wav" id="1_d2dya"]
+
+[node name="AudioStreamPlayer2D" type="AudioStreamPlayer2D"]
+stream = ExtResource("1_d2dya")
+volume_db = 20.971
+autoplay = true

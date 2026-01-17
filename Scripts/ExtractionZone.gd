@@ -9,6 +9,8 @@ class_name ExtractionZone
 @export var extraction_loudness: float = 1.2
 @export var extraction_radius: float = 520.0
 @export var prompt_text: String = "Press E to extract"
+@export var extraction_stream: AudioStream = preload("res://Audio/EXTRACTION SOUND.wav")
+@export var extraction_volume_db: float = -4.0
 
 var _timer: Timer
 var _extracting: bool = false
@@ -30,6 +32,7 @@ func interact(player: Node) -> void:
 	_extracting = true
 	_timer.start(max(interact_duration, 0.1))
 	_emit_extraction_sound(player)
+	_play_extraction_audio()
 	_show_message(start_message, interact_duration)
 
 func _on_extract_complete() -> void:
@@ -75,3 +78,8 @@ func _show_message(text: String, duration: float) -> void:
 
 func get_interact_prompt(_player: Node) -> String:
 	return prompt_text
+
+func _play_extraction_audio() -> void:
+	if extraction_stream == null:
+		return
+	AudioOneShot.play_2d(extraction_stream, global_position, get_tree().current_scene, extraction_volume_db)

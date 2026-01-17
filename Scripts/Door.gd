@@ -10,6 +10,10 @@ extends Node2D
 @export var prompt_open: String = "Press E to open"
 @export var prompt_slam: String = "Press E to open (sprint to slam)"
 @export var prompt_slam_only: String = "Press E to slam"
+@export var open_stream: AudioStream = preload("res://Audio/Door Opening.wav")
+@export var open_volume_db: float = -6.0
+@export var slam_stream: AudioStream = preload("res://Audio/door slaming.wav")
+@export var slam_volume_db: float = -2.0
 
 func _ready() -> void:
 	add_to_group("door")
@@ -18,11 +22,13 @@ func slam() -> void:
 	if SoundBus == null:
 		return
 	SoundBus.emit_sound_at(global_position, slam_loudness, slam_radius, SoundEvent.SoundType.ANOMALOUS, self)
+	AudioOneShot.play_2d(slam_stream, global_position, get_tree().current_scene, slam_volume_db)
 
 func open_quiet() -> void:
 	if SoundBus == null:
 		return
 	SoundBus.emit_sound_at(global_position, open_loudness, open_radius, SoundEvent.SoundType.EXPECTED, self)
+	AudioOneShot.play_2d(open_stream, global_position, get_tree().current_scene, open_volume_db)
 
 func interact(_player: Node) -> void:
 	var wants_slam: bool = slam_on_interact

@@ -30,6 +30,11 @@ enum State {
 @export var patrol_color: Color = Color(0.9, 0.9, 1.0, 1.0)
 @export var investigate_color: Color = Color(1.0, 0.8, 0.4, 1.0)
 @export var alert_color: Color = Color(1.0, 0.45, 0.3, 1.0)
+@export var alarm_stream: AudioStream = preload("res://Audio/Watcher alarm.wav")
+@export var alarm_volume_db: float = -3.0
+@export var footstep_interval: float = 0.7
+@export var footstep_stream: AudioStream = preload("res://Audio/Guard Footsteps.wav")
+@export var footstep_volume_db: float = -9.0
 
 @onready var visuals: Node2D = $Visuals
 @onready var sprite: AnimatedSprite2D = $Visuals/AnimatedSprite2D
@@ -47,6 +52,7 @@ var _player: Node2D
 var _lose_timer: float = 0.0
 var _aim_angle: float = 0.0
 var _alarm_timer: float = 0.0
+var _footstep_timer: float = 0.0
 
 func _ready() -> void:
 	add_to_group("enemy")
@@ -123,6 +129,7 @@ func _physics_process(delta: float) -> void:
 	move_and_slide()
 	_update_animation(move_dir)
 	_apply_state_debug_color()
+	_update_footsteps(delta, move_dir)
 
 func _update_facing(direction: Vector2) -> void:
 	if direction.length_squared() < 0.001:
@@ -168,6 +175,7 @@ func _try_alarm() -> void:
 	if SoundBus != null:
 		SoundBus.emit_sound_at(global_position, alarm_loudness, alarm_radius, SoundEvent.SoundType.ANOMALOUS, self, "alarm")
 	_spawn_alarm_pulse()
+	_play_one_shot(alarm_stream, alarm_volume_db)
 	_alarm_timer = max(alarm_cooldown, 0.1)
 
 func _spawn_alarm_pulse() -> void:
@@ -246,3 +254,18 @@ func _resolve_player() -> void:
 		node = get_tree().get_root().find_child("Player", true, false)
 	if node is Node2D:
 		_player = node as Node2D
+
+func _update_footsteps(delta: float, move_dir: Vector2) -> void:
+	if move_dir.length() < 0.1:
+		_footstep_timer = 0.0
+		return
+	_footstep_timer -= delta
+	if _footstep_timer > 0.0:
+		return
+	_footstep_timer = max(footstep_interval, 0.1)
+	_play_one_shot(footstep_stream, footstep_volume_db)
+
+func _play_one_shot(stream: AudioStream, volume_db: float) -> void:
+	if stream == null:
+		return
+	AudioOneShot.play_2d(stream, global_position, get_tree().current_scene, volume_db)

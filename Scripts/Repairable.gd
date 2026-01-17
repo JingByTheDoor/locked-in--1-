@@ -1,6 +1,9 @@
 extends Area2D
 class_name Repairable
 
+const DEFAULT_BREACH_DOOR_STREAM: AudioStream = preload("res://Audio/door breakthrough.wav")
+const DEFAULT_BREACH_WINDOW_STREAM: AudioStream = preload("res://Audio/Glass breakpoint.wav")
+
 @export var repair_id: String = ""
 @export var display_name: String = ""
 @export var repair_type: String = "Door"
@@ -19,6 +22,10 @@ class_name Repairable
 @export var damaged_color: Color = Color(0.6, 0.25, 0.25, 1.0)
 @export var prompt_repair: String = "Press E to repair"
 @export var prompt_repaired: String = "Repaired"
+@export var repair_stream: AudioStream = preload("res://Audio/Fixing sound.wav")
+@export var repair_volume_db: float = -4.0
+@export var breach_stream: AudioStream
+@export var breach_volume_db: float = -3.0
 
 @onready var sprite: Sprite2D = $Sprite2D
 @onready var audio_player: AudioStreamPlayer2D = get_node_or_null("RepairSound") as AudioStreamPlayer2D
@@ -30,6 +37,7 @@ var _repairing_player: Node = null
 func _ready() -> void:
 	add_to_group("interactable")
 	add_to_group("repairable")
+	_apply_audio_streams()
 	_apply_state()
 	_repair_timer = Timer.new()
 	_repair_timer.one_shot = true
@@ -94,6 +102,7 @@ func apply_breach_damage() -> void:
 	_apply_state()
 	if breach_emit_sound and SoundBus != null:
 		SoundBus.emit_sound_at(global_position, breach_loudness, breach_radius, SoundEvent.SoundType.ANOMALOUS, self, "destruction")
+	_play_breach_audio()
 	if was_repaired and breach_damage_message != "":
 		_show_message(breach_damage_message)
 
@@ -157,3 +166,22 @@ func get_interact_prompt(_player: Node) -> String:
 		return prompt_repaired
 	var name: String = get_display_name()
 	return "%s %s (%d wood, %d scrap)" % [prompt_repair, name, cost_wood, cost_scrap]
+
+func _apply_audio_streams() -> void:
+	if audio_player != null and audio_player.stream == null and repair_stream != null:
+		audio_player.stream = repair_stream
+		audio_player.volume_db = repair_volume_db
+
+func _play_breach_audio() -> void:
+	var stream := _get_breach_stream()
+	if stream == null:
+		return
+	AudioOneShot.play_2d(stream, global_position, get_tree().current_scene, breach_volume_db)
+
+func _get_breach_stream() -> AudioStream:
+	if breach_stream != null:
+		return breach_stream
+	var repair_key := repair_type.to_lower()
+	if repair_key.find("window") >= 0:
+		return DEFAULT_BREACH_WINDOW_STREAM
+	return DEFAULT_BREACH_DOOR_STREAM

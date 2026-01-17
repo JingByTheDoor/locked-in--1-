@@ -1,0 +1,7 @@
+[gd_scene load_steps=2 format=3 uid="uid://dn80xqbasn7qq"]
+
+[ext_resource type="AudioStream" uid="uid://bjgn3t4f0t8ns" path="res://Fast Runing.wav" id="1_lyxlc"]
+
+[node name="AudioStreamPlayer2D" type="AudioStreamPlayer2D"]
+stream = ExtResource("1_lyxlc")
+autoplay = true

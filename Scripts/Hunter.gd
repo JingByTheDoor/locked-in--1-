@@ -28,6 +28,10 @@ enum State {
 @export var presence_max_distance: float = 640.0
 @export var presence_volume_min_db: float = -24.0
 @export var presence_volume_max_db: float = -6.0
+@export var presence_stream: AudioStream = preload("res://Audio/Enemy Presence Breathing.wav")
+@export var spotted_stream: AudioStream = preload("res://Audio/HUNTER SPOTED YOU.wav")
+@export var spotted_volume_db: float = -2.0
+@export var spotted_cooldown: float = 6.0
 @export var idle_animation_name: StringName = &"idle"
 @export var walk_animation_name: StringName = &"walk"
 @export var player_path: NodePath
@@ -52,11 +56,13 @@ var _search_pause_timer: float = 0.0
 var _hidden_check_timer: float = 0.0
 var _aim_angle: float = 0.0
 var _rng: RandomNumberGenerator = RandomNumberGenerator.new()
+var _spotted_cooldown_timer: float = 0.0
 
 func _ready() -> void:
 	add_to_group("enemy")
 	_rng.randomize()
 	_resolve_player()
+	_apply_presence_stream()
 	if SoundBus != null:
 		SoundBus.sound_emitted.connect(_on_sound_emitted)
 	if door_sensor != null:
@@ -69,6 +75,7 @@ func _physics_process(delta: float) -> void:
 		if presence_player != null and presence_player.playing:
 			presence_player.stop()
 		return
+	_spotted_cooldown_timer = max(0.0, _spotted_cooldown_timer - delta)
 	_update_presence_audio()
 	_attack_timer = max(0.0, _attack_timer - delta)
 	if _delay_timer > 0.0:
@@ -79,6 +86,7 @@ func _physics_process(delta: float) -> void:
 
 	var sees: bool = _can_see_player(delta)
 	if sees:
+		_play_spotted_stinger()
 		state = State.CHASE
 		_search_points.clear()
 		_search_pause_timer = 0.0
@@ -260,3 +268,24 @@ func _update_presence_audio() -> void:
 	var dist: float = global_position.distance_to(_player.global_position)
 	var t: float = 1.0 - clampf(dist / max(presence_max_distance, 0.01), 0.0, 1.0)
 	presence_player.volume_db = lerpf(presence_volume_min_db, presence_volume_max_db, t)
+
+func _apply_presence_stream() -> void:
+	if presence_player == null:
+		return
+	if presence_player.stream == null and presence_stream != null:
+		_enable_loop(presence_stream)
+		presence_player.stream = presence_stream
+
+func _play_spotted_stinger() -> void:
+	if _spotted_cooldown_timer > 0.0:
+		return
+	if spotted_stream == null:
+		return
+	AudioOneShot.play_2d(spotted_stream, global_position, get_tree().current_scene, spotted_volume_db)
+	_spotted_cooldown_timer = max(spotted_cooldown, 0.1)
+
+func _enable_loop(stream: AudioStream) -> void:
+	if stream is AudioStreamWAV:
+		var wav := stream as AudioStreamWAV
+		if wav.loop_mode == AudioStreamWAV.LOOP_DISABLED:
+			wav.loop_mode = AudioStreamWAV.LOOP_FORWARD

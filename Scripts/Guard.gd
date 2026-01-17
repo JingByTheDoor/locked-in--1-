@@ -36,6 +36,18 @@ enum State {
 @export var patrol_color: Color = Color(1.0, 1.0, 1.0, 1.0)
 @export var investigate_color: Color = Color(1.0, 0.85, 0.4, 1.0)
 @export var chase_color: Color = Color(1.0, 0.35, 0.35, 1.0)
+@export var footstep_interval: float = 0.65
+@export var footstep_stream: AudioStream = preload("res://Audio/Guard Footsteps.wav")
+@export var footstep_volume_db: float = -8.0
+@export var attack_hit_streams: Array[AudioStream] = [
+	preload("res://Audio/ATTACK HIT 1.wav"),
+	preload("res://Audio/ATTACK HIT 2.wav"),
+	preload("res://Audio/ATTACK HIT 3.wav"),
+	preload("res://Audio/ATTACK HIT 4.wav")
+]
+@export var attack_hit_volume_db: float = -3.0
+@export var death_stream: AudioStream = preload("res://Audio/Enemy death.wav")
+@export var death_volume_db: float = -2.0
 
 @onready var visuals: Node2D = $Visuals
 @onready var sprite: AnimatedSprite2D = $Visuals/AnimatedSprite2D
@@ -56,9 +68,12 @@ var _aim_angle: float = 0.0
 var _current_alert_hp: int = 3
 var _knockback_velocity: Vector2 = Vector2.ZERO
 var _callout_timer: float = 0.0
+var _footstep_timer: float = 0.0
+var _rng: RandomNumberGenerator = RandomNumberGenerator.new()
 
 func _ready() -> void:
 	add_to_group("enemy")
+	_rng.randomize()
 	_resolve_player()
 	_cache_patrol_points()
 	_update_animation(Vector2.ZERO)
@@ -142,6 +157,7 @@ func _physics_process(delta: float) -> void:
 	move_and_slide()
 	_update_animation(move_dir)
 	_apply_state_debug_color()
+	_update_footsteps(delta, move_dir)
 	_knockback_velocity = _knockback_velocity.move_toward(Vector2.ZERO, knockback_decay * delta)
 
 func _process(_delta: float) -> void:
@@ -212,6 +228,7 @@ func _try_attack() -> void:
 	if _player.has_method("apply_damage"):
 		_player.call("apply_damage", attack_damage, "guard")
 	attacked.emit(_player, attack_damage)
+	_play_random_one_shot(attack_hit_streams, attack_hit_volume_db)
 	_attack_timer = attack_cooldown
 
 func _try_callout() -> void:
@@ -245,6 +262,7 @@ func apply_knockback(direction: Vector2, strength: float) -> void:
 	_knockback_velocity += dir.normalized() * (strength / max(knockback_resistance, 0.1))
 
 func _die(_context: String) -> void:
+	_play_one_shot(death_stream, death_volume_db)
 	queue_free()
 
 func _on_sound_emitted(event: SoundEvent) -> void:
@@ -311,3 +329,30 @@ func _resolve_player() -> void:
 		node = get_tree().get_root().find_child("Player", true, false)
 	if node is Node2D:
 		_player = node as Node2D
+
+func _update_footsteps(delta: float, move_dir: Vector2) -> void:
+	if move_dir.length() < 0.1:
+		_footstep_timer = 0.0
+		return
+	_footstep_timer -= delta
+	if _footstep_timer > 0.0:
+		return
+	_footstep_timer = max(footstep_interval, 0.1)
+	_play_one_shot(footstep_stream, footstep_volume_db)
+
+func _play_one_shot(stream: AudioStream, volume_db: float) -> void:
+	if stream == null:
+		return
+	AudioOneShot.play_2d(stream, global_position, get_tree().current_scene, volume_db)
+
+func _play_random_one_shot(streams: Array[AudioStream], volume_db: float) -> void:
+	var stream := _pick_random_stream(streams)
+	if stream == null:
+		return
+	AudioOneShot.play_2d(stream, global_position, get_tree().current_scene, volume_db)
+
+func _pick_random_stream(streams: Array[AudioStream]) -> AudioStream:
+	if streams.is_empty():
+		return null
+	var idx: int = _rng.randi_range(0, streams.size() - 1)
+	return streams[idx]

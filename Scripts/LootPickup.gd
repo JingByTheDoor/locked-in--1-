@@ -18,6 +18,8 @@ enum LootType {
 @export var pickup_anomaly: bool = false
 @export var deny_when_escape_only: bool = true
 @export var prompt_text: String = ""
+@export var pickup_stream: AudioStream = preload("res://Audio/pickup sound.wav")
+@export var pickup_volume_db: float = -6.0
 
 func _ready() -> void:
 	add_to_group("interactable")
@@ -26,6 +28,7 @@ func interact(player: Node) -> void:
 	if deny_when_escape_only and GameState.escape_only:
 		_show_message("Escape only.")
 		return
+	_play_pickup_audio()
 	_apply_pickup(player)
 	queue_free()
 
@@ -78,3 +81,8 @@ func _loot_name() -> String:
 			return "ammo"
 		_:
 			return "item"
+
+func _play_pickup_audio() -> void:
+	if pickup_stream == null:
+		return
+	AudioOneShot.play_2d(pickup_stream, global_position, get_tree().current_scene, pickup_volume_db)

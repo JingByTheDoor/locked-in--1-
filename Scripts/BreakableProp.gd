@@ -12,6 +12,8 @@ class_name BreakableProp
 @export var broken_texture: Texture2D
 @export var break_on_interact: bool = false
 @export var disable_collision_on_break: bool = true
+@export var break_stream: AudioStream = preload("res://Audio/door smash 1.wav")
+@export var break_volume_db: float = -3.0
 
 @onready var sprite: Sprite2D = $Sprite2D
 @onready var collision_shape: CollisionShape2D = $CollisionShape2D
@@ -45,6 +47,7 @@ func _break() -> void:
 	if disable_collision_on_break and collision_shape != null:
 		collision_shape.disabled = true
 	_emit_break_sound()
+	_play_break_audio()
 	_spawn_break_vfx()
 	_apply_visuals()
 
@@ -52,6 +55,11 @@ func _emit_break_sound() -> void:
 	if SoundBus == null:
 		return
 	SoundBus.emit_sound_at(global_position, break_loudness, break_radius, SoundEvent.SoundType.ANOMALOUS, self, break_tag)
+
+func _play_break_audio() -> void:
+	if break_stream == null:
+		return
+	AudioOneShot.play_2d(break_stream, global_position, get_tree().current_scene, break_volume_db)
 
 func _spawn_break_vfx() -> void:
 	if break_vfx_scene == null:

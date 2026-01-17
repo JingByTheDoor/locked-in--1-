@@ -32,6 +32,24 @@ signal damaged(amount: int, context: String)
 @export var sprint_sound_radius: float = 360.0
 @export var walk_sound_loudness: float = 0.35
 @export var sprint_sound_loudness: float = 0.8
+@export var walk_stream: AudioStream = preload("res://Audio/player slow walk.wav")
+@export var sprint_stream: AudioStream = preload("res://Audio/Fast Runing.wav")
+@export var walk_volume_db: float = -8.0
+@export var sprint_volume_db: float = -6.0
+@export var bat_swing_stream: AudioStream = preload("res://Audio/BAT SWING.wav")
+@export var bat_swing_volume_db: float = -4.0
+@export var bat_hit_enemy_streams: Array[AudioStream] = [
+	preload("res://Audio/ATTACK HIT 1.wav"),
+	preload("res://Audio/ATTACK HIT 2.wav"),
+	preload("res://Audio/ATTACK HIT 3.wav"),
+	preload("res://Audio/ATTACK HIT 4.wav")
+]
+@export var bat_hit_enemy_volume_db: float = -2.0
+@export var bat_hit_wall_streams: Array[AudioStream] = [
+	preload("res://Audio/Bat swing hit object 1.wav"),
+	preload("res://Audio/Bat Swing hit Object 2.wav")
+]
+@export var bat_hit_wall_volume_db: float = -3.0
 @export var gun_enabled: bool = true
 @export var gun_damage: int = 999
 @export var gun_range: float = 900.0
@@ -39,6 +57,8 @@ signal damaged(amount: int, context: String)
 @export var gun_knockback: float = 220.0
 @export var gun_shot_loudness: float = 2.6
 @export var gun_shot_radius: float = 1600.0
+@export var gun_shot_stream: AudioStream = preload("res://Audio/gunshot.wav")
+@export var gun_shot_volume_db: float = -2.0
 @export var gun_empty_message: String = "No ammo."
 @export var gun_collision_mask: int = 1
 @export var gun_muzzle_offset: float = 18.0
@@ -77,9 +97,11 @@ var _carry_rank: int = 1
 var _is_hiding: bool = false
 var _repair_locked: bool = false
 var _gun_cooldown_timer: float = 0.0
+var _rng: RandomNumberGenerator = RandomNumberGenerator.new()
 
 func _ready() -> void:
 	add_to_group("player")
+	_rng.randomize()
 	_sync_hp()
 	_sync_carry_rank()
 	_apply_interact_radius()
@@ -184,6 +206,7 @@ func _begin_attack_active() -> void:
 	_attack_state = AttackState.ACTIVE
 	_attack_timer = max(attack_active_time, 0.01)
 	_set_attack_monitoring(true)
+	_play_one_shot(bat_swing_stream, bat_swing_volume_db)
 
 func _end_attack() -> void:
 	_set_attack_monitoring(false)
@@ -235,12 +258,14 @@ func _try_hit_target(target: Node, aim_dir: Vector2, half_arc: float) -> void:
 			target.call("apply_knockback", to_target.normalized(), attack_knockback)
 		if not _attack_hit_enemy:
 			_emit_sound(SoundEvent.SoundType.ANOMALOUS, hit_loudness_enemy, hit_radius_enemy)
+			_play_random_one_shot(bat_hit_enemy_streams, bat_hit_enemy_volume_db)
 		_attack_hit_enemy = true
 		_spawn_hit_vfx(node2d.global_position, true)
 	else:
 		if target is PhysicsBody2D or target is Area2D or target is TileMap:
 			if not _attack_hit_wall and not _attack_hit_enemy:
 				_emit_sound(SoundEvent.SoundType.ANOMALOUS, hit_loudness_wall, hit_radius_wall)
+				_play_random_one_shot(bat_hit_wall_streams, bat_hit_wall_volume_db)
 			_attack_hit_wall = true
 			_spawn_hit_vfx(node2d.global_position, false)
 
@@ -285,6 +310,10 @@ func _update_movement_sound(delta: float, input_vector: Vector2, is_sprinting: b
 		return
 	_sound_timer = max(interval, 0.05)
 	SoundBus.emit_sound_at(global_position, loudness, radius, sound_type, self)
+	if is_sprinting:
+		_play_one_shot(sprint_stream, sprint_volume_db)
+	else:
+		_play_one_shot(walk_stream, walk_volume_db)
 
 func apply_damage(amount: int, context: String = "") -> void:
 	if is_dead:
@@ -385,6 +414,7 @@ func _try_fire_gun() -> void:
 	var muzzle_pos: Vector2 = global_position + aim_dir * gun_muzzle_offset
 	_spawn_muzzle_flash(muzzle_pos, _aim_angle)
 	_emit_gun_sound()
+	_play_one_shot(gun_shot_stream, gun_shot_volume_db)
 	_fire_gun_ray(muzzle_pos, aim_dir)
 	GameState.show_tutorial_message("tutorial_gun", "Gunfire spikes pressure.", 2.0, get_tree().get_first_node_in_group("message_hud"))
 
@@ -496,3 +526,20 @@ func _show_message(text: String) -> void:
 	var hud: Node = get_tree().get_first_node_in_group("message_hud")
 	if hud != null and hud.has_method("show_message"):
 		hud.call("show_message", text, 1.2)
+
+func _play_one_shot(stream: AudioStream, volume_db: float) -> void:
+	if stream == null:
+		return
+	AudioOneShot.play_2d(stream, global_position, get_tree().current_scene, volume_db)
+
+func _play_random_one_shot(streams: Array[AudioStream], volume_db: float) -> void:
+	var stream := _pick_random_stream(streams)
+	if stream == null:
+		return
+	AudioOneShot.play_2d(stream, global_position, get_tree().current_scene, volume_db)
+
+func _pick_random_stream(streams: Array[AudioStream]) -> AudioStream:
+	if streams.is_empty():
+		return null
+	var idx: int = _rng.randi_range(0, streams.size() - 1)
+	return streams[idx]

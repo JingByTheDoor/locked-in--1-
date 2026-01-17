@@ -31,6 +31,8 @@ extends Node2D
 @export var overlay_path: NodePath
 @export var tension_player_path: NodePath
 @export var heartbeat_player_path: NodePath
+@export var tension_stream: AudioStream = preload("res://Audio/TENSION LAYER.wav")
+@export var heartbeat_stream: AudioStream = preload("res://Audio/heartbeat.wav")
 @export var message_hud_path: NodePath
 @export var hunted_message: String = "HUNTED: escape or die"
 @export var hunter_scene: PackedScene
@@ -205,6 +207,7 @@ func _resolve_nodes() -> void:
 	_tension_player = get_node_or_null(tension_player_path) as AudioStreamPlayer
 	_heartbeat_player = get_node_or_null(heartbeat_player_path) as AudioStreamPlayer
 	_message_hud = get_node_or_null(message_hud_path)
+	_apply_audio_streams()
 
 func _update_spike_timer(delta: float, noise_value: float) -> float:
 	var timer: float = _spike_timer
@@ -324,3 +327,17 @@ func _pick_spawn_position(origin: Vector2) -> Vector2:
 			best_dist = dist
 			best_pos = candidate
 	return best_pos
+
+func _apply_audio_streams() -> void:
+	if _tension_player != null and _tension_player.stream == null and tension_stream != null:
+		_enable_loop(tension_stream)
+		_tension_player.stream = tension_stream
+	if _heartbeat_player != null and _heartbeat_player.stream == null and heartbeat_stream != null:
+		_enable_loop(heartbeat_stream)
+		_heartbeat_player.stream = heartbeat_stream
+
+func _enable_loop(stream: AudioStream) -> void:
+	if stream is AudioStreamWAV:
+		var wav := stream as AudioStreamWAV
+		if wav.loop_mode == AudioStreamWAV.LOOP_DISABLED:
+			wav.loop_mode = AudioStreamWAV.LOOP_FORWARD
