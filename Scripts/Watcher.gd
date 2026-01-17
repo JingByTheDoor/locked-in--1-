@@ -35,7 +35,8 @@ enum State {
 @export var alarm_volume_db: float = -3.0
 @export var footstep_interval: float = 0.7
 @export var footstep_stream: AudioStream = preload("res://Audio/Guard Footsteps.wav")
-@export var footstep_volume_db: float = -9.0
+@export var footstep_volume_db: float = -14.0
+@export var footstep_max_distance: float = 320.0
 
 @onready var visuals: Node2D = $Visuals
 @onready var sprite: AnimatedSprite2D = $Visuals/AnimatedSprite2D
@@ -281,6 +282,10 @@ func _update_footsteps(delta: float, move_dir: Vector2) -> void:
 	_footstep_timer -= delta
 	if _footstep_timer > 0.0:
 		return
+	if _player != null:
+		var max_dist: float = maxf(footstep_max_distance, 0.0)
+		if global_position.distance_squared_to(_player.global_position) > max_dist * max_dist:
+			return
 	_footstep_timer = max(footstep_interval, 0.1)
 	_play_one_shot(footstep_stream, footstep_volume_db)
 

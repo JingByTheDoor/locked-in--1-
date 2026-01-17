@@ -38,7 +38,11 @@ enum State {
 @export var chase_color: Color = Color(1.0, 0.35, 0.35, 1.0)
 @export var footstep_interval: float = 0.65
 @export var footstep_stream: AudioStream = preload("res://Audio/Guard Footsteps.wav")
-@export var footstep_volume_db: float = -8.0
+@export var footstep_volume_db: float = -14.0
+@export var footstep_max_distance: float = 320.0
+@export var footstep_emit_sound: bool = true
+@export var footstep_sound_loudness: float = 0.2
+@export var footstep_sound_radius: float = 180.0
 @export var attack_hit_streams: Array[AudioStream] = [
 	preload("res://Audio/ATTACK HIT 1.wav"),
 	preload("res://Audio/ATTACK HIT 2.wav"),
@@ -337,8 +341,14 @@ func _update_footsteps(delta: float, move_dir: Vector2) -> void:
 	_footstep_timer -= delta
 	if _footstep_timer > 0.0:
 		return
+	if _player != null:
+		var max_dist: float = maxf(footstep_max_distance, 0.0)
+		if global_position.distance_squared_to(_player.global_position) > max_dist * max_dist:
+			return
 	_footstep_timer = max(footstep_interval, 0.1)
 	_play_one_shot(footstep_stream, footstep_volume_db)
+	if footstep_emit_sound and SoundBus != null:
+		SoundBus.emit_sound_at(global_position, footstep_sound_loudness, footstep_sound_radius, SoundEvent.SoundType.EXPECTED, self)
 
 func _play_one_shot(stream: AudioStream, volume_db: float) -> void:
 	if stream == null:
@@ -349,7 +359,7 @@ func _play_random_one_shot(streams: Array[AudioStream], volume_db: float) -> voi
 	var stream := _pick_random_stream(streams)
 	if stream == null:
 		return
-	AudioOneShot.play_2d(stream, global_position, get_tree().current_scene, volume_db)
+w	AudioOneShot.play_2d(stream, global_position, get_tree().current_scene, volume_db)
 
 func _pick_random_stream(streams: Array[AudioStream]) -> AudioStream:
 	if streams.is_empty():
