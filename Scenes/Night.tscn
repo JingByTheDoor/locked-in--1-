@@ -29,6 +29,9 @@ message_hud_path = NodePath("MessageHud")
 spawn_points_path = NodePath("SpawnPoints")
 intruder_container_path = NodePath("Intruders")
 
+[node name="GlobalDarkness" type="CanvasModulate" parent="."]
+color = Color(0, 0, 0, 1)
+
 [node name="Map" type="Node2D" parent="."]
 
 [node name="WallTop" type="StaticBody2D" parent="Map"]

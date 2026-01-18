@@ -9,6 +9,15 @@ signal damaged(amount: int, context: String)
 @export var idle_animation_name: StringName = &"Idle"
 @export var walk_animation_name: StringName = &"Walk"
 @export var aim_rotation_offset_degrees: float = 0.0
+@export var vision_light_enabled: bool = true
+@export var vision_light_energy: float = 1.4
+@export var vision_light_color: Color = Color(1.0, 0.95, 0.85, 1.0)
+@export var vision_light_spot_angle_degrees: float = 70.0
+@export var vision_light_spot_attenuation: float = 1.4
+@export var vision_light_height: float = 0.5
+@export var vision_light_texture_scale: float = 1.0
+@export var vision_light_shadow_enabled: bool = true
+@export var vision_light_rotation_offset_degrees: float = 0.0
 @export var attack_arc_degrees: float = 160.0
 @export var attack_range: float = 80.0
 @export var attack_windup: float = 0.05
@@ -74,6 +83,7 @@ signal damaged(amount: int, context: String)
 @onready var interact_area: Area2D = $InteractArea
 @onready var interact_shape: CollisionShape2D = $InteractArea/CollisionShape2D
 @onready var vision_cone: Node2D = get_node_or_null("VisionCone")
+@onready var vision_light: Light2D = get_node_or_null("VisionLight") as Light2D
 @onready var attack_area: Area2D = $AttackArea
 @onready var attack_shape: CollisionShape2D = $AttackArea/CollisionShape2D
 
@@ -102,6 +112,7 @@ var _rng: RandomNumberGenerator = RandomNumberGenerator.new()
 func _ready() -> void:
 	add_to_group("player")
 	_rng.randomize()
+	_apply_vision_light_settings()
 	_sync_hp()
 	_sync_carry_rank()
 	_apply_interact_radius()
@@ -153,6 +164,8 @@ func _update_aim() -> void:
 	visuals.rotation = _aim_angle + deg_to_rad(aim_rotation_offset_degrees)
 	if vision_cone != null:
 		vision_cone.rotation = _aim_angle
+	if vision_light != null:
+		vision_light.global_rotation = _aim_angle + deg_to_rad(vision_light_rotation_offset_degrees)
 
 func _update_animation(input_vector: Vector2) -> void:
 	if sprite == null:
@@ -526,6 +539,32 @@ func _show_message(text: String) -> void:
 	var hud: Node = get_tree().get_first_node_in_group("message_hud")
 	if hud != null and hud.has_method("show_message"):
 		hud.call("show_message", text, 1.2)
+
+func _apply_vision_light_settings() -> void:
+	if vision_light == null:
+		return
+	_try_set_light_property(vision_light, "enabled", vision_light_enabled)
+	_try_set_light_property(vision_light, "energy", vision_light_energy)
+	_try_set_light_property(vision_light, "color", vision_light_color)
+	_try_set_light_property(vision_light, "texture_scale", vision_light_texture_scale)
+	_try_set_light_property(vision_light, "height", vision_light_height)
+	_try_set_light_property(vision_light, "shadow_enabled", vision_light_shadow_enabled)
+	_try_set_light_property(vision_light, "light_type", 1)
+	_try_set_light_property(vision_light, "spot_angle", vision_light_spot_angle_degrees)
+	_try_set_light_property(vision_light, "spot_attenuation", vision_light_spot_attenuation)
+
+func _try_set_light_property(light: Light2D, prop: String, value: Variant) -> void:
+	if light == null:
+		return
+	if _has_property(light, prop):
+		light.set(prop, value)
+
+func _has_property(obj: Object, prop: String) -> bool:
+	var list: Array = obj.get_property_list()
+	for info in list:
+		if typeof(info) == TYPE_DICTIONARY and info.has("name") and info["name"] == prop:
+			return true
+	return false
 
 func _play_one_shot(stream: AudioStream, volume_db: float) -> void:
 	if stream == null:

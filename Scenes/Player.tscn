@@ -1,10 +1,11 @@
-[gd_scene load_steps=18 format=3 uid="uid://x4khlkw6qu05"]
+[gd_scene load_steps=19 format=3 uid="uid://x4khlkw6qu05"]
 
 [ext_resource type="Script" uid="uid://btcv2iprnmnd4" path="res://Scripts/Player.gd" id="1"]
 [ext_resource type="Texture2D" uid="uid://cx1pbb1jbp3uf" path="res://Guy Walking COMPLETE.png" id="2_kyqiw"]
 [ext_resource type="Script" uid="uid://d23fs4q1yb1dt" path="res://Scripts/VisionCone.gd" id="3"]
 [ext_resource type="PackedScene" path="res://VFX/HitSplat.tscn" id="4"]
 [ext_resource type="PackedScene" path="res://VFX/GunMuzzleFlash.tscn" id="5"]
+[ext_resource type="Texture2D" uid="uid://bfcsm2rk6eqsx" path="res://cone light.jpg" id="5_nn08x"]
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_yoq75"]
 atlas = ExtResource("2_kyqiw")
@@ -114,6 +115,15 @@ sprite_frames = SubResource("1")
 animation = &"Idle"
 frame_progress = 0.10416737
 
+[node name="VisionLight" type="PointLight2D" parent="Visuals"]
+position = Vector2(8, -288)
+rotation = 3.1415927
+color = Color(1, 0.95, 0.85, 1)
+energy = 2.0
+shadow_enabled = true
+texture = ExtResource("5_nn08x")
+height = 0.5
+
 [node name="CollisionShape2D" type="CollisionShape2D" parent="."]
 shape = SubResource("2")
 
@@ -140,5 +150,6 @@ shape = SubResource("4")
 script = ExtResource("3")
 cone_length = 900.0
 extra_length = 600.0
+show_cone = false
 cone_fill_color = Color(0.3, 0.9, 1, 0.12)
 cone_outline_color = Color(0.3, 0.9, 1, 0.35)

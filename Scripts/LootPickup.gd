@@ -23,6 +23,7 @@ enum LootType {
 
 func _ready() -> void:
 	add_to_group("interactable")
+	add_to_group("loot")
 
 func interact(player: Node) -> void:
 	if deny_when_escape_only and GameState.escape_only:

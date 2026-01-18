@@ -11,6 +11,8 @@ uniform float base_darkness = 0.85;
 uniform float inner_radius = 200.0;
 uniform float inner_softness = 24.0;
 uniform vec2 viewport_size = vec2(1280.0, 720.0);
+uniform sampler2D occlusion_tex;
+uniform float occlusion_strength = 0.0;
 
 void fragment() {
 	vec2 pixel_pos = SCREEN_UV * viewport_size;
@@ -31,6 +33,10 @@ void fragment() {
 	float inner_edge = max(1.0, inner_softness);
 	float inner_visibility = 1.0 - smoothstep(max(0.0, inner_radius - inner_edge), inner_radius, dist);
 	visibility = max(visibility, inner_visibility);
+	if (occlusion_strength > 0.0) {
+		float occlusion = texture(occlusion_tex, SCREEN_UV).r;
+		visibility *= mix(1.0, occlusion, clamp(occlusion_strength, 0.0, 1.0));
+	}
 	float darkness = base_darkness * (1.0 - clamp(visibility, 0.0, 1.0));
 	COLOR = vec4(0.0, 0.0, 0.0, clamp(darkness, 0.0, 1.0));
 }
