@@ -104,7 +104,8 @@ radius = 48.0
 [node name="Player" type="CharacterBody2D"]
 script = ExtResource("1")
 aim_rotation_offset_degrees = 90.0
-ambient_light_enabled = true
+vision_light_texture_scale = 2.0
+vision_light_rotation_offset_degrees = 270.0
 hit_vfx_scene = ExtResource("4")
 gun_muzzle_flash_scene = ExtResource("5")
 
