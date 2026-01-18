@@ -18,6 +18,11 @@ signal damaged(amount: int, context: String)
 @export var vision_light_texture_scale: float = 1.0
 @export var vision_light_shadow_enabled: bool = true
 @export var vision_light_rotation_offset_degrees: float = 0.0
+@export var ambient_light_enabled: bool = false
+@export var ambient_light_energy: float = 0.4
+@export var ambient_light_color: Color = Color(1.0, 0.95, 0.85, 1.0)
+@export var ambient_light_texture_scale: float = 1.0
+@export var ambient_light_height: float = 0.5
 @export var attack_arc_degrees: float = 160.0
 @export var attack_range: float = 80.0
 @export var attack_windup: float = 0.05
@@ -83,7 +88,8 @@ signal damaged(amount: int, context: String)
 @onready var interact_area: Area2D = $InteractArea
 @onready var interact_shape: CollisionShape2D = $InteractArea/CollisionShape2D
 @onready var vision_cone: Node2D = get_node_or_null("VisionCone")
-@onready var vision_light: Light2D = get_node_or_null("VisionLight") as Light2D
+@onready var vision_light: Light2D = _find_light("VisionLight")
+@onready var ambient_light: Light2D = _find_light("Around light")
 @onready var attack_area: Area2D = $AttackArea
 @onready var attack_shape: CollisionShape2D = $AttackArea/CollisionShape2D
 
@@ -113,6 +119,7 @@ func _ready() -> void:
 	add_to_group("player")
 	_rng.randomize()
 	_apply_vision_light_settings()
+	_apply_ambient_light_settings()
 	_sync_hp()
 	_sync_carry_rank()
 	_apply_interact_radius()
@@ -565,6 +572,21 @@ func _has_property(obj: Object, prop: String) -> bool:
 		if typeof(info) == TYPE_DICTIONARY and info.has("name") and info["name"] == prop:
 			return true
 	return false
+
+func _apply_ambient_light_settings() -> void:
+	if ambient_light == null:
+		return
+	_try_set_light_property(ambient_light, "enabled", ambient_light_enabled)
+	_try_set_light_property(ambient_light, "energy", ambient_light_energy)
+	_try_set_light_property(ambient_light, "color", ambient_light_color)
+	_try_set_light_property(ambient_light, "texture_scale", ambient_light_texture_scale)
+	_try_set_light_property(ambient_light, "height", ambient_light_height)
+
+func _find_light(node_name: String) -> Light2D:
+	var node: Node = get_node_or_null(node_name)
+	if node == null:
+		node = get_node_or_null("Visuals/" + node_name)
+	return node as Light2D
 
 func _play_one_shot(stream: AudioStream, volume_db: float) -> void:
 	if stream == null:

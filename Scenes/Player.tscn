@@ -1,4 +1,4 @@
-[gd_scene load_steps=19 format=3 uid="uid://x4khlkw6qu05"]
+[gd_scene load_steps=20 format=3 uid="uid://x4khlkw6qu05"]
 
 [ext_resource type="Script" uid="uid://btcv2iprnmnd4" path="res://Scripts/Player.gd" id="1"]
 [ext_resource type="Texture2D" uid="uid://cx1pbb1jbp3uf" path="res://Guy Walking COMPLETE.png" id="2_kyqiw"]
@@ -6,6 +6,7 @@
 [ext_resource type="PackedScene" path="res://VFX/HitSplat.tscn" id="4"]
 [ext_resource type="PackedScene" path="res://VFX/GunMuzzleFlash.tscn" id="5"]
 [ext_resource type="Texture2D" uid="uid://bfcsm2rk6eqsx" path="res://cone light.jpg" id="5_nn08x"]
+[ext_resource type="Texture2D" uid="uid://oo0j4i3mwt17" path="res://spotlight_1.png" id="6_52ee3"]
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_yoq75"]
 atlas = ExtResource("2_kyqiw")
@@ -103,8 +104,15 @@ radius = 48.0
 [node name="Player" type="CharacterBody2D"]
 script = ExtResource("1")
 aim_rotation_offset_degrees = 90.0
+ambient_light_enabled = true
 hit_vfx_scene = ExtResource("4")
 gun_muzzle_flash_scene = ExtResource("5")
+
+[node name="Around light" type="PointLight2D" parent="."]
+position = Vector2(-5.722046e-05, 0)
+shadow_enabled = true
+texture = ExtResource("6_52ee3")
+height = 1024.0
 
 [node name="Visuals" type="Node2D" parent="."]
 
@@ -116,12 +124,12 @@ animation = &"Idle"
 frame_progress = 0.10416737
 
 [node name="VisionLight" type="PointLight2D" parent="Visuals"]
-position = Vector2(8, -288)
+position = Vector2(15, 10)
 rotation = 3.1415927
 color = Color(1, 0.95, 0.85, 1)
-energy = 2.0
 shadow_enabled = true
 texture = ExtResource("5_nn08x")
+texture_scale = 2.0
 height = 0.5
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="."]
@@ -144,9 +152,11 @@ monitoring = false
 monitorable = false
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="AttackArea"]
+position = Vector2(0, -2)
 shape = SubResource("4")
 
 [node name="VisionCone" type="Node2D" parent="."]
+position = Vector2(-7, 4)
 script = ExtResource("3")
 cone_length = 900.0
 extra_length = 600.0
