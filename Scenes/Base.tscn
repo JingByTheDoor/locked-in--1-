@@ -1,4 +1,4 @@
-[gd_scene load_steps=20 format=3]
+[gd_scene load_steps=21 format=3]
 
 [ext_resource type="Script" path="res://Scripts/Base.gd" id="1"]
 [ext_resource type="PackedScene" path="res://Scenes/Player.tscn" id="2"]
@@ -12,6 +12,7 @@
 [ext_resource type="PackedScene" path="res://Scenes/StartNight.tscn" id="10"]
 [ext_resource type="PackedScene" path="res://Scenes/StartScavenge.tscn" id="11"]
 [ext_resource type="PackedScene" path="res://UI/InteractPrompt.tscn" id="12"]
+[ext_resource type="PackedScene" path="res://Scenes/ResourceChest.tscn" id="13"]
 
 [sub_resource type="RectangleShape2D" id="1"]
 size = Vector2(840, 40)
@@ -119,6 +120,9 @@ position = Vector2(-300, 120)
 
 [node name="FoodStation" parent="." instance=ExtResource("6")]
 position = Vector2(300, 120)
+
+[node name="ResourceChest" parent="." instance=ExtResource("13")]
+position = Vector2(0, 140)
 
 [node name="StartNight" parent="." instance=ExtResource("10")]
 position = Vector2(0, -120)

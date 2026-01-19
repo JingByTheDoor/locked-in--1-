@@ -20,6 +20,7 @@ enum NightVariant {
 @export var min_calm_interval: float = 2.5
 @export var min_heavy_interval: float = 1.5
 @export var base_scene_path: String = "res://Scenes/Base.tscn"
+@export var results_scene_path: String = "res://Scenes/Results.tscn"
 @export var intruder_scene: PackedScene
 @export var spawn_points_path: NodePath = NodePath("SpawnPoints")
 @export var intruder_container_path: NodePath = NodePath("Intruders")
@@ -221,10 +222,13 @@ func _apply_death_consequences() -> void:
 func _finish_night() -> void:
 	_finishing = true
 	GameState.night_index += 1
-	GameState.run_state = GameState.RunState.BASE
+	GameState.run_state = GameState.RunState.RESULTS
 	GameState.escape_only = false
-	if base_scene_path != "":
-		get_tree().change_scene_to_file(base_scene_path)
+	var target_scene := results_scene_path
+	if target_scene == "":
+		target_scene = base_scene_path
+	if target_scene != "":
+		get_tree().change_scene_to_file(target_scene)
 
 func _update_hud() -> void:
 	if _night_hud != null and _night_hud.has_method("set_time_left"):
