@@ -45,6 +45,8 @@ auto_length_from_viewport = false
 show_cone = false
 require_line_of_sight = true
 occlusion_mask = 1
+cone_fill_color = Color(1, 1, 1, 0.15)
+cone_outline_color = Color(1, 1, 1, 0.35)
 
 [node name="DoorSensor" type="Area2D" parent="."]
 monitoring = true

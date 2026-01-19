@@ -46,5 +46,5 @@ cone_angle_degrees = 110.0
 cone_length = 260.0
 auto_length_from_viewport = false
 extra_length = 0.0
-cone_fill_color = Color(1, 0.55, 0.3, 0.12)
-cone_outline_color = Color(1, 0.55, 0.3, 0.35)
+cone_fill_color = Color(1, 1, 1, 0.12)
+cone_outline_color = Color(1, 1, 1, 0.35)

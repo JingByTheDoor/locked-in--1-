@@ -118,9 +118,9 @@ animation = &"Idle"
 frame_progress = 0.10416737
 
 [node name="PointLight2D" type="PointLight2D" parent="Visuals"]
-position = Vector2(0, -199)
+position = Vector2(1, -147)
 rotation = -1.5707964
-scale = Vector2(1, 1.225663)
+scale = Vector2(1, 2.061823)
 energy = 1.86
 blend_mode = 2
 shadow_enabled = true
