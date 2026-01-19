@@ -1,3 +1,29 @@
-[gd_scene format=3]
+[gd_scene load_steps=2 format=3]
 
-[node name="GameOver" type="Node2D"]
+[ext_resource type="Script" path="res://Scripts/GameOver.gd" id="1"]
+
+[node name="GameOver" type="Control"]
+anchor_right = 1.0
+anchor_bottom = 1.0
+script = ExtResource("1")
+
+[node name="CenterContainer" type="CenterContainer" parent="."]
+anchor_right = 1.0
+anchor_bottom = 1.0
+
+[node name="VBoxContainer" type="VBoxContainer" parent="CenterContainer"]
+custom_minimum_size = Vector2(320, 0)
+theme_override_constants/separation = 12
+alignment = 1
+
+[node name="TitleLabel" type="Label" parent="CenterContainer/VBoxContainer"]
+text = "Game Over"
+horizontal_alignment = 1
+
+[node name="RetryButton" type="Button" parent="CenterContainer/VBoxContainer"]
+custom_minimum_size = Vector2(240, 36)
+text = "Retry Night"
+
+[node name="MenuButton" type="Button" parent="CenterContainer/VBoxContainer"]
+custom_minimum_size = Vector2(240, 36)
+text = "Return to Menu"

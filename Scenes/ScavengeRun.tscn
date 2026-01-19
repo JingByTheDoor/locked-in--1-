@@ -1,4 +1,4 @@
-[gd_scene load_steps=42 format=3 uid="uid://iuo6gtonvub0"]
+[gd_scene load_steps=43 format=3 uid="uid://iuo6gtonvub0"]
 
 [ext_resource type="Script" uid="uid://bjvfys8e3cajl" path="res://Scripts/ScavengeRun.gd" id="1"]
 [ext_resource type="PackedScene" uid="uid://x4khlkw6qu05" path="res://Scenes/Player.tscn" id="2"]
@@ -11,6 +11,7 @@
 [ext_resource type="PackedScene" path="res://UI/ExitSignLayer.tscn" id="10"]
 [ext_resource type="PackedScene" path="res://UI/HuntedBanner.tscn" id="11"]
 [ext_resource type="PackedScene" path="res://UI/MessageHud.tscn" id="12"]
+[ext_resource type="PackedScene" path="res://UI/ScavengeHud.tscn" id="20"]
 [ext_resource type="Script" uid="uid://dspas587cy1x1" path="res://Scripts/EscalationManager.gd" id="13"]
 [ext_resource type="PackedScene" path="res://Scenes/Hunter.tscn" id="14"]
 [ext_resource type="Texture2D" uid="uid://wyj60w1c6a8u" path="res://icon.svg" id="15"]
@@ -756,6 +757,8 @@ message_hud_path = NodePath("../MessageHud")
 hunter_scene = ExtResource("14")
 
 [node name="ReadabilityOverlay" parent="." instance=ExtResource("9")]
+
+[node name="ScavengeHud" parent="." instance=ExtResource("20")]
 
 [node name="ExitSignLayer" parent="." instance=ExtResource("10")]
 
