@@ -1,47 +1,93 @@
-[gd_scene load_steps=26 format=3]
+[gd_scene load_steps=43 format=3 uid="uid://iuo6gtonvub0"]
 
-[ext_resource type="Script" path="res://Scripts/ScavengeRun.gd" id="1"]
-[ext_resource type="PackedScene" path="res://Scenes/Player.tscn" id="2"]
-[ext_resource type="PackedScene" path="res://Scenes/Guard.tscn" id="3"]
+[ext_resource type="Script" uid="uid://bjvfys8e3cajl" path="res://Scripts/ScavengeRun.gd" id="1"]
+[ext_resource type="PackedScene" uid="uid://x4khlkw6qu05" path="res://Scenes/Player.tscn" id="2"]
+[ext_resource type="PackedScene" uid="uid://dv3s6lpqlvwwb" path="res://Scenes/Guard.tscn" id="3"]
 [ext_resource type="PackedScene" path="res://Scenes/ExtractionZone.tscn" id="4"]
 [ext_resource type="PackedScene" path="res://Scenes/LootPickup.tscn" id="5"]
 [ext_resource type="PackedScene" path="res://Scenes/HidingSpot.tscn" id="6"]
-[ext_resource type="PackedScene" path="res://Scenes/Watcher.tscn" id="16"]
-[ext_resource type="PackedScene" path="res://Scenes/BreakableProp.tscn" id="17"]
 [ext_resource type="PackedScene" path="res://VFX/SoundRippleManager.tscn" id="7"]
 [ext_resource type="PackedScene" path="res://VFX/ReadabilityOverlay.tscn" id="9"]
 [ext_resource type="PackedScene" path="res://UI/ExitSignLayer.tscn" id="10"]
 [ext_resource type="PackedScene" path="res://UI/HuntedBanner.tscn" id="11"]
 [ext_resource type="PackedScene" path="res://UI/MessageHud.tscn" id="12"]
-[ext_resource type="PackedScene" path="res://UI/InteractPrompt.tscn" id="19"]
-[ext_resource type="Script" path="res://Scripts/EscalationManager.gd" id="13"]
+[ext_resource type="Script" uid="uid://dspas587cy1x1" path="res://Scripts/EscalationManager.gd" id="13"]
 [ext_resource type="PackedScene" path="res://Scenes/Hunter.tscn" id="14"]
-[ext_resource type="Texture2D" path="res://icon.svg" id="15"]
-[ext_resource type="Script" path="res://Scripts/MapRules.gd" id="18"]
+[ext_resource type="Texture2D" uid="uid://wyj60w1c6a8u" path="res://icon.svg" id="15"]
+[ext_resource type="PackedScene" path="res://Scenes/Watcher.tscn" id="16"]
+[ext_resource type="PackedScene" path="res://Scenes/BreakableProp.tscn" id="17"]
+[ext_resource type="Script" uid="uid://md4m5ar0w1ly" path="res://Scripts/MapRules.gd" id="18"]
+[ext_resource type="PackedScene" path="res://UI/InteractPrompt.tscn" id="19"]
+[ext_resource type="Texture2D" uid="uid://boyyd16hwu0qb" path="res://hat diagonal.png" id="19_vm6l8"]
 
 [sub_resource type="RectangleShape2D" id="1"]
 size = Vector2(1200, 40)
 
+[sub_resource type="OccluderPolygon2D" id="OccluderPolygon2D_vm6l8"]
+polygon = PackedVector2Array(-602, 14, 595, 15, 593, -22, -602, -20)
+
+[sub_resource type="OccluderPolygon2D" id="OccluderPolygon2D_l2se2"]
+polygon = PackedVector2Array(-600, -25, -603, 19, 600, 22, 596, -22)
+
 [sub_resource type="RectangleShape2D" id="2"]
 size = Vector2(40, 800)
+
+[sub_resource type="OccluderPolygon2D" id="OccluderPolygon2D_cqyoi"]
+polygon = PackedVector2Array(-21, 397, -18, -404, 25, -401, 25, 395)
+
+[sub_resource type="OccluderPolygon2D" id="OccluderPolygon2D_6dgt8"]
+polygon = PackedVector2Array(-21, -398, -21, 393, 20, 393, 20, -401)
 
 [sub_resource type="RectangleShape2D" id="3"]
 size = Vector2(40, 180)
 
-[sub_resource type="RectangleShape2D" id="4"]
-size = Vector2(40, 200)
+[sub_resource type="OccluderPolygon2D" id="OccluderPolygon2D_y3853"]
+polygon = PackedVector2Array(-20, 86, -18, -90, 18, -90, 19, 92)
+
+[sub_resource type="OccluderPolygon2D" id="OccluderPolygon2D_50gmn"]
+polygon = PackedVector2Array(-20, 91, -20, -91, 17, -93, 19, 92)
+
+[sub_resource type="OccluderPolygon2D" id="OccluderPolygon2D_hsomh"]
+polygon = PackedVector2Array(-20, -87, -17, 90, 19, 92, 19, -92)
 
 [sub_resource type="RectangleShape2D" id="5"]
 size = Vector2(40, 160)
 
+[sub_resource type="OccluderPolygon2D" id="OccluderPolygon2D_pf5ob"]
+polygon = PackedVector2Array(-21, 77, -19, -82, 20, -81, 20, 80)
+
+[sub_resource type="RectangleShape2D" id="4"]
+size = Vector2(40, 200)
+
+[sub_resource type="OccluderPolygon2D" id="OccluderPolygon2D_7qsjq"]
+polygon = PackedVector2Array(-20, -164, -19, -322, 20, -320, 20, -159)
+
+[sub_resource type="OccluderPolygon2D" id="OccluderPolygon2D_hk3gb"]
+polygon = PackedVector2Array(-22, -98, -19, 96, 20, 96, 15, -101)
+
 [sub_resource type="RectangleShape2D" id="6"]
 size = Vector2(160, 40)
+
+[sub_resource type="OccluderPolygon2D" id="OccluderPolygon2D_4b3lk"]
+polygon = PackedVector2Array(24, -21, 79, -19, 80, 20, -83, 22, -85, 41, -113, 39, -115, -164, -85, -162, -83, -104, 26, -102)
+
+[sub_resource type="OccluderPolygon2D" id="OccluderPolygon2D_l3ob2"]
+polygon = PackedVector2Array(-82, 18, -80, -21, 77, -20, 78, 18)
+
+[sub_resource type="OccluderPolygon2D" id="OccluderPolygon2D_vcrhb"]
+polygon = PackedVector2Array(-81, -18, 79, -20, 77, 21, -82, 19)
 
 [sub_resource type="RectangleShape2D" id="7"]
 size = Vector2(80, 80)
 
+[sub_resource type="OccluderPolygon2D" id="OccluderPolygon2D_5e0cw"]
+polygon = PackedVector2Array(-40, -40, 40, -40, 40, 40, -40, 40)
+
 [sub_resource type="RectangleShape2D" id="8"]
 size = Vector2(120, 60)
+
+[sub_resource type="OccluderPolygon2D" id="OccluderPolygon2D_k4p4q"]
+polygon = PackedVector2Array(-60, -30, 60, -30, 60, 30, -60, 30)
 
 [node name="ScavengeRun" type="Node2D"]
 script = ExtResource("1")
@@ -75,9 +121,12 @@ position = Vector2(0, -420)
 shape = SubResource("1")
 
 [node name="Sprite2D" type="Sprite2D" parent="Map/OuterWallTop"]
-texture = ExtResource("15")
-scale = Vector2(6, 0.25)
 modulate = Color(0.15, 0.15, 0.15, 1)
+scale = Vector2(6, 0.25)
+texture = ExtResource("15")
+
+[node name="LightOccluder2D" type="LightOccluder2D" parent="Map/OuterWallTop"]
+occluder = SubResource("OccluderPolygon2D_vm6l8")
 
 [node name="OuterWallBottom" type="StaticBody2D" parent="Map"]
 position = Vector2(0, 420)
@@ -86,9 +135,12 @@ position = Vector2(0, 420)
 shape = SubResource("1")
 
 [node name="Sprite2D" type="Sprite2D" parent="Map/OuterWallBottom"]
-texture = ExtResource("15")
-scale = Vector2(6, 0.25)
 modulate = Color(0.15, 0.15, 0.15, 1)
+scale = Vector2(6, 0.25)
+texture = ExtResource("15")
+
+[node name="LightOccluder2D" type="LightOccluder2D" parent="Map/OuterWallBottom"]
+occluder = SubResource("OccluderPolygon2D_l2se2")
 
 [node name="OuterWallLeft" type="StaticBody2D" parent="Map"]
 position = Vector2(-620, 0)
@@ -97,9 +149,12 @@ position = Vector2(-620, 0)
 shape = SubResource("2")
 
 [node name="Sprite2D" type="Sprite2D" parent="Map/OuterWallLeft"]
-texture = ExtResource("15")
-scale = Vector2(0.25, 6)
 modulate = Color(0.15, 0.15, 0.15, 1)
+scale = Vector2(0.25, 6)
+texture = ExtResource("15")
+
+[node name="LightOccluder2D" type="LightOccluder2D" parent="Map/OuterWallLeft"]
+occluder = SubResource("OccluderPolygon2D_cqyoi")
 
 [node name="OuterWallRight" type="StaticBody2D" parent="Map"]
 position = Vector2(620, 0)
@@ -108,9 +163,12 @@ position = Vector2(620, 0)
 shape = SubResource("2")
 
 [node name="Sprite2D" type="Sprite2D" parent="Map/OuterWallRight"]
-texture = ExtResource("15")
-scale = Vector2(0.25, 6)
 modulate = Color(0.15, 0.15, 0.15, 1)
+scale = Vector2(0.25, 6)
+texture = ExtResource("15")
+
+[node name="LightOccluder2D" type="LightOccluder2D" parent="Map/OuterWallRight"]
+occluder = SubResource("OccluderPolygon2D_6dgt8")
 
 [node name="WallLeftTop" type="StaticBody2D" parent="Map"]
 position = Vector2(-200, -280)
@@ -119,9 +177,12 @@ position = Vector2(-200, -280)
 shape = SubResource("3")
 
 [node name="Sprite2D" type="Sprite2D" parent="Map/WallLeftTop"]
-texture = ExtResource("15")
-scale = Vector2(0.25, 1.4)
 modulate = Color(0.2, 0.2, 0.2, 1)
+scale = Vector2(0.25, 1.4)
+texture = ExtResource("15")
+
+[node name="LightOccluder2D" type="LightOccluder2D" parent="Map/WallLeftTop"]
+occluder = SubResource("OccluderPolygon2D_y3853")
 
 [node name="WallLeftMid" type="StaticBody2D" parent="Map"]
 position = Vector2(-200, -20)
@@ -130,9 +191,12 @@ position = Vector2(-200, -20)
 shape = SubResource("3")
 
 [node name="Sprite2D" type="Sprite2D" parent="Map/WallLeftMid"]
-texture = ExtResource("15")
-scale = Vector2(0.25, 1.4)
 modulate = Color(0.2, 0.2, 0.2, 1)
+scale = Vector2(0.25, 1.4)
+texture = ExtResource("15")
+
+[node name="LightOccluder2D" type="LightOccluder2D" parent="Map/WallLeftMid"]
+occluder = SubResource("OccluderPolygon2D_50gmn")
 
 [node name="WallLeftBottom" type="StaticBody2D" parent="Map"]
 position = Vector2(-200, 240)
@@ -141,9 +205,12 @@ position = Vector2(-200, 240)
 shape = SubResource("3")
 
 [node name="Sprite2D" type="Sprite2D" parent="Map/WallLeftBottom"]
-texture = ExtResource("15")
-scale = Vector2(0.25, 1.4)
 modulate = Color(0.2, 0.2, 0.2, 1)
+scale = Vector2(0.25, 1.4)
+texture = ExtResource("15")
+
+[node name="LightOccluder2D" type="LightOccluder2D" parent="Map/WallLeftBottom"]
+occluder = SubResource("OccluderPolygon2D_hsomh")
 
 [node name="WallRightTop" type="StaticBody2D" parent="Map"]
 position = Vector2(200, -300)
@@ -152,9 +219,12 @@ position = Vector2(200, -300)
 shape = SubResource("5")
 
 [node name="Sprite2D" type="Sprite2D" parent="Map/WallRightTop"]
-texture = ExtResource("15")
-scale = Vector2(0.25, 1.2)
 modulate = Color(0.2, 0.2, 0.2, 1)
+scale = Vector2(0.25, 1.2)
+texture = ExtResource("15")
+
+[node name="LightOccluder2D" type="LightOccluder2D" parent="Map/WallRightTop"]
+occluder = SubResource("OccluderPolygon2D_pf5ob")
 
 [node name="WallRightMid" type="StaticBody2D" parent="Map"]
 position = Vector2(200, -60)
@@ -163,9 +233,12 @@ position = Vector2(200, -60)
 shape = SubResource("4")
 
 [node name="Sprite2D" type="Sprite2D" parent="Map/WallRightMid"]
-texture = ExtResource("15")
-scale = Vector2(0.25, 1.6)
 modulate = Color(0.2, 0.2, 0.2, 1)
+scale = Vector2(0.25, 1.6)
+texture = ExtResource("15")
+
+[node name="LightOccluder2D" type="LightOccluder2D" parent="Map/WallRightMid"]
+occluder = SubResource("OccluderPolygon2D_7qsjq")
 
 [node name="WallRightBottom" type="StaticBody2D" parent="Map"]
 position = Vector2(200, 180)
@@ -174,9 +247,12 @@ position = Vector2(200, 180)
 shape = SubResource("4")
 
 [node name="Sprite2D" type="Sprite2D" parent="Map/WallRightBottom"]
-texture = ExtResource("15")
-scale = Vector2(0.25, 1.6)
 modulate = Color(0.2, 0.2, 0.2, 1)
+scale = Vector2(0.25, 1.6)
+texture = ExtResource("15")
+
+[node name="LightOccluder2D" type="LightOccluder2D" parent="Map/WallRightBottom"]
+occluder = SubResource("OccluderPolygon2D_hk3gb")
 
 [node name="WallRightH1" type="StaticBody2D" parent="Map"]
 position = Vector2(300, 0)
@@ -185,9 +261,12 @@ position = Vector2(300, 0)
 shape = SubResource("6")
 
 [node name="Sprite2D" type="Sprite2D" parent="Map/WallRightH1"]
-texture = ExtResource("15")
-scale = Vector2(1.2, 0.25)
 modulate = Color(0.2, 0.2, 0.2, 1)
+scale = Vector2(1.2, 0.25)
+texture = ExtResource("15")
+
+[node name="LightOccluder2D" type="LightOccluder2D" parent="Map/WallRightH1"]
+occluder = SubResource("OccluderPolygon2D_4b3lk")
 
 [node name="WallRightH2" type="StaticBody2D" parent="Map"]
 position = Vector2(520, 0)
@@ -196,9 +275,12 @@ position = Vector2(520, 0)
 shape = SubResource("6")
 
 [node name="Sprite2D" type="Sprite2D" parent="Map/WallRightH2"]
-texture = ExtResource("15")
-scale = Vector2(1.2, 0.25)
 modulate = Color(0.2, 0.2, 0.2, 1)
+scale = Vector2(1.2, 0.25)
+texture = ExtResource("15")
+
+[node name="LightOccluder2D" type="LightOccluder2D" parent="Map/WallRightH2"]
+occluder = SubResource("OccluderPolygon2D_l3ob2")
 
 [node name="WallLeftH1" type="StaticBody2D" parent="Map"]
 position = Vector2(-420, 140)
@@ -207,9 +289,12 @@ position = Vector2(-420, 140)
 shape = SubResource("6")
 
 [node name="Sprite2D" type="Sprite2D" parent="Map/WallLeftH1"]
-texture = ExtResource("15")
-scale = Vector2(1.2, 0.25)
 modulate = Color(0.2, 0.2, 0.2, 1)
+scale = Vector2(1.2, 0.25)
+texture = ExtResource("15")
+
+[node name="LightOccluder2D" type="LightOccluder2D" parent="Map/WallLeftH1"]
+occluder = SubResource("OccluderPolygon2D_vcrhb")
 
 [node name="CrateA" type="StaticBody2D" parent="Map"]
 position = Vector2(-480, -80)
@@ -218,9 +303,12 @@ position = Vector2(-480, -80)
 shape = SubResource("7")
 
 [node name="Sprite2D" type="Sprite2D" parent="Map/CrateA"]
-texture = ExtResource("15")
-scale = Vector2(0.6, 0.6)
 modulate = Color(0.35, 0.3, 0.2, 1)
+scale = Vector2(0.6, 0.6)
+texture = ExtResource("15")
+
+[node name="LightOccluder2D" type="LightOccluder2D" parent="Map/CrateA"]
+occluder = SubResource("OccluderPolygon2D_5e0cw")
 
 [node name="CrateB" type="StaticBody2D" parent="Map"]
 position = Vector2(60, 260)
@@ -229,9 +317,12 @@ position = Vector2(60, 260)
 shape = SubResource("8")
 
 [node name="Sprite2D" type="Sprite2D" parent="Map/CrateB"]
-texture = ExtResource("15")
-scale = Vector2(0.9, 0.45)
 modulate = Color(0.35, 0.3, 0.2, 1)
+scale = Vector2(0.9, 0.45)
+texture = ExtResource("15")
+
+[node name="LightOccluder2D" type="LightOccluder2D" parent="Map/CrateB"]
+occluder = SubResource("OccluderPolygon2D_k4p4q")
 
 [node name="CrateC" type="StaticBody2D" parent="Map"]
 position = Vector2(440, -220)
@@ -240,24 +331,27 @@ position = Vector2(440, -220)
 shape = SubResource("7")
 
 [node name="Sprite2D" type="Sprite2D" parent="Map/CrateC"]
-texture = ExtResource("15")
-scale = Vector2(0.6, 0.6)
 modulate = Color(0.35, 0.3, 0.2, 1)
+scale = Vector2(0.6, 0.6)
+texture = ExtResource("15")
+
+[node name="LightOccluder2D" type="LightOccluder2D" parent="Map/CrateC"]
+occluder = SubResource("OccluderPolygon2D_5e0cw")
 
 [node name="ExitSignWorld" type="Sprite2D" parent="Map"]
-texture = ExtResource("15")
+modulate = Color(0.35, 1, 0.55, 1)
 position = Vector2(520, -320)
 scale = Vector2(0.4, 0.4)
-modulate = Color(0.35, 1, 0.55, 1)
+texture = ExtResource("15")
 
 [node name="ExitSignWorld2" type="Sprite2D" parent="Map"]
-texture = ExtResource("15")
+modulate = Color(0.35, 1, 0.55, 1)
 position = Vector2(-520, 320)
 scale = Vector2(0.4, 0.4)
-modulate = Color(0.35, 1, 0.55, 1)
+texture = ExtResource("15")
 
 [node name="Player" parent="." instance=ExtResource("2")]
-position = Vector2(-520, 0)
+position = Vector2(-384, 293)
 
 [node name="ExtractionZone" parent="." instance=ExtResource("4")]
 position = Vector2(520, -260)
@@ -267,59 +361,32 @@ position = Vector2(-520, 260)
 
 [node name="LootScrap1" parent="." instance=ExtResource("5")]
 position = Vector2(-520, -260)
-loot_type = 0
 amount = 3
-carry_rank_add = 1
-
-[node name="Sprite2D" parent="LootScrap1"]
-modulate = Color(0.7, 0.7, 0.7, 1)
 
 [node name="LootWood1" parent="." instance=ExtResource("5")]
-position = Vector2(-420, 220)
+position = Vector2(-289, 302)
 loot_type = 1
 amount = 2
-carry_rank_add = 1
-
-[node name="Sprite2D" parent="LootWood1"]
-modulate = Color(0.7, 0.5, 0.3, 1)
 
 [node name="LootAmmo1" parent="." instance=ExtResource("5")]
 position = Vector2(20, -260)
 loot_type = 4
 amount = 6
-carry_rank_add = 1
-
-[node name="Sprite2D" parent="LootAmmo1"]
-modulate = Color(0.6, 0.7, 1, 1)
 
 [node name="LootFood1" parent="." instance=ExtResource("5")]
 position = Vector2(420, 220)
 loot_type = 3
-amount = 1
 grade = 2
 carry_rank_add = 2
-
-[node name="Sprite2D" parent="LootFood1"]
-modulate = Color(0.45, 0.9, 0.45, 1)
 
 [node name="LootFuel1" parent="." instance=ExtResource("5")]
 position = Vector2(120, 320)
 loot_type = 2
-amount = 1
-grade = 1
 carry_rank_add = 2
-
-[node name="Sprite2D" parent="LootFuel1"]
-modulate = Color(0.95, 0.85, 0.2, 1)
 
 [node name="LootScrap2" parent="." instance=ExtResource("5")]
 position = Vector2(300, -140)
-loot_type = 0
 amount = 2
-carry_rank_add = 1
-
-[node name="Sprite2D" parent="LootScrap2"]
-modulate = Color(0.65, 0.65, 0.65, 1)
 
 [node name="BreakableCrate1" parent="." instance=ExtResource("17")]
 position = Vector2(-320, -120)
@@ -336,18 +403,11 @@ broken_color = Color(0.35, 0.4, 0.5, 1)
 [node name="HidingSpot1" parent="." instance=ExtResource("6")]
 position = Vector2(-520, 320)
 
-[node name="Sprite2D" parent="HidingSpot1"]
-modulate = Color(0.4, 0.45, 0.55, 1)
-
 [node name="HidingSpot2" parent="." instance=ExtResource("6")]
 position = Vector2(540, -320)
 
-[node name="Sprite2D" parent="HidingSpot2"]
-modulate = Color(0.4, 0.45, 0.55, 1)
-
 [node name="UnfairRoom" type="Node2D" parent="."]
 position = Vector2(420, -220)
-groups = ["unfair_room"]
 
 [node name="GuardLeft" parent="." instance=ExtResource("3")]
 position = Vector2(-360, -200)
@@ -455,6 +515,7 @@ volume_db = -30.0
 volume_db = -30.0
 
 [node name="EscalationManager" type="Node2D" parent="."]
+position = Vector2(54, 7)
 script = ExtResource("13")
 overlay_path = NodePath("../ReadabilityOverlay")
 tension_player_path = NodePath("../AudioLayers/TensionLayer")
@@ -471,3 +532,7 @@ hunter_scene = ExtResource("14")
 [node name="MessageHud" parent="." instance=ExtResource("12")]
 
 [node name="InteractPrompt" parent="." instance=ExtResource("19")]
+
+[node name="HatDiagonal" type="Sprite2D" parent="."]
+position = Vector2(1942, 703)
+texture = ExtResource("19_vm6l8")

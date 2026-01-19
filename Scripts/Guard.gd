@@ -359,7 +359,7 @@ func _play_random_one_shot(streams: Array[AudioStream], volume_db: float) -> voi
 	var stream := _pick_random_stream(streams)
 	if stream == null:
 		return
-	AudioOneShot.play_2d(stream, global_position, get_tree().current_scene, volume_db)
+
 
 func _pick_random_stream(streams: Array[AudioStream]) -> AudioStream:
 	if streams.is_empty():

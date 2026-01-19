@@ -18,6 +18,8 @@ signal damaged(amount: int, context: String)
 @export var vision_light_texture_scale: float = 1.0
 @export var vision_light_shadow_enabled: bool = true
 @export var vision_light_rotation_offset_degrees: float = 0.0
+@export var vision_light_auto_texture_offset: bool = true
+@export var vision_light_texture_offset: Vector2 = Vector2.ZERO
 @export var ambient_light_enabled: bool = false
 @export var ambient_light_energy: float = 0.4
 @export var ambient_light_color: Color = Color(1.0, 0.95, 0.85, 1.0)
@@ -556,6 +558,12 @@ func _apply_vision_light_settings() -> void:
 	_try_set_light_property(vision_light, "texture_scale", vision_light_texture_scale)
 	_try_set_light_property(vision_light, "height", vision_light_height)
 	_try_set_light_property(vision_light, "shadow_enabled", vision_light_shadow_enabled)
+	var offset := vision_light_texture_offset
+	if vision_light_auto_texture_offset:
+		var tex := _get_light_texture(vision_light)
+		if tex != null:
+			offset = Vector2(0.0, tex.get_size().y * 0.5)
+	_try_set_light_property(vision_light, "texture_offset", offset)
 	_try_set_light_property(vision_light, "light_type", 1)
 	_try_set_light_property(vision_light, "spot_angle", vision_light_spot_angle_degrees)
 	_try_set_light_property(vision_light, "spot_attenuation", vision_light_spot_attenuation)
@@ -565,6 +573,13 @@ func _try_set_light_property(light: Light2D, prop: String, value: Variant) -> vo
 		return
 	if _has_property(light, prop):
 		light.set(prop, value)
+
+func _get_light_texture(light: Light2D) -> Texture2D:
+	if light == null:
+		return null
+	if _has_property(light, "texture"):
+		return light.get("texture") as Texture2D
+	return null
 
 func _has_property(obj: Object, prop: String) -> bool:
 	var list: Array = obj.get_property_list()
