@@ -1,4 +1,4 @@
-[gd_scene load_steps=43 format=3 uid="uid://iuo6gtonvub0"]
+[gd_scene load_steps=42 format=3 uid="uid://iuo6gtonvub0"]
 
 [ext_resource type="Script" uid="uid://bjvfys8e3cajl" path="res://Scripts/ScavengeRun.gd" id="1"]
 [ext_resource type="PackedScene" uid="uid://x4khlkw6qu05" path="res://Scenes/Player.tscn" id="2"]
@@ -80,14 +80,11 @@ polygon = PackedVector2Array(-81, -18, 79, -20, 77, 21, -82, 19)
 [sub_resource type="RectangleShape2D" id="7"]
 size = Vector2(80, 80)
 
-[sub_resource type="OccluderPolygon2D" id="OccluderPolygon2D_5e0cw"]
-polygon = PackedVector2Array(-40, -40, 40, -40, 40, 40, -40, 40)
-
 [sub_resource type="RectangleShape2D" id="8"]
 size = Vector2(120, 60)
 
-[sub_resource type="OccluderPolygon2D" id="OccluderPolygon2D_k4p4q"]
-polygon = PackedVector2Array(-60, -30, 60, -30, 60, 30, -60, 30)
+[sub_resource type="RectangleShape2D" id="9"]
+size = Vector2(40, 60)
 
 [node name="ScavengeRun" type="Node2D"]
 script = ExtResource("1")
@@ -301,6 +298,250 @@ texture = ExtResource("15")
 [node name="LightOccluder2D" type="LightOccluder2D" parent="Map/WallLeftH1"]
 occluder = SubResource("OccluderPolygon2D_vcrhb")
 
+[node name="RoomWalls" type="Node2D" parent="Map"]
+
+[node name="HallTopLeftA" type="StaticBody2D" parent="Map/RoomWalls"]
+position = Vector2(-520, -180)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Map/RoomWalls/HallTopLeftA"]
+shape = SubResource("6")
+
+[node name="Sprite2D" type="Sprite2D" parent="Map/RoomWalls/HallTopLeftA"]
+modulate = Color(0.2, 0.2, 0.2, 1)
+scale = Vector2(1.2, 0.25)
+texture = ExtResource("15")
+
+[node name="LightOccluder2D" type="LightOccluder2D" parent="Map/RoomWalls/HallTopLeftA"]
+occluder = SubResource("OccluderPolygon2D_l3ob2")
+
+[node name="HallTopLeftB" type="StaticBody2D" parent="Map/RoomWalls"]
+position = Vector2(-360, -180)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Map/RoomWalls/HallTopLeftB"]
+shape = SubResource("6")
+
+[node name="Sprite2D" type="Sprite2D" parent="Map/RoomWalls/HallTopLeftB"]
+modulate = Color(0.2, 0.2, 0.2, 1)
+scale = Vector2(1.2, 0.25)
+texture = ExtResource("15")
+
+[node name="LightOccluder2D" type="LightOccluder2D" parent="Map/RoomWalls/HallTopLeftB"]
+occluder = SubResource("OccluderPolygon2D_l3ob2")
+
+[node name="HallTopCenterA" type="StaticBody2D" parent="Map/RoomWalls"]
+position = Vector2(-120, -180)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Map/RoomWalls/HallTopCenterA"]
+shape = SubResource("6")
+
+[node name="Sprite2D" type="Sprite2D" parent="Map/RoomWalls/HallTopCenterA"]
+modulate = Color(0.2, 0.2, 0.2, 1)
+scale = Vector2(1.2, 0.25)
+texture = ExtResource("15")
+
+[node name="LightOccluder2D" type="LightOccluder2D" parent="Map/RoomWalls/HallTopCenterA"]
+occluder = SubResource("OccluderPolygon2D_l3ob2")
+
+[node name="HallTopCenterB" type="StaticBody2D" parent="Map/RoomWalls"]
+position = Vector2(120, -180)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Map/RoomWalls/HallTopCenterB"]
+shape = SubResource("6")
+
+[node name="Sprite2D" type="Sprite2D" parent="Map/RoomWalls/HallTopCenterB"]
+modulate = Color(0.2, 0.2, 0.2, 1)
+scale = Vector2(1.2, 0.25)
+texture = ExtResource("15")
+
+[node name="LightOccluder2D" type="LightOccluder2D" parent="Map/RoomWalls/HallTopCenterB"]
+occluder = SubResource("OccluderPolygon2D_l3ob2")
+
+[node name="HallTopRightA" type="StaticBody2D" parent="Map/RoomWalls"]
+position = Vector2(360, -180)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Map/RoomWalls/HallTopRightA"]
+shape = SubResource("6")
+
+[node name="Sprite2D" type="Sprite2D" parent="Map/RoomWalls/HallTopRightA"]
+modulate = Color(0.2, 0.2, 0.2, 1)
+scale = Vector2(1.2, 0.25)
+texture = ExtResource("15")
+
+[node name="LightOccluder2D" type="LightOccluder2D" parent="Map/RoomWalls/HallTopRightA"]
+occluder = SubResource("OccluderPolygon2D_l3ob2")
+
+[node name="HallTopRightB" type="StaticBody2D" parent="Map/RoomWalls"]
+position = Vector2(520, -180)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Map/RoomWalls/HallTopRightB"]
+shape = SubResource("6")
+
+[node name="Sprite2D" type="Sprite2D" parent="Map/RoomWalls/HallTopRightB"]
+modulate = Color(0.2, 0.2, 0.2, 1)
+scale = Vector2(1.2, 0.25)
+texture = ExtResource("15")
+
+[node name="LightOccluder2D" type="LightOccluder2D" parent="Map/RoomWalls/HallTopRightB"]
+occluder = SubResource("OccluderPolygon2D_l3ob2")
+
+[node name="HallBottomLeftA" type="StaticBody2D" parent="Map/RoomWalls"]
+position = Vector2(-520, 180)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Map/RoomWalls/HallBottomLeftA"]
+shape = SubResource("6")
+
+[node name="Sprite2D" type="Sprite2D" parent="Map/RoomWalls/HallBottomLeftA"]
+modulate = Color(0.2, 0.2, 0.2, 1)
+scale = Vector2(1.2, 0.25)
+texture = ExtResource("15")
+
+[node name="LightOccluder2D" type="LightOccluder2D" parent="Map/RoomWalls/HallBottomLeftA"]
+occluder = SubResource("OccluderPolygon2D_l3ob2")
+
+[node name="HallBottomLeftB" type="StaticBody2D" parent="Map/RoomWalls"]
+position = Vector2(-360, 180)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Map/RoomWalls/HallBottomLeftB"]
+shape = SubResource("6")
+
+[node name="Sprite2D" type="Sprite2D" parent="Map/RoomWalls/HallBottomLeftB"]
+modulate = Color(0.2, 0.2, 0.2, 1)
+scale = Vector2(1.2, 0.25)
+texture = ExtResource("15")
+
+[node name="LightOccluder2D" type="LightOccluder2D" parent="Map/RoomWalls/HallBottomLeftB"]
+occluder = SubResource("OccluderPolygon2D_l3ob2")
+
+[node name="HallBottomCenterA" type="StaticBody2D" parent="Map/RoomWalls"]
+position = Vector2(-120, 180)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Map/RoomWalls/HallBottomCenterA"]
+shape = SubResource("6")
+
+[node name="Sprite2D" type="Sprite2D" parent="Map/RoomWalls/HallBottomCenterA"]
+modulate = Color(0.2, 0.2, 0.2, 1)
+scale = Vector2(1.2, 0.25)
+texture = ExtResource("15")
+
+[node name="LightOccluder2D" type="LightOccluder2D" parent="Map/RoomWalls/HallBottomCenterA"]
+occluder = SubResource("OccluderPolygon2D_l3ob2")
+
+[node name="HallBottomCenterB" type="StaticBody2D" parent="Map/RoomWalls"]
+position = Vector2(120, 180)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Map/RoomWalls/HallBottomCenterB"]
+shape = SubResource("6")
+
+[node name="Sprite2D" type="Sprite2D" parent="Map/RoomWalls/HallBottomCenterB"]
+modulate = Color(0.2, 0.2, 0.2, 1)
+scale = Vector2(1.2, 0.25)
+texture = ExtResource("15")
+
+[node name="LightOccluder2D" type="LightOccluder2D" parent="Map/RoomWalls/HallBottomCenterB"]
+occluder = SubResource("OccluderPolygon2D_l3ob2")
+
+[node name="HallBottomRightA" type="StaticBody2D" parent="Map/RoomWalls"]
+position = Vector2(360, 180)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Map/RoomWalls/HallBottomRightA"]
+shape = SubResource("6")
+
+[node name="Sprite2D" type="Sprite2D" parent="Map/RoomWalls/HallBottomRightA"]
+modulate = Color(0.2, 0.2, 0.2, 1)
+scale = Vector2(1.2, 0.25)
+texture = ExtResource("15")
+
+[node name="LightOccluder2D" type="LightOccluder2D" parent="Map/RoomWalls/HallBottomRightA"]
+occluder = SubResource("OccluderPolygon2D_l3ob2")
+
+[node name="HallBottomRightB" type="StaticBody2D" parent="Map/RoomWalls"]
+position = Vector2(520, 180)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Map/RoomWalls/HallBottomRightB"]
+shape = SubResource("6")
+
+[node name="Sprite2D" type="Sprite2D" parent="Map/RoomWalls/HallBottomRightB"]
+modulate = Color(0.2, 0.2, 0.2, 1)
+scale = Vector2(1.2, 0.25)
+texture = ExtResource("15")
+
+[node name="LightOccluder2D" type="LightOccluder2D" parent="Map/RoomWalls/HallBottomRightB"]
+occluder = SubResource("OccluderPolygon2D_l3ob2")
+
+[node name="Doors" type="Node2D" parent="Map"]
+
+[node name="DoorTopLeft" type="Area2D" parent="Map/Doors"]
+position = Vector2(-240, -180)
+groups = ["door"]
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Map/Doors/DoorTopLeft"]
+shape = SubResource("9")
+
+[node name="Sprite2D" type="Sprite2D" parent="Map/Doors/DoorTopLeft"]
+modulate = Color(0.6, 0.55, 0.4, 1)
+scale = Vector2(0.35, 0.5)
+texture = ExtResource("15")
+
+[node name="DoorTopCenter" type="Area2D" parent="Map/Doors"]
+position = Vector2(0, -180)
+groups = ["door"]
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Map/Doors/DoorTopCenter"]
+shape = SubResource("9")
+
+[node name="Sprite2D" type="Sprite2D" parent="Map/Doors/DoorTopCenter"]
+modulate = Color(0.6, 0.55, 0.4, 1)
+scale = Vector2(0.35, 0.5)
+texture = ExtResource("15")
+
+[node name="DoorTopRight" type="Area2D" parent="Map/Doors"]
+position = Vector2(240, -180)
+groups = ["door"]
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Map/Doors/DoorTopRight"]
+shape = SubResource("9")
+
+[node name="Sprite2D" type="Sprite2D" parent="Map/Doors/DoorTopRight"]
+modulate = Color(0.6, 0.55, 0.4, 1)
+scale = Vector2(0.35, 0.5)
+texture = ExtResource("15")
+
+[node name="DoorBottomLeft" type="Area2D" parent="Map/Doors"]
+position = Vector2(-240, 180)
+groups = ["door"]
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Map/Doors/DoorBottomLeft"]
+shape = SubResource("9")
+
+[node name="Sprite2D" type="Sprite2D" parent="Map/Doors/DoorBottomLeft"]
+modulate = Color(0.6, 0.55, 0.4, 1)
+scale = Vector2(0.35, 0.5)
+texture = ExtResource("15")
+
+[node name="DoorBottomCenter" type="Area2D" parent="Map/Doors"]
+position = Vector2(0, 180)
+groups = ["door"]
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Map/Doors/DoorBottomCenter"]
+shape = SubResource("9")
+
+[node name="Sprite2D" type="Sprite2D" parent="Map/Doors/DoorBottomCenter"]
+modulate = Color(0.6, 0.55, 0.4, 1)
+scale = Vector2(0.35, 0.5)
+texture = ExtResource("15")
+
+[node name="DoorBottomRight" type="Area2D" parent="Map/Doors"]
+position = Vector2(240, 180)
+groups = ["door"]
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Map/Doors/DoorBottomRight"]
+shape = SubResource("9")
+
+[node name="Sprite2D" type="Sprite2D" parent="Map/Doors/DoorBottomRight"]
+modulate = Color(0.6, 0.55, 0.4, 1)
+scale = Vector2(0.35, 0.5)
+texture = ExtResource("15")
+
 [node name="CrateA" type="StaticBody2D" parent="Map"]
 position = Vector2(-480, -80)
 
@@ -311,9 +552,6 @@ shape = SubResource("7")
 modulate = Color(0.35, 0.3, 0.2, 1)
 scale = Vector2(0.6, 0.6)
 texture = ExtResource("15")
-
-[node name="LightOccluder2D" type="LightOccluder2D" parent="Map/CrateA"]
-occluder = SubResource("OccluderPolygon2D_5e0cw")
 
 [node name="CrateB" type="StaticBody2D" parent="Map"]
 position = Vector2(60, 260)
@@ -326,9 +564,6 @@ modulate = Color(0.35, 0.3, 0.2, 1)
 scale = Vector2(0.9, 0.45)
 texture = ExtResource("15")
 
-[node name="LightOccluder2D" type="LightOccluder2D" parent="Map/CrateB"]
-occluder = SubResource("OccluderPolygon2D_k4p4q")
-
 [node name="CrateC" type="StaticBody2D" parent="Map"]
 position = Vector2(440, -220)
 
@@ -339,9 +574,6 @@ shape = SubResource("7")
 modulate = Color(0.35, 0.3, 0.2, 1)
 scale = Vector2(0.6, 0.6)
 texture = ExtResource("15")
-
-[node name="LightOccluder2D" type="LightOccluder2D" parent="Map/CrateC"]
-occluder = SubResource("OccluderPolygon2D_5e0cw")
 
 [node name="ExitSignWorld" type="Sprite2D" parent="Map"]
 modulate = Color(0.35, 1, 0.55, 1)
@@ -415,15 +647,15 @@ position = Vector2(540, -320)
 position = Vector2(420, -220)
 
 [node name="GuardLeft" parent="." instance=ExtResource("3")]
-position = Vector2(-360, -200)
+position = Vector2(-420, -300)
 patrol_path = NodePath("../PatrolPathLeft")
 
 [node name="GuardCenter" parent="." instance=ExtResource("3")]
-position = Vector2(-40, -200)
+position = Vector2(-40, -300)
 patrol_path = NodePath("../PatrolPathCenter")
 
 [node name="GuardRight" parent="." instance=ExtResource("3")]
-position = Vector2(340, 160)
+position = Vector2(340, 300)
 patrol_path = NodePath("../PatrolPathRight")
 
 [node name="GuardSouth" parent="." instance=ExtResource("3")]
@@ -435,7 +667,7 @@ position = Vector2(260, -40)
 patrol_path = NodePath("../WatcherPath")
 
 [node name="PatrolPathLeft" type="Node2D" parent="."]
-position = Vector2(-450, -200)
+position = Vector2(-450, -300)
 
 [node name="PointA" type="Node2D" parent="PatrolPathLeft"]
 position = Vector2(-80, -80)
@@ -450,7 +682,7 @@ position = Vector2(80, 80)
 position = Vector2(-80, 80)
 
 [node name="PatrolPathCenter" type="Node2D" parent="."]
-position = Vector2(0, -180)
+position = Vector2(0, -300)
 
 [node name="PointA" type="Node2D" parent="PatrolPathCenter"]
 position = Vector2(-80, -60)
@@ -465,7 +697,7 @@ position = Vector2(80, 80)
 position = Vector2(-80, 80)
 
 [node name="PatrolPathRight" type="Node2D" parent="."]
-position = Vector2(360, 180)
+position = Vector2(360, 300)
 
 [node name="PointA" type="Node2D" parent="PatrolPathRight"]
 position = Vector2(-80, -80)

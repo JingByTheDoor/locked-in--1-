@@ -82,7 +82,7 @@ signal damaged(amount: int, context: String)
 @export var default_prompt_text: String = "Press E to interact"
 @export var carry_rank_min: int = 1
 @export var carry_rank_max: int = 5
-@export var carry_speed_step: float = 0.1
+@export var carry_speed_step: float = 0.03
 @export var carry_noise_step: float = 0.15
 
 @onready var visuals: Node2D = $Visuals
@@ -563,6 +563,7 @@ func _apply_vision_light_settings() -> void:
 		var tex := _get_light_texture(vision_light)
 		if tex != null:
 			offset = Vector2(0.0, tex.get_size().y * 0.5)
+	_try_set_light_property(vision_light, "offset", offset)
 	_try_set_light_property(vision_light, "texture_offset", offset)
 	_try_set_light_property(vision_light, "light_type", 1)
 	_try_set_light_property(vision_light, "spot_angle", vision_light_spot_angle_degrees)

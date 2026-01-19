@@ -247,7 +247,7 @@ func _try_callout() -> void:
 func apply_damage(amount: int, context: String = "") -> void:
 	if amount <= 0:
 		return
-	if state == State.PATROL:
+	if state == State.PATROL or state == State.INVESTIGATE:
 		_die(context)
 		return
 	_current_alert_hp -= amount

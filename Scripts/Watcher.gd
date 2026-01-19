@@ -176,7 +176,7 @@ func _apply_state_debug_color() -> void:
 func apply_damage(amount: int, _context: String = "") -> void:
 	if amount <= 0:
 		return
-	if state == State.PATROL:
+	if state == State.PATROL or state == State.INVESTIGATE:
 		_die()
 		return
 	_current_alert_hp -= amount
