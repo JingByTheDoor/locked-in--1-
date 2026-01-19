@@ -170,6 +170,10 @@ func reset_phase_state() -> void:
 	phase_state = PhaseState.QUIET
 	escape_only = false
 
+func reset_pressure() -> void:
+	global_pressure = 0.0
+	global_pressure_floor = 0.0
+
 func has_tutorial(key: String) -> bool:
 	if key == "":
 		return false

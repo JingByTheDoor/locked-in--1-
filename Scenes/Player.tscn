@@ -103,6 +103,7 @@ radius = 48.0
 
 [node name="Player" type="CharacterBody2D"]
 script = ExtResource("1")
+sprint_multiplier = 3.0
 aim_rotation_offset_degrees = 90.0
 vision_light_texture_scale = 2.0
 vision_light_rotation_offset_degrees = 270.0
@@ -122,9 +123,9 @@ animation = &"Idle"
 frame_progress = 0.10416737
 
 [node name="PointLight2D" type="PointLight2D" parent="Visuals"]
-position = Vector2(-2.7844925, -146.99998)
+position = Vector2(0.9630207, -146.99998)
 rotation = -1.5707964
-scale = Vector2(170.07397, 60.725163)
+scale = Vector2(170.07397, 91.87653)
 energy = 5.0
 blend_mode = 2
 shadow_enabled = true
@@ -167,5 +168,5 @@ cone_fill_color = Color(0.3, 0.9, 1, 0.12)
 cone_outline_color = Color(0.3, 0.9, 1, 0.35)
 
 [node name="Arean light" type="PointLight2D" parent="."]
-position = Vector2(8, 41)
+position = Vector2(-4, 32)
 texture = ExtResource("6_52ee3")

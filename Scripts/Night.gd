@@ -68,6 +68,7 @@ var _gun_response_spawns: int = 0
 func _ready() -> void:
 	add_to_group("night_manager")
 	GameState.run_state = GameState.RunState.NIGHT
+	GameState.reset_pressure()
 	GameState.reset_phase_state()
 	_rng.randomize()
 	_resolve_nodes()

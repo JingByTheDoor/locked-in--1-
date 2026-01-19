@@ -11,6 +11,7 @@ extends Node2D
 
 func _ready() -> void:
 	GameState.run_state = GameState.RunState.SCAVENGE
+	GameState.reset_pressure()
 	GameState.reset_phase_state()
 	_connect_player()
 	_place_player_spawn()
