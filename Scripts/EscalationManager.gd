@@ -314,6 +314,17 @@ func _spawn_hunter() -> void:
 		_hunter_instance.global_position = spawn_pos
 	if hunter.has_method("set"):
 		hunter.set("player_path", NodePath("../Player"))
+	_notify_hunter_arrived(_hunter_instance)
+
+func _notify_hunter_arrived(hunter: Node2D) -> void:
+	var enemies: Array = get_tree().get_nodes_in_group("enemy")
+	for node in enemies:
+		if node == null:
+			continue
+		if node == hunter:
+			continue
+		if node.has_method("flee_and_despawn"):
+			node.call("flee_and_despawn", hunter)
 
 func _pick_spawn_position(origin: Vector2) -> Vector2:
 	var best_pos: Vector2 = origin + Vector2.RIGHT * hunter_spawn_min_distance

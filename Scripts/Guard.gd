@@ -43,6 +43,8 @@ enum State {
 @export var footstep_emit_sound: bool = true
 @export var footstep_sound_loudness: float = 0.2
 @export var footstep_sound_radius: float = 180.0
+@export var flee_speed: float = 200.0
+@export var flee_duration: float = 2.5
 @export var attack_hit_streams: Array[AudioStream] = [
 	preload("res://Audio/ATTACK HIT 1.wav"),
 	preload("res://Audio/ATTACK HIT 2.wav"),
@@ -74,6 +76,10 @@ var _knockback_velocity: Vector2 = Vector2.ZERO
 var _callout_timer: float = 0.0
 var _footstep_timer: float = 0.0
 var _rng: RandomNumberGenerator = RandomNumberGenerator.new()
+var _fleeing: bool = false
+var _flee_timer: float = 0.0
+var _flee_source: Node2D = null
+var _flee_dir: Vector2 = Vector2.ZERO
 
 func _ready() -> void:
 	add_to_group("enemy")
@@ -86,6 +92,9 @@ func _ready() -> void:
 		SoundBus.sound_emitted.connect(_on_sound_emitted)
 
 func _physics_process(delta: float) -> void:
+	if _fleeing:
+		_update_flee(delta)
+		return
 	_attack_timer = max(0.0, _attack_timer - delta)
 	_callout_timer = max(0.0, _callout_timer - delta)
 
@@ -268,6 +277,39 @@ func apply_knockback(direction: Vector2, strength: float) -> void:
 func _die(_context: String) -> void:
 	_play_one_shot(death_stream, death_volume_db)
 	queue_free()
+
+func flee_and_despawn(hunter: Node = null) -> void:
+	if _fleeing:
+		return
+	_fleeing = true
+	_flee_timer = max(flee_duration, 0.1)
+	_knockback_velocity = Vector2.ZERO
+	if hunter is Node2D:
+		_flee_source = hunter as Node2D
+	elif _player != null:
+		_flee_source = _player
+	_flee_dir = _get_flee_direction()
+
+func _update_flee(delta: float) -> void:
+	_flee_timer -= delta
+	if _flee_timer <= 0.0:
+		queue_free()
+		return
+	_flee_dir = _get_flee_direction()
+	velocity = _flee_dir * flee_speed
+	move_and_slide()
+	_update_animation(_flee_dir)
+	_update_facing(_flee_dir)
+
+func _get_flee_direction() -> Vector2:
+	if _flee_source != null and is_instance_valid(_flee_source):
+		var away := global_position - _flee_source.global_position
+		if away.length_squared() > 0.001:
+			return away.normalized()
+	if _flee_dir.length_squared() > 0.001:
+		return _flee_dir
+	var angle: float = _rng.randf_range(0.0, TAU)
+	return Vector2.RIGHT.rotated(angle)
 
 func _on_sound_emitted(event: SoundEvent) -> void:
 	if event == null:

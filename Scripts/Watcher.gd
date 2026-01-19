@@ -37,6 +37,8 @@ enum State {
 @export var footstep_stream: AudioStream = preload("res://Audio/Guard Footsteps.wav")
 @export var footstep_volume_db: float = -14.0
 @export var footstep_max_distance: float = 320.0
+@export var flee_speed: float = 190.0
+@export var flee_duration: float = 2.5
 
 @onready var visuals: Node2D = $Visuals
 @onready var sprite: AnimatedSprite2D = $Visuals/AnimatedSprite2D
@@ -56,9 +58,15 @@ var _aim_angle: float = 0.0
 var _alarm_timer: float = 0.0
 var _footstep_timer: float = 0.0
 var _current_alert_hp: int = 3
+var _rng: RandomNumberGenerator = RandomNumberGenerator.new()
+var _fleeing: bool = false
+var _flee_timer: float = 0.0
+var _flee_source: Node2D = null
+var _flee_dir: Vector2 = Vector2.ZERO
 
 func _ready() -> void:
 	add_to_group("enemy")
+	_rng.randomize()
 	_resolve_player()
 	_cache_patrol_points()
 	_update_animation(Vector2.ZERO)
@@ -67,6 +75,9 @@ func _ready() -> void:
 		SoundBus.sound_emitted.connect(_on_sound_emitted)
 
 func _physics_process(delta: float) -> void:
+	if _fleeing:
+		_update_flee(delta)
+		return
 	_alarm_timer = max(0.0, _alarm_timer - delta)
 	var sees_player: bool = _can_see_player()
 	if sees_player:
@@ -197,6 +208,38 @@ func _try_alarm() -> void:
 
 func _die() -> void:
 	queue_free()
+
+func flee_and_despawn(hunter: Node = null) -> void:
+	if _fleeing:
+		return
+	_fleeing = true
+	_flee_timer = max(flee_duration, 0.1)
+	if hunter is Node2D:
+		_flee_source = hunter as Node2D
+	elif _player != null:
+		_flee_source = _player
+	_flee_dir = _get_flee_direction()
+
+func _update_flee(delta: float) -> void:
+	_flee_timer -= delta
+	if _flee_timer <= 0.0:
+		queue_free()
+		return
+	_flee_dir = _get_flee_direction()
+	velocity = _flee_dir * flee_speed
+	move_and_slide()
+	_update_animation(_flee_dir)
+	_update_facing(_flee_dir)
+
+func _get_flee_direction() -> Vector2:
+	if _flee_source != null and is_instance_valid(_flee_source):
+		var away := global_position - _flee_source.global_position
+		if away.length_squared() > 0.001:
+			return away.normalized()
+	if _flee_dir.length_squared() > 0.001:
+		return _flee_dir
+	var angle: float = _rng.randf_range(0.0, TAU)
+	return Vector2.RIGHT.rotated(angle)
 
 func _spawn_alarm_pulse() -> void:
 	if alarm_vfx_scene == null:
