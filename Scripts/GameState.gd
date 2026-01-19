@@ -231,6 +231,47 @@ func save_run() -> bool:
 	file.store_string(JSON.stringify(get_save_data()))
 	return true
 
+func reset_run() -> void:
+	run_state = RunState.MAIN_MENU
+	phase_state = PhaseState.QUIET
+	night_index = 1
+	player_max_hp = 100
+	player_hp = 100
+	player_carry_rank = 1
+	resources = {
+		"scrap": 0,
+		"wood": 0,
+		"ammo": 0,
+		"food": 0,
+		"fuel": 0,
+		"meds": 0
+	}
+	food_grades = {
+		"1": 0,
+		"2": 0,
+		"3": 0
+	}
+	fuel_grades = {
+		"1": 0,
+		"2": 0,
+		"3": 0
+	}
+	base_damage = 0.0
+	global_pressure = 0.0
+	global_pressure_floor = 0.0
+	escape_only = false
+	generator_charge = 75.0
+	generator_on = true
+	base_repairs = {}
+	tutorial_flags = {}
+	debug_show_vision = false
+	debug_show_sound = false
+	debug_print_pressure = false
+	_generator_drain_timer = 0.0
+	_ensure_resource_defaults()
+	_normalize_carry_rank()
+	_normalize_generator()
+
 func load_run() -> bool:
 	if not FileAccess.file_exists(SAVE_PATH):
 		return false
