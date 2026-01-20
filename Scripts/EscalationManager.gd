@@ -15,8 +15,8 @@ extends Node2D
 @export var gun_local_noise_boost: float = 0.7
 @export var gun_spike_timer_boost: float = 0.6
 @export var major_event_window: float = 6.0
-@export var major_event_required: int = 2
-@export var major_event_pressure_threshold: float = 1.1
+@export var major_event_required: int = 3
+@export var major_event_pressure_threshold: float = 1.3
 @export var major_event_local_boost: float = 0.45
 @export var major_event_global_boost: float = 0.35
 @export var major_event_spike_timer_boost: float = 0.5
@@ -24,9 +24,10 @@ extends Node2D
 
 @export var investigate_threshold: float = 0.25
 @export var pressure_threshold: float = 0.6
-@export var hunted_pressure_threshold: float = 1.4
+@export var hunted_pressure_threshold: float = 1.6
 @export var hunted_spike_threshold: float = 0.85
 @export var hunted_spike_time: float = 0.6
+@export_range(0.5, 2.0, 0.05) var hunter_difficulty: float = 1.0
 
 @export var overlay_path: NodePath
 @export var tension_player_path: NodePath
@@ -155,7 +156,9 @@ func _update_phase_state(_delta: float) -> void:
 			_enter_hunted()
 		return
 	var next_phase: int = GameState.PhaseState.QUIET
-	if GameState.global_pressure >= hunted_pressure_threshold and _spike_timer >= hunted_spike_time:
+	var hunted_pressure := _get_hunted_pressure_threshold()
+	var hunted_spike_time_value := _get_hunted_spike_time()
+	if GameState.global_pressure >= hunted_pressure and _spike_timer >= hunted_spike_time_value:
 		next_phase = GameState.PhaseState.HUNTED
 	elif local_noise_value >= pressure_threshold or GameState.global_pressure >= pressure_threshold:
 		next_phase = GameState.PhaseState.PRESSURE
@@ -198,7 +201,8 @@ func _apply_audio_player(player: AudioStreamPlayer, intensity: float) -> void:
 	player.volume_db = lerpf(-30.0, -6.0, clamped)
 
 func _compute_phase_intensity() -> float:
-	var pressure_norm: float = clampf(GameState.global_pressure / max(hunted_pressure_threshold, 0.01), 0.0, 1.0)
+	var hunted_pressure := _get_hunted_pressure_threshold()
+	var pressure_norm: float = clampf(GameState.global_pressure / max(hunted_pressure, 0.01), 0.0, 1.0)
 	var local_norm: float = clampf(local_noise_value, 0.0, 1.0)
 	return max(pressure_norm, local_norm)
 
@@ -211,7 +215,8 @@ func _resolve_nodes() -> void:
 
 func _update_spike_timer(delta: float, noise_value: float) -> float:
 	var timer: float = _spike_timer
-	if noise_value >= hunted_spike_threshold:
+	var spike_threshold := _get_hunted_spike_threshold()
+	if noise_value >= spike_threshold:
 		timer += delta
 	else:
 		timer = max(0.0, timer - delta)
@@ -265,7 +270,9 @@ func _register_major_event(event: SoundEvent) -> void:
 	else:
 		_major_event_count = 1
 	_major_event_timer = max(major_event_window, 0.1)
-	if GameState.global_pressure >= major_event_pressure_threshold and _major_event_count >= major_event_required:
+	var major_pressure := _get_major_event_pressure_threshold()
+	var required := _get_major_event_required()
+	if GameState.global_pressure >= major_pressure and _major_event_count >= required:
 		if GameState.phase_state != GameState.PhaseState.HUNTED:
 			_enter_hunted()
 
@@ -282,9 +289,36 @@ func _apply_major_spike(event: SoundEvent) -> void:
 	local_noise_position = event.position
 	local_noise_value = max(local_noise_value, pressure_threshold + 0.05)
 	local_noise_value = clampf(local_noise_value + major_event_local_boost, 0.0, local_noise_max)
-	_spike_timer = min(_spike_timer + major_event_spike_timer_boost, hunted_spike_time + major_event_spike_timer_boost)
+	var spike_time := _get_hunted_spike_time()
+	_spike_timer = min(_spike_timer + major_event_spike_timer_boost, spike_time + major_event_spike_timer_boost)
 	GameState.global_pressure += major_event_global_boost * event.loudness
 	_show_major_event_message(event)
+
+func _get_difficulty_value() -> float:
+	return clampf(hunter_difficulty, 0.25, 4.0)
+
+func _get_pressure_multiplier() -> float:
+	return 1.0 / _get_difficulty_value()
+
+func _get_hunted_pressure_threshold() -> float:
+	var mult := _get_pressure_multiplier()
+	return clampf(hunted_pressure_threshold * mult, 0.1, 10.0)
+
+func _get_major_event_pressure_threshold() -> float:
+	var mult := _get_pressure_multiplier()
+	return clampf(major_event_pressure_threshold * mult, 0.1, 10.0)
+
+func _get_major_event_required() -> int:
+	var diff := _get_difficulty_value()
+	return maxi(1, int(round(float(major_event_required) / diff)))
+
+func _get_hunted_spike_threshold() -> float:
+	var mult := _get_pressure_multiplier()
+	return clampf(hunted_spike_threshold * mult, 0.1, local_noise_max)
+
+func _get_hunted_spike_time() -> float:
+	var mult := _get_pressure_multiplier()
+	return clampf(hunted_spike_time * mult, 0.1, 10.0)
 
 func _update_major_event_timer(delta: float) -> void:
 	if _major_event_timer <= 0.0:

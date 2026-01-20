@@ -35,7 +35,7 @@ func set_bounds(new_bounds: Rect2) -> void:
 	bounds = new_bounds
 	_needs_rebuild = true
 
-func get_path(from_pos: Vector2, to_pos: Vector2) -> Array[Vector2]:
+func get_nav_path(from_pos: Vector2, to_pos: Vector2) -> Array[Vector2]:
 	_ensure_grid()
 	if _grid == null:
 		return []

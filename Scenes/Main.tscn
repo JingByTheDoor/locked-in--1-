@@ -109,6 +109,6 @@ hunter_scene = ExtResource("10")
 [node name="HatDiagonal" type="Sprite2D" parent="."]
 show_behind_parent = true
 z_index = -2
-position = Vector2(191.99988, -36.49997)
+position = Vector2(-2302, 2790)
 scale = Vector2(2.7598784, 2.8868258)
 texture = ExtResource("3_50glp")

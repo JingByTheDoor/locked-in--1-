@@ -11,16 +11,16 @@
 [ext_resource type="PackedScene" path="res://UI/ExitSignLayer.tscn" id="10"]
 [ext_resource type="PackedScene" path="res://UI/HuntedBanner.tscn" id="11"]
 [ext_resource type="PackedScene" path="res://UI/MessageHud.tscn" id="12"]
-[ext_resource type="PackedScene" path="res://UI/ScavengeHud.tscn" id="20"]
 [ext_resource type="Script" uid="uid://dspas587cy1x1" path="res://Scripts/EscalationManager.gd" id="13"]
-[ext_resource type="PackedScene" path="res://Scenes/Hunter.tscn" id="14"]
+[ext_resource type="PackedScene" uid="uid://cyruxhht66d6q" path="res://Scenes/Hunter.tscn" id="14"]
 [ext_resource type="Texture2D" uid="uid://wyj60w1c6a8u" path="res://icon.svg" id="15"]
 [ext_resource type="PackedScene" path="res://Scenes/Watcher.tscn" id="16"]
 [ext_resource type="PackedScene" path="res://Scenes/BreakableProp.tscn" id="17"]
 [ext_resource type="Script" uid="uid://md4m5ar0w1ly" path="res://Scripts/MapRules.gd" id="18"]
 [ext_resource type="PackedScene" path="res://UI/InteractPrompt.tscn" id="19"]
 [ext_resource type="Texture2D" uid="uid://boyyd16hwu0qb" path="res://hat diagonal.png" id="19_vm6l8"]
-[ext_resource type="Script" path="res://Scripts/MapPathing.gd" id="21"]
+[ext_resource type="PackedScene" path="res://UI/ScavengeHud.tscn" id="20"]
+[ext_resource type="Script" uid="uid://c1hfc1gydbpsa" path="res://Scripts/MapPathing.gd" id="21"]
 
 [sub_resource type="RectangleShape2D" id="1"]
 size = Vector2(1200, 40)
@@ -93,8 +93,8 @@ script = ExtResource("1")
 
 [node name="HatDiagonal" type="Sprite2D" parent="."]
 modulate = Color(0, 0, 0, 1)
-position = Vector2(-527, -228)
-scale = Vector2(4.8915906, 6.0389037)
+position = Vector2(4383, 432)
+scale = Vector2(2.2406282, 2.495137)
 texture = ExtResource("19_vm6l8")
 
 [node name="GlobalDarkness" type="CanvasModulate" parent="."]
@@ -104,7 +104,10 @@ color = Color(0, 0, 0, 1)
 script = ExtResource("18")
 
 [node name="MapPathing" type="Node2D" parent="."]
+modulate = Color(0, 1, 1, 1)
+self_modulate = Color(0, 0.4138379, 0.4138379, 1)
 script = ExtResource("21")
+cell_size = 5
 
 [node name="PlayerSpawns" type="Node2D" parent="."]
 
@@ -742,6 +745,7 @@ position = Vector2(60, 40)
 position = Vector2(-60, 40)
 
 [node name="SoundRippleManager" parent="." instance=ExtResource("7")]
+position = Vector2(3, 1)
 
 [node name="AudioLayers" type="Node" parent="."]
 
@@ -754,6 +758,9 @@ volume_db = -30.0
 [node name="EscalationManager" type="Node2D" parent="."]
 position = Vector2(54, 7)
 script = ExtResource("13")
+global_pressure_gain_per_second = 0.01
+hunted_pressure_threshold = 10.0
+hunter_difficulty = 0.5
 overlay_path = NodePath("../ReadabilityOverlay")
 tension_player_path = NodePath("../AudioLayers/TensionLayer")
 heartbeat_player_path = NodePath("../AudioLayers/HeartbeatLayer")

@@ -85,7 +85,7 @@ var _fleeing: bool = false
 var _flee_timer: float = 0.0
 var _flee_source: Node2D = null
 var _flee_dir: Vector2 = Vector2.ZERO
-var _pathing: MapPathing = null
+var _pathing: Node = null
 var _path_points: Array[Vector2] = []
 var _path_index: int = 0
 var _path_timer: float = 0.0
@@ -394,8 +394,10 @@ func _resolve_player() -> void:
 
 func _resolve_pathing() -> void:
 	var node := get_tree().get_first_node_in_group("map_pathing")
-	if node is MapPathing:
-		_pathing = node as MapPathing
+	if node != null and node.has_method("get_nav_path") and node.has_method("has_line_of_sight"):
+		_pathing = node as Node
+	else:
+		_pathing = null
 
 func _clear_path() -> void:
 	_path_points.clear()
@@ -408,7 +410,7 @@ func _get_path_direction(target_pos: Vector2, delta: float) -> Vector2:
 		return Vector2.ZERO
 	if not pathing_enabled or _pathing == null:
 		return direct.normalized()
-	if path_allow_direct and _pathing.has_line_of_sight(global_position, target_pos):
+	if path_allow_direct and bool(_pathing.call("has_line_of_sight", global_position, target_pos)):
 		_clear_path()
 		return direct.normalized()
 	_path_timer -= delta
@@ -416,7 +418,8 @@ func _get_path_direction(target_pos: Vector2, delta: float) -> Vector2:
 	if needs_repath:
 		_path_timer = max(path_repath_interval, 0.05)
 		_path_target = target_pos
-		_path_points = _pathing.get_path(global_position, target_pos)
+		var result: Variant = _pathing.call("get_nav_path", global_position, target_pos)
+		_path_points = result if result is Array else []
 		_path_index = 0
 		_drop_close_path_points()
 	if _path_points.is_empty():
