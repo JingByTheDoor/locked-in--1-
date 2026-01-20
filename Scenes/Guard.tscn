@@ -49,13 +49,14 @@ radius = 12.0
 
 [node name="Guard" type="CharacterBody2D"]
 script = ExtResource("1")
+aim_rotation_offset_degrees = -90.0
 
 [node name="Visuals" type="Node2D" parent="."]
 
 [node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="Visuals"]
 sprite_frames = SubResource("1")
-animation = &"idle"
-frame_progress = 0.22401072
+animation = &"walk"
+frame_progress = 0.20229626
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="."]
 shape = SubResource("2")
