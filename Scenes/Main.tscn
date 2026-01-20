@@ -1,4 +1,4 @@
-[gd_scene load_steps=15 format=3 uid="uid://cv0kmglile0l7"]
+[gd_scene load_steps=16 format=3 uid="uid://cv0kmglile0l7"]
 
 [ext_resource type="PackedScene" uid="uid://x4khlkw6qu05" path="res://Scenes/Player.tscn" id="1"]
 [ext_resource type="PackedScene" path="res://UI/MessageHud.tscn" id="2"]
@@ -14,9 +14,15 @@
 [ext_resource type="PackedScene" path="res://UI/InteractPrompt.tscn" id="12"]
 [ext_resource type="TileSet" uid="uid://dafxu3tflyhgo" path="res://new_tile_set.tres" id="13_frkhe"]
 [ext_resource type="Script" uid="uid://b1pwatu6yrfpb" path="res://Scripts/ProcMapGenerator.gd" id="14"]
+[ext_resource type="Texture2D" uid="uid://boyyd16hwu0qb" path="res://hat diagonal.png" id="15_h1m7h"]
 
 [node name="Main" type="Node2D"]
 script = ExtResource("8")
+
+[node name="HatDiagonal" type="Sprite2D" parent="."]
+position = Vector2(3364.5002, 1227.4998)
+scale = Vector2(14.177812, 12.536694)
+texture = ExtResource("15_h1m7h")
 
 [node name="Floor" type="TileMapLayer" parent="."]
 tile_set = ExtResource("13_frkhe")
@@ -26,9 +32,11 @@ tile_set = ExtResource("3_1p5hy")
 
 [node name="ProcMapGenerator" type="Node2D" parent="."]
 script = ExtResource("14")
+map_width = 80
+map_height = 60
+room_attempts = 24
 
 [node name="GlobalDarkness" type="CanvasModulate" parent="."]
-visible = false
 color = Color(0, 0, 0, 1)
 
 [node name="Player" parent="." instance=ExtResource("1")]
