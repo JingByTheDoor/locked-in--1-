@@ -1,28 +1,50 @@
-[gd_scene load_steps=7 format=3]
+[gd_scene load_steps=11 format=3 uid="uid://yy0t7kf40cof"]
 
-[ext_resource type="Script" path="res://Scripts/Watcher.gd" id="1"]
-[ext_resource type="Texture2D" path="res://icon.svg" id="2"]
-[ext_resource type="Script" path="res://Scripts/VisionCone.gd" id="3"]
+[ext_resource type="Script" uid="uid://cq0mr6tljahd0" path="res://Scripts/Watcher.gd" id="1"]
+[ext_resource type="Texture2D" uid="uid://wyj60w1c6a8u" path="res://icon.svg" id="2"]
+[ext_resource type="Script" uid="uid://d23fs4q1yb1dt" path="res://Scripts/VisionCone.gd" id="3"]
 [ext_resource type="PackedScene" path="res://VFX/AlarmPulse.tscn" id="4"]
+[ext_resource type="Texture2D" uid="uid://bdce662ru6rct" path="res://Watcher walkprototype.png" id="4_4xleo"]
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_fbgis"]
+atlas = ExtResource("4_4xleo")
+region = Rect2(0, 0, 196, 101)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_5npyk"]
+atlas = ExtResource("4_4xleo")
+region = Rect2(196, 0, 196, 101)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_wjqj1"]
+atlas = ExtResource("4_4xleo")
+region = Rect2(392, 0, 196, 101)
 
 [sub_resource type="SpriteFrames" id="1"]
-animations = [ {
-"frames": [ {
+animations = [{
+"frames": [{
 "duration": 1.0,
 "texture": ExtResource("2")
-} ],
+}],
 "loop": true,
 "name": &"idle",
 "speed": 6.0
 }, {
-"frames": [ {
+"frames": [{
 "duration": 1.0,
-"texture": ExtResource("2")
-} ],
+"texture": SubResource("AtlasTexture_fbgis")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_5npyk")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_fbgis")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_wjqj1")
+}],
 "loop": true,
 "name": &"walk",
 "speed": 8.0
-} ]
+}]
 
 [sub_resource type="CircleShape2D" id="2"]
 radius = 12.0
@@ -34,8 +56,11 @@ alarm_vfx_scene = ExtResource("4")
 [node name="Visuals" type="Node2D" parent="."]
 
 [node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="Visuals"]
+position = Vector2(-0.5, 2.3841858e-07)
+scale = Vector2(1.2295917, 1.1485149)
 sprite_frames = SubResource("1")
-animation = &"idle"
+animation = &"walk"
+frame_progress = 0.043101463
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="."]
 shape = SubResource("2")
@@ -45,6 +70,5 @@ script = ExtResource("3")
 cone_angle_degrees = 110.0
 cone_length = 260.0
 auto_length_from_viewport = false
-extra_length = 0.0
 cone_fill_color = Color(1, 1, 1, 0.12)
 cone_outline_color = Color(1, 1, 1, 0.35)

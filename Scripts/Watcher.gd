@@ -19,6 +19,7 @@ enum State {
 @export var alarm_cooldown: float = 10.0
 @export var alarm_loudness: float = 2.4
 @export var alarm_radius: float = 2000.0
+@export var alarm_pause_time: float = 0.5
 @export var alarm_vfx_scene: PackedScene
 @export var alarm_color: Color = Color(1.0, 0.4, 0.2, 0.95)
 @export var alarm_pulse_duration: float = 1.2
@@ -31,8 +32,17 @@ enum State {
 @export var pathing_enabled: bool = true
 @export var path_repath_interval: float = 0.25
 @export var path_repath_distance: float = 48.0
-@export var path_next_point_distance: float = 12.0
-@export var path_allow_direct: bool = true
+@export var path_next_point_distance: float = 16.0
+@export var path_allow_direct: bool = false
+@export var path_stuck_time: float = 0.25
+@export var path_stuck_distance: float = 4.0
+@export var investigate_unreachable_time: float = 4.5
+@export var investigate_progress_epsilon: float = 2.0
+@export var patrol_idle_enabled: bool = true
+@export var patrol_idle_interval_min: float = 1.5
+@export var patrol_idle_interval_max: float = 3.5
+@export var patrol_idle_time_min: float = 0.4
+@export var patrol_idle_time_max: float = 1.0
 @export var patrol_color: Color = Color(0.9, 0.9, 1.0, 1.0)
 @export var investigate_color: Color = Color(1.0, 0.8, 0.4, 1.0)
 @export var alert_color: Color = Color(1.0, 0.45, 0.3, 1.0)
@@ -68,11 +78,19 @@ var _fleeing: bool = false
 var _flee_timer: float = 0.0
 var _flee_source: Node2D = null
 var _flee_dir: Vector2 = Vector2.ZERO
+var _alarm_pause_timer: float = 0.0
 var _pathing: Node = null
 var _path_points: Array[Vector2] = []
 var _path_index: int = 0
 var _path_timer: float = 0.0
 var _path_target: Vector2 = Vector2.ZERO
+var _path_last_pos: Vector2 = Vector2.ZERO
+var _path_stuck_timer: float = 0.0
+var _investigate_timer: float = 0.0
+var _investigate_last_goal_dist: float = INF
+var _investigate_last_path_index: int = -1
+var _patrol_idle_timer: float = 0.0
+var _patrol_pause_timer: float = 0.0
 
 func _ready() -> void:
 	add_to_group("enemy")
@@ -80,6 +98,8 @@ func _ready() -> void:
 	_resolve_player()
 	_cache_patrol_points()
 	_resolve_pathing()
+	_path_last_pos = global_position
+	_reset_patrol_idle_timer()
 	_update_animation(Vector2.ZERO)
 	_current_alert_hp = max(1, alert_hit_points)
 	if SoundBus != null:
@@ -90,6 +110,12 @@ func _physics_process(delta: float) -> void:
 		_update_flee(delta)
 		return
 	_alarm_timer = max(0.0, _alarm_timer - delta)
+	_alarm_pause_timer = max(0.0, _alarm_pause_timer - delta)
+	if _alarm_pause_timer > 0.0:
+		velocity = Vector2.ZERO
+		move_and_slide()
+		_update_animation(Vector2.ZERO)
+		return
 	var sees_player: bool = _can_see_player()
 	if sees_player:
 		if _player != null:
@@ -145,7 +171,18 @@ func _physics_process(delta: float) -> void:
 			desired_dir = _get_path_direction(target_pos, delta)
 			if desired_dir.length_squared() > 0.001:
 				_update_facing(desired_dir)
-		if dist <= arrival_distance:
+		var goal_dist := _get_path_goal_distance()
+		var has_los := _has_line_of_sight(target_pos)
+		var arrival_dist := dist
+		if goal_dist >= 0.0:
+			arrival_dist = goal_dist
+		_update_investigate_progress(delta, arrival_dist, has_los)
+		var arrived := false
+		if has_los:
+			arrived = arrival_dist <= arrival_distance
+		elif goal_dist >= 0.0:
+			arrived = arrival_dist <= arrival_distance
+		if arrived:
 			if state == State.PATROL:
 				_advance_patrol()
 			elif state == State.INVESTIGATE:
@@ -155,6 +192,9 @@ func _physics_process(delta: float) -> void:
 			move_dir = desired_dir
 	else:
 		_clear_path()
+
+	if _update_patrol_idle(delta, sees_player):
+		move_dir = Vector2.ZERO
 
 	velocity = move_dir * speed
 	move_and_slide()
@@ -221,6 +261,7 @@ func _try_alarm() -> void:
 	_spawn_alarm_pulse()
 	_play_one_shot(alarm_stream, alarm_volume_db)
 	_alarm_timer = max(alarm_cooldown, 0.1)
+	_alarm_pause_timer = max(alarm_pause_time, 0.0)
 
 func _die() -> void:
 	queue_free()
@@ -345,13 +386,21 @@ func _clear_path() -> void:
 	_path_points.clear()
 	_path_index = 0
 	_path_timer = 0.0
+	_path_stuck_timer = 0.0
+	_path_last_pos = global_position
+	_reset_investigate_progress()
 
 func _get_path_direction(target_pos: Vector2, delta: float) -> Vector2:
 	var direct := target_pos - global_position
 	if direct.length_squared() < 0.001:
 		return Vector2.ZERO
-	if not pathing_enabled or _pathing == null:
+	if not pathing_enabled:
 		return direct.normalized()
+	if _pathing == null:
+		_resolve_pathing()
+	if _pathing == null:
+		return direct.normalized()
+	_update_path_stuck(delta, direct.length())
 	if path_allow_direct and bool(_pathing.call("has_line_of_sight", global_position, target_pos)):
 		_clear_path()
 		return direct.normalized()
@@ -377,9 +426,117 @@ func _get_path_direction(target_pos: Vector2, delta: float) -> Vector2:
 		return direct.normalized()
 	return dir.normalized()
 
+func _update_path_stuck(delta: float, target_dist: float) -> void:
+	var moved := global_position.distance_to(_path_last_pos)
+	_path_last_pos = global_position
+	var needs_progress: bool = target_dist > path_next_point_distance * 1.5
+	if moved <= path_stuck_distance and needs_progress:
+		_path_stuck_timer += delta
+		if state == State.INVESTIGATE and _path_stuck_timer >= investigate_unreachable_time:
+			_abandon_investigation()
+			return
+		if _path_stuck_timer >= path_stuck_time:
+			_path_timer = 0.0
+			_path_points.clear()
+			_path_index = 0
+			_path_stuck_timer = 0.0
+	else:
+		_path_stuck_timer = 0.0
+
+func _abandon_investigation() -> void:
+	has_last_heard = false
+	state = State.PATROL
+	_clear_path()
+
+func _reset_investigate_progress() -> void:
+	_investigate_timer = 0.0
+	_investigate_last_goal_dist = INF
+	_investigate_last_path_index = -1
+
+func _update_investigate_progress(delta: float, goal_dist: float, has_los: bool) -> void:
+	if state != State.INVESTIGATE:
+		_reset_investigate_progress()
+		return
+	if has_los:
+		_reset_investigate_progress()
+		return
+	if _path_points.is_empty():
+		_investigate_timer += delta
+		if _investigate_timer >= investigate_unreachable_time:
+			_abandon_investigation()
+		return
+	if _investigate_last_path_index != _path_index:
+		_investigate_last_path_index = _path_index
+		_investigate_last_goal_dist = goal_dist
+		_investigate_timer = 0.0
+		return
+	if _investigate_last_goal_dist == INF:
+		_investigate_last_goal_dist = goal_dist
+		_investigate_timer = 0.0
+		return
+	if goal_dist <= _investigate_last_goal_dist - investigate_progress_epsilon:
+		_investigate_timer = 0.0
+	else:
+		_investigate_timer += delta
+		if _investigate_timer >= investigate_unreachable_time:
+			_abandon_investigation()
+	_investigate_last_goal_dist = goal_dist
+
+func _update_patrol_idle(delta: float, sees_player: bool) -> bool:
+	if not patrol_idle_enabled:
+		_patrol_pause_timer = 0.0
+		_patrol_idle_timer = 0.0
+		return false
+	if state != State.PATROL or sees_player:
+		_patrol_pause_timer = 0.0
+		_patrol_idle_timer = 0.0
+		return false
+	if _patrol_pause_timer > 0.0:
+		_patrol_pause_timer = max(0.0, _patrol_pause_timer - delta)
+		return _patrol_pause_timer > 0.0
+	if _patrol_idle_timer <= 0.0:
+		_reset_patrol_idle_timer()
+	_patrol_idle_timer = max(0.0, _patrol_idle_timer - delta)
+	if _patrol_idle_timer <= 0.0:
+		_start_patrol_pause()
+		_reset_patrol_idle_timer()
+		return _patrol_pause_timer > 0.0
+	return false
+
+func _reset_patrol_idle_timer() -> void:
+	var min_interval: float = max(patrol_idle_interval_min, 0.0)
+	var max_interval: float = max(patrol_idle_interval_max, min_interval)
+	if max_interval <= 0.0:
+		_patrol_idle_timer = 0.0
+		return
+	_patrol_idle_timer = _rng.randf_range(min_interval, max_interval)
+
+func _start_patrol_pause() -> void:
+	var min_pause: float = max(patrol_idle_time_min, 0.0)
+	var max_pause: float = max(patrol_idle_time_max, min_pause)
+	if max_pause <= 0.0:
+		_patrol_pause_timer = 0.0
+		return
+	_patrol_pause_timer = _rng.randf_range(min_pause, max_pause)
+
 func _drop_close_path_points() -> void:
 	while _path_points.size() > 0 and global_position.distance_to(_path_points[0]) <= path_next_point_distance:
 		_path_points.remove_at(0)
+
+func _get_path_goal_distance() -> float:
+	if _path_points.is_empty():
+		return -1.0
+	var goal: Vector2 = _path_points[_path_points.size() - 1]
+	return global_position.distance_to(goal)
+
+func _has_line_of_sight(target_pos: Vector2) -> bool:
+	if not pathing_enabled:
+		return true
+	if _pathing == null:
+		_resolve_pathing()
+	if _pathing == null:
+		return true
+	return bool(_pathing.call("has_line_of_sight", global_position, target_pos))
 
 func _update_footsteps(delta: float, move_dir: Vector2) -> void:
 	if move_dir.length() < 0.1:

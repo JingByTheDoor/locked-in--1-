@@ -1,22 +1,43 @@
-[gd_scene load_steps=6 format=3 uid="uid://dv3s6lpqlvwwb"]
+[gd_scene load_steps=9 format=3 uid="uid://dv3s6lpqlvwwb"]
 
 [ext_resource type="Script" uid="uid://doy6ompjq3yv" path="res://Scripts/Guard.gd" id="1"]
-[ext_resource type="Texture2D" uid="uid://wyj60w1c6a8u" path="res://icon.svg" id="2"]
+[ext_resource type="Texture2D" uid="uid://cl0ww7ibv6td7" path="res://guard walk prototype - Edited.png" id="2_gtyxt"]
 [ext_resource type="Script" uid="uid://d23fs4q1yb1dt" path="res://Scripts/VisionCone.gd" id="3"]
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_qym4e"]
+atlas = ExtResource("2_gtyxt")
+region = Rect2(0, 0, 192, 99)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_0m4oc"]
+atlas = ExtResource("2_gtyxt")
+region = Rect2(192, 0, 192, 99)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_ixxti"]
+atlas = ExtResource("2_gtyxt")
+region = Rect2(384, 0, 192, 99)
 
 [sub_resource type="SpriteFrames" id="1"]
 animations = [{
 "frames": [{
 "duration": 1.0,
-"texture": ExtResource("2")
+"texture": SubResource("AtlasTexture_qym4e")
 }],
 "loop": true,
 "name": &"idle",
-"speed": 6.0
+"speed": 8.0
 }, {
 "frames": [{
 "duration": 1.0,
-"texture": ExtResource("2")
+"texture": SubResource("AtlasTexture_qym4e")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_0m4oc")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_qym4e")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_ixxti")
 }],
 "loop": true,
 "name": &"walk",
@@ -34,6 +55,7 @@ script = ExtResource("1")
 [node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="Visuals"]
 sprite_frames = SubResource("1")
 animation = &"idle"
+frame_progress = 0.22401072
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="."]
 shape = SubResource("2")
@@ -43,6 +65,5 @@ script = ExtResource("3")
 cone_angle_degrees = 140.0
 cone_length = 300.0
 auto_length_from_viewport = false
-extra_length = 0.0
 cone_fill_color = Color(1, 1, 1, 0.15)
 cone_outline_color = Color(1, 1, 1, 0.4)

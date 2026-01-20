@@ -4,6 +4,7 @@ class_name MapPathing
 @export var bounds: Rect2 = Rect2(Vector2(-640, -440), Vector2(1280, 880))
 @export var cell_size: int = 32
 @export var sample_radius: float = 12.0
+@export_range(0.0, 0.49, 0.01) var sample_offset_ratio: float = 0.25
 @export var collision_mask: int = 1
 @export var allow_diagonal: bool = false
 @export var refresh_interval: float = 0.0
@@ -65,6 +66,21 @@ func get_nav_path(from_pos: Vector2, to_pos: Vector2) -> Array[Vector2]:
 	return world
 
 func has_line_of_sight(from_pos: Vector2, to_pos: Vector2) -> bool:
+	if not _ray_clear(from_pos, to_pos):
+		return false
+	var to_target := to_pos - from_pos
+	if to_target.length_squared() < 0.001:
+		return true
+	var offset_len: float = max(sample_radius * 0.7, 1.0)
+	var perp := to_target.normalized().orthogonal() * offset_len
+	if perp.length_squared() > 0.001:
+		if not _ray_clear(from_pos + perp, to_pos + perp):
+			return false
+		if not _ray_clear(from_pos - perp, to_pos - perp):
+			return false
+	return true
+
+func _ray_clear(from_pos: Vector2, to_pos: Vector2) -> bool:
 	var world := get_world_2d()
 	if world == null:
 		return true
@@ -133,16 +149,20 @@ func _mark_obstacles() -> void:
 	params.collide_with_areas = true
 	params.collide_with_bodies = true
 	var max_hits := 32
+	var offsets := _build_sample_offsets()
 	for y in range(_grid_size.y):
 		for x in range(_grid_size.x):
 			var cell := Vector2i(x, y)
-			params.transform = Transform2D(0.0, _cell_to_world(cell))
-			var hits: Array = space_state.intersect_shape(params, max_hits)
 			var blocked := false
-			for hit in hits:
-				var collider: Object = hit.get("collider")
-				if _is_blocking(collider):
-					blocked = true
+			for offset in offsets:
+				params.transform = Transform2D(0.0, _cell_to_world(cell) + offset)
+				var hits: Array = space_state.intersect_shape(params, max_hits)
+				for hit in hits:
+					var collider: Object = hit.get("collider")
+					if _is_blocking(collider):
+						blocked = true
+						break
+				if blocked:
 					break
 			_grid.set_point_solid(cell, blocked)
 
@@ -196,3 +216,18 @@ func _find_nearest_open(cell: Vector2i) -> Vector2i:
 				if not _grid.is_point_solid(candidate):
 					return candidate
 	return Vector2i(-1, -1)
+
+func _build_sample_offsets() -> Array[Vector2]:
+	var offsets: Array[Vector2] = [Vector2.ZERO]
+	var ratio := clampf(sample_offset_ratio, 0.0, 0.49)
+	if ratio <= 0.0:
+		return offsets
+	var max_offset: float = max(float(cell_size) * 0.5 - 0.01, 0.0)
+	var offset_len: float = min(float(cell_size) * ratio, max_offset)
+	if offset_len <= 0.01:
+		return offsets
+	offsets.append(Vector2(offset_len, 0.0))
+	offsets.append(Vector2(-offset_len, 0.0))
+	offsets.append(Vector2(0.0, offset_len))
+	offsets.append(Vector2(0.0, -offset_len))
+	return offsets
