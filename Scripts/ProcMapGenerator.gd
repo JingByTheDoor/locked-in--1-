@@ -15,7 +15,7 @@ class_name ProcMapGenerator
 @export var room_attempts: int = 12
 @export var room_min_size: Vector2i = Vector2i(4, 4)
 @export var room_max_size: Vector2i = Vector2i(9, 9)
-@export var corridor_width: int = 1
+@export var corridor_width: int = 3
 
 @export var floor_source_id: int = 0
 @export var floor_atlas_coords: Vector2i = Vector2i(0, 0)
@@ -30,6 +30,7 @@ class_name ProcMapGenerator
 
 @export var spawn_root_path: NodePath = NodePath("../PlayerSpawns")
 @export var spawn_count: int = 4
+@export var spawn_min_floor_neighbors: int = 4
 
 @export var exit_scene: PackedScene = preload("res://Scenes/ExtractionZone.tscn")
 @export var hiding_scene: PackedScene = preload("res://Scenes/HidingSpot.tscn")
@@ -61,19 +62,25 @@ func generate() -> void:
 	var grid := _init_grid(width, height)
 	var rooms := _carve_rooms(grid, width, height)
 	_connect_rooms(grid, rooms)
+	_ensure_connected(grid, width, height)
+
+	var components: Array = _collect_floor_components(grid, width, height)
+	var main_component: Array[Vector2i] = _select_main_component(components)
 
 	var floor_cells: Array[Vector2i] = []
 	for y in range(height):
 		for x in range(width):
 			if grid[y][x]:
 				floor_cells.append(Vector2i(x, y))
+	if main_component.is_empty():
+		main_component = floor_cells
 
 	var origin := _get_origin_cell(width, height)
 	_clear_tilemap(floor_layer)
 	_clear_tilemap(wall_layer)
 	_paint_tiles(floor_layer, wall_layer, floor_cells, width, height, origin)
 
-	_spawn_markers(floor_layer, floor_cells, origin)
+	_spawn_markers(floor_layer, main_component, width, height, origin)
 	_update_pathing_bounds(floor_layer, width, height, origin)
 
 func _init_grid(width: int, height: int) -> Array:
@@ -345,7 +352,7 @@ func _build_terrain_connect_args(layer: Node, cells: Array[Vector2i], terrain_se
 		return args
 	return [cells, terrain_set, terrain]
 
-func _spawn_markers(floor_layer: Node, floor_cells: Array[Vector2i], origin: Vector2i) -> void:
+func _spawn_markers(floor_layer: Node, floor_cells: Array[Vector2i], width: int, height: int, origin: Vector2i) -> void:
 	if floor_layer == null or floor_cells.is_empty():
 		return
 	var generated := _get_or_create_generated_root()
@@ -354,19 +361,20 @@ func _spawn_markers(floor_layer: Node, floor_cells: Array[Vector2i], origin: Vec
 	var spawn_root := _get_or_create_spawn_root()
 	_clear_children(spawn_root)
 
-	var shuffled := floor_cells.duplicate()
+	var spawn_candidates := _filter_spawn_cells(floor_cells, width, height, spawn_min_floor_neighbors)
+	var shuffled := spawn_candidates.duplicate()
 	shuffled.shuffle()
 	var spawn_total: int = maxi(spawn_count, 1)
-	for i in range(min(spawn_total, shuffled.size())):
-		var pos := _cell_to_world(floor_layer, shuffled[i] + origin)
+	for i in range(mini(spawn_total, shuffled.size())):
+		var pos := _cell_to_world_center(floor_layer, shuffled[i] + origin)
 		var spawn := Node2D.new()
 		spawn.position = pos
 		spawn.name = "Spawn_%d" % i
 		spawn_root.add_child(spawn)
 
-	_place_scene_instances(generated, floor_layer, shuffled, origin, exit_scene, exit_count, "exit", "Exit")
-	_place_scene_instances(generated, floor_layer, shuffled, origin, hiding_scene, hiding_count, "hiding_spot", "Hiding")
-	_place_unfair_nodes(generated, floor_layer, shuffled, origin, unfair_count)
+	_place_scene_instances(generated, floor_layer, floor_cells, origin, exit_scene, exit_count, "exit", "Exit")
+	_place_scene_instances(generated, floor_layer, floor_cells, origin, hiding_scene, hiding_count, "hiding_spot", "Hiding")
+	_place_unfair_nodes(generated, floor_layer, floor_cells, origin, unfair_count)
 
 func _place_scene_instances(parent: Node, floor_layer: Node, cells: Array[Vector2i], origin: Vector2i, scene: PackedScene, count: int, group: String, name_prefix: String) -> void:
 	if scene == null or parent == null:
@@ -378,7 +386,7 @@ func _place_scene_instances(parent: Node, floor_layer: Node, cells: Array[Vector
 			break
 		var instance := scene.instantiate()
 		if instance is Node2D:
-			(instance as Node2D).position = _cell_to_world(floor_layer, cell + origin)
+			(instance as Node2D).position = _cell_to_world_center(floor_layer, cell + origin)
 		instance.name = "%s_%d" % [name_prefix, used]
 		instance.add_to_group(group)
 		parent.add_child(instance)
@@ -391,7 +399,7 @@ func _place_unfair_nodes(parent: Node, floor_layer: Node, cells: Array[Vector2i]
 		if used >= total:
 			break
 		var node := Node2D.new()
-		node.position = _cell_to_world(floor_layer, cell + origin)
+		node.position = _cell_to_world_center(floor_layer, cell + origin)
 		node.name = "Unfair_%d" % used
 		node.add_to_group("unfair_room")
 		parent.add_child(node)
@@ -401,6 +409,126 @@ func _cell_to_world(floor_layer: Node, cell: Vector2i) -> Vector2:
 	if floor_layer.has_method("map_to_local"):
 		return floor_layer.call("map_to_local", cell)
 	return Vector2(cell.x, cell.y)
+
+func _cell_to_world_center(floor_layer: Node, cell: Vector2i) -> Vector2:
+	if floor_layer is TileMapLayer:
+		var layer := floor_layer as TileMapLayer
+		var tile_size := Vector2.ONE
+		var tile_set := layer.tile_set
+		if tile_set != null:
+			tile_size = Vector2(tile_set.tile_size)
+		var local := layer.map_to_local(cell) + tile_size * 0.5
+		return layer.to_global(local)
+	if floor_layer is Node2D:
+		return (floor_layer as Node2D).to_global(Vector2(cell.x, cell.y))
+	return Vector2(cell.x, cell.y)
+
+func _filter_spawn_cells(
+	floor_cells: Array[Vector2i],
+	width: int,
+	height: int,
+	min_neighbors: int
+) -> Array[Vector2i]:
+	var results: Array[Vector2i] = []
+	if floor_cells.is_empty():
+		return results
+	var lookup: Dictionary = {}
+	for cell in floor_cells:
+		lookup[cell] = true
+	var neighbor_min: int = clampi(min_neighbors, 0, 4)
+	var offsets: Array[Vector2i] = [
+		Vector2i(1, 0),
+		Vector2i(-1, 0),
+		Vector2i(0, 1),
+		Vector2i(0, -1)
+	]
+	for cell in floor_cells:
+		var count: int = 0
+		for offset in offsets:
+			var neighbor := cell + offset
+			if neighbor.x < 0 or neighbor.x >= width or neighbor.y < 0 or neighbor.y >= height:
+				continue
+			if lookup.has(neighbor):
+				count += 1
+		if count >= neighbor_min:
+			results.append(cell)
+	if results.is_empty():
+		return floor_cells
+	return results
+
+func _collect_floor_components(grid: Array, width: int, height: int) -> Array:
+	var components: Array = []
+	var visited: Dictionary = {}
+	var offsets: Array[Vector2i] = [
+		Vector2i(1, 0),
+		Vector2i(-1, 0),
+		Vector2i(0, 1),
+		Vector2i(0, -1)
+	]
+	for y in range(height):
+		for x in range(width):
+			if not grid[y][x]:
+				continue
+			var start := Vector2i(x, y)
+			if visited.has(start):
+				continue
+			var component: Array[Vector2i] = []
+			var queue: Array[Vector2i] = [start]
+			visited[start] = true
+			while not queue.is_empty():
+				var current: Vector2i = queue.pop_back()
+				component.append(current)
+				for offset in offsets:
+					var nx: int = current.x + offset.x
+					var ny: int = current.y + offset.y
+					if nx < 0 or nx >= width or ny < 0 or ny >= height:
+						continue
+					if not grid[ny][nx]:
+						continue
+					var neighbor := Vector2i(nx, ny)
+					if visited.has(neighbor):
+						continue
+					visited[neighbor] = true
+					queue.append(neighbor)
+			components.append(component)
+	return components
+
+func _select_main_component(components: Array) -> Array[Vector2i]:
+	if components.is_empty():
+		return []
+	var best_index: int = 0
+	for i in range(1, components.size()):
+		if components[i].size() > components[best_index].size():
+			best_index = i
+	return components[best_index]
+
+func _ensure_connected(grid: Array, width: int, height: int) -> void:
+	var components: Array = _collect_floor_components(grid, width, height)
+	if components.size() <= 1:
+		return
+	var main: Array[Vector2i] = _select_main_component(components)
+	for component in components:
+		if component == main:
+			continue
+		var pair: Array[Vector2i] = _find_nearest_cells(component, main)
+		if pair.size() == 2:
+			_carve_corridor(grid, pair[0], pair[1])
+			main.append_array(component)
+
+func _find_nearest_cells(source: Array[Vector2i], target: Array[Vector2i]) -> Array[Vector2i]:
+	if source.is_empty() or target.is_empty():
+		return []
+	var best_a: Vector2i = source[0]
+	var best_b: Vector2i = target[0]
+	var best_dist: int = 2147483647
+	for a in source:
+		for b in target:
+			var dist: int = abs(a.x - b.x) + abs(a.y - b.y)
+			if dist < best_dist:
+				best_dist = dist
+				best_a = a
+				best_b = b
+	return [best_a, best_b]
 
 func _get_or_create_spawn_root() -> Node2D:
 	var node := get_node_or_null(spawn_root_path)

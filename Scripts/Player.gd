@@ -9,6 +9,7 @@ signal damaged(amount: int, context: String)
 @export var interact_radius: float = 48.0
 @export var idle_animation_name: StringName = &"Idle"
 @export var walk_animation_name: StringName = &"Walk"
+@export var attack_animation_name: StringName = &"Attack"
 @export var aim_rotation_offset_degrees: float = 0.0
 @export var vision_light_enabled: bool = true
 @export var vision_light_energy: float = 1.4
@@ -185,11 +186,14 @@ func _update_animation(input_vector: Vector2, is_sprinting: bool = false) -> voi
 	if frames == null:
 		return
 	var anim_name := idle_animation_name
-	if input_vector.length() > 0.1:
-		anim_name = walk_animation_name
 	var speed_scale := 1.0
-	if is_sprinting and input_vector.length() > 0.1:
-		speed_scale = max(sprint_anim_speed_multiplier, 1.0)
+	if _attack_state != AttackState.IDLE and frames.has_animation(attack_animation_name):
+		anim_name = attack_animation_name
+	else:
+		if input_vector.length() > 0.1:
+			anim_name = walk_animation_name
+		if is_sprinting and input_vector.length() > 0.1:
+			speed_scale = max(sprint_anim_speed_multiplier, 1.0)
 	if frames.has_animation(anim_name):
 		if sprite.animation != anim_name or not sprite.is_playing():
 			sprite.play(anim_name)
