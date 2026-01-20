@@ -39,6 +39,11 @@ enum State {
 @export var idle_animation_name: StringName = &"idle"
 @export var walk_animation_name: StringName = &"walk"
 @export var player_path: NodePath
+@export var pathing_enabled: bool = true
+@export var path_repath_interval: float = 0.2
+@export var path_repath_distance: float = 64.0
+@export var path_next_point_distance: float = 12.0
+@export var path_allow_direct: bool = true
 
 @onready var visuals: Node2D = $Visuals
 @onready var sprite: AnimatedSprite2D = $Visuals/AnimatedSprite2D
@@ -66,11 +71,17 @@ var _wall_break_pass_timer: float = 0.0
 var _wall_break_cooldown_timer: float = 0.0
 var _wall_break_pending: bool = false
 var _wall_break_target: Node = null
+var _pathing: MapPathing = null
+var _path_points: Array[Vector2] = []
+var _path_index: int = 0
+var _path_timer: float = 0.0
+var _path_target: Vector2 = Vector2.ZERO
 
 func _ready() -> void:
 	add_to_group("enemy")
 	_rng.randomize()
 	_resolve_player()
+	_resolve_pathing()
 	_apply_presence_stream()
 	if SoundBus != null:
 		SoundBus.sound_emitted.connect(_on_sound_emitted)
@@ -129,10 +140,14 @@ func _physics_process(delta: float) -> void:
 			speed = chase_speed
 			if _player != null:
 				target_pos = _player.global_position
-				move_dir = (target_pos - global_position).normalized()
-				_update_facing(move_dir)
-				if global_position.distance_to(target_pos) <= attack_range:
+				var to_target: Vector2 = target_pos - global_position
+				if to_target.length_squared() > 0.001:
+					move_dir = _get_path_direction(target_pos, delta)
+					if move_dir.length_squared() > 0.001:
+						_update_facing(move_dir)
+				if to_target.length() <= attack_range:
 					_try_attack()
+					move_dir = Vector2.ZERO
 		State.SEARCH:
 			speed = search_speed
 			if _search_pause_timer > 0.0:
@@ -143,12 +158,16 @@ func _physics_process(delta: float) -> void:
 				if to_target.length() <= 8.0:
 					_advance_search()
 				else:
-					move_dir = to_target.normalized()
-					_update_facing(move_dir)
+					move_dir = _get_path_direction(target_pos, delta)
+					if move_dir.length_squared() > 0.001:
+						_update_facing(move_dir)
 			else:
 				state = State.IDLE
 		State.IDLE:
 			speed = 0.0
+
+	if state == State.IDLE:
+		_clear_path()
 
 	if _wall_break_pass_timer > 0.0:
 		speed *= clampf(wall_break_speed_multiplier, 0.1, 1.0)
@@ -331,6 +350,50 @@ func _resolve_player() -> void:
 		node = get_tree().get_root().find_child("Player", true, false)
 	if node is Node2D:
 		_player = node as Node2D
+
+func _resolve_pathing() -> void:
+	var node := get_tree().get_first_node_in_group("map_pathing")
+	if node is MapPathing:
+		_pathing = node as MapPathing
+
+func _clear_path() -> void:
+	_path_points.clear()
+	_path_index = 0
+	_path_timer = 0.0
+
+func _get_path_direction(target_pos: Vector2, delta: float) -> Vector2:
+	var direct := target_pos - global_position
+	if direct.length_squared() < 0.001:
+		return Vector2.ZERO
+	if not pathing_enabled or _pathing == null:
+		return direct.normalized()
+	if path_allow_direct and _pathing.has_line_of_sight(global_position, target_pos):
+		_clear_path()
+		return direct.normalized()
+	_path_timer -= delta
+	var needs_repath: bool = _path_timer <= 0.0 or _path_points.is_empty() or _path_target.distance_to(target_pos) > path_repath_distance
+	if needs_repath:
+		_path_timer = max(path_repath_interval, 0.05)
+		_path_target = target_pos
+		_path_points = _pathing.get_path(global_position, target_pos)
+		_path_index = 0
+		_drop_close_path_points()
+	if _path_points.is_empty():
+		return direct.normalized()
+	if _path_index >= _path_points.size():
+		_path_index = _path_points.size() - 1
+	var next_point: Vector2 = _path_points[_path_index]
+	if global_position.distance_to(next_point) <= path_next_point_distance and _path_index < _path_points.size() - 1:
+		_path_index += 1
+		next_point = _path_points[_path_index]
+	var dir := next_point - global_position
+	if dir.length_squared() < 0.001:
+		return direct.normalized()
+	return dir.normalized()
+
+func _drop_close_path_points() -> void:
+	while _path_points.size() > 0 and global_position.distance_to(_path_points[0]) <= path_next_point_distance:
+		_path_points.remove_at(0)
 
 func _update_presence_audio() -> void:
 	if presence_player == null:

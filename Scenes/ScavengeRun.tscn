@@ -1,4 +1,4 @@
-[gd_scene load_steps=43 format=3 uid="uid://iuo6gtonvub0"]
+[gd_scene load_steps=44 format=3 uid="uid://iuo6gtonvub0"]
 
 [ext_resource type="Script" uid="uid://bjvfys8e3cajl" path="res://Scripts/ScavengeRun.gd" id="1"]
 [ext_resource type="PackedScene" uid="uid://x4khlkw6qu05" path="res://Scenes/Player.tscn" id="2"]
@@ -20,6 +20,7 @@
 [ext_resource type="Script" uid="uid://md4m5ar0w1ly" path="res://Scripts/MapRules.gd" id="18"]
 [ext_resource type="PackedScene" path="res://UI/InteractPrompt.tscn" id="19"]
 [ext_resource type="Texture2D" uid="uid://boyyd16hwu0qb" path="res://hat diagonal.png" id="19_vm6l8"]
+[ext_resource type="Script" path="res://Scripts/MapPathing.gd" id="21"]
 
 [sub_resource type="RectangleShape2D" id="1"]
 size = Vector2(1200, 40)
@@ -101,6 +102,9 @@ color = Color(0, 0, 0, 1)
 
 [node name="MapRules" type="Node" parent="."]
 script = ExtResource("18")
+
+[node name="MapPathing" type="Node2D" parent="."]
+script = ExtResource("21")
 
 [node name="PlayerSpawns" type="Node2D" parent="."]
 

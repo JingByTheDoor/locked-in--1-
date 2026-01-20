@@ -28,6 +28,11 @@ enum State {
 @export var walk_animation_name: StringName = &"walk"
 @export var aim_rotation_offset_degrees: float = 0.0
 @export var debug_state_colors: bool = true
+@export var pathing_enabled: bool = true
+@export var path_repath_interval: float = 0.25
+@export var path_repath_distance: float = 48.0
+@export var path_next_point_distance: float = 12.0
+@export var path_allow_direct: bool = true
 @export var patrol_color: Color = Color(0.9, 0.9, 1.0, 1.0)
 @export var investigate_color: Color = Color(1.0, 0.8, 0.4, 1.0)
 @export var alert_color: Color = Color(1.0, 0.45, 0.3, 1.0)
@@ -63,12 +68,18 @@ var _fleeing: bool = false
 var _flee_timer: float = 0.0
 var _flee_source: Node2D = null
 var _flee_dir: Vector2 = Vector2.ZERO
+var _pathing: MapPathing = null
+var _path_points: Array[Vector2] = []
+var _path_index: int = 0
+var _path_timer: float = 0.0
+var _path_target: Vector2 = Vector2.ZERO
 
 func _ready() -> void:
 	add_to_group("enemy")
 	_rng.randomize()
 	_resolve_player()
 	_cache_patrol_points()
+	_resolve_pathing()
 	_update_animation(Vector2.ZERO)
 	_current_alert_hp = max(1, alert_hit_points)
 	if SoundBus != null:
@@ -129,8 +140,11 @@ func _physics_process(delta: float) -> void:
 	if has_target:
 		var to_target: Vector2 = target_pos - global_position
 		var dist: float = to_target.length()
+		var desired_dir: Vector2 = Vector2.ZERO
 		if dist > 0.001:
-			_update_facing(to_target.normalized())
+			desired_dir = _get_path_direction(target_pos, delta)
+			if desired_dir.length_squared() > 0.001:
+				_update_facing(desired_dir)
 		if dist <= arrival_distance:
 			if state == State.PATROL:
 				_advance_patrol()
@@ -138,7 +152,9 @@ func _physics_process(delta: float) -> void:
 				has_last_heard = false
 				state = State.PATROL
 		else:
-			move_dir = to_target.normalized()
+			move_dir = desired_dir
+	else:
+		_clear_path()
 
 	velocity = move_dir * speed
 	move_and_slide()
@@ -317,6 +333,50 @@ func _resolve_player() -> void:
 		node = get_tree().get_root().find_child("Player", true, false)
 	if node is Node2D:
 		_player = node as Node2D
+
+func _resolve_pathing() -> void:
+	var node := get_tree().get_first_node_in_group("map_pathing")
+	if node is MapPathing:
+		_pathing = node as MapPathing
+
+func _clear_path() -> void:
+	_path_points.clear()
+	_path_index = 0
+	_path_timer = 0.0
+
+func _get_path_direction(target_pos: Vector2, delta: float) -> Vector2:
+	var direct := target_pos - global_position
+	if direct.length_squared() < 0.001:
+		return Vector2.ZERO
+	if not pathing_enabled or _pathing == null:
+		return direct.normalized()
+	if path_allow_direct and _pathing.has_line_of_sight(global_position, target_pos):
+		_clear_path()
+		return direct.normalized()
+	_path_timer -= delta
+	var needs_repath: bool = _path_timer <= 0.0 or _path_points.is_empty() or _path_target.distance_to(target_pos) > path_repath_distance
+	if needs_repath:
+		_path_timer = max(path_repath_interval, 0.05)
+		_path_target = target_pos
+		_path_points = _pathing.get_path(global_position, target_pos)
+		_path_index = 0
+		_drop_close_path_points()
+	if _path_points.is_empty():
+		return direct.normalized()
+	if _path_index >= _path_points.size():
+		_path_index = _path_points.size() - 1
+	var next_point: Vector2 = _path_points[_path_index]
+	if global_position.distance_to(next_point) <= path_next_point_distance and _path_index < _path_points.size() - 1:
+		_path_index += 1
+		next_point = _path_points[_path_index]
+	var dir := next_point - global_position
+	if dir.length_squared() < 0.001:
+		return direct.normalized()
+	return dir.normalized()
+
+func _drop_close_path_points() -> void:
+	while _path_points.size() > 0 and global_position.distance_to(_path_points[0]) <= path_next_point_distance:
+		_path_points.remove_at(0)
 
 func _update_footsteps(delta: float, move_dir: Vector2) -> void:
 	if move_dir.length() < 0.1:
