@@ -33,6 +33,7 @@ visible = false
 color = Color(0, 0, 0, 1)
 
 [node name="Player" parent="." instance=ExtResource("1")]
+position = Vector2(-82, -58)
 
 [node name="Guard" parent="." instance=ExtResource("7")]
 position = Vector2(240, 40)
@@ -102,6 +103,7 @@ volume_db = -30.0
 volume_db = -30.0
 
 [node name="EscalationManager" type="Node2D" parent="."]
+position = Vector2(-15, 25)
 script = ExtResource("9")
 overlay_path = NodePath("../ReadabilityOverlay")
 tension_player_path = NodePath("../AudioLayers/TensionLayer")

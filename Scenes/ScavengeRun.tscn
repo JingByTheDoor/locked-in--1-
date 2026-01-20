@@ -14,7 +14,7 @@
 [ext_resource type="Script" uid="uid://dspas587cy1x1" path="res://Scripts/EscalationManager.gd" id="13"]
 [ext_resource type="PackedScene" uid="uid://cyruxhht66d6q" path="res://Scenes/Hunter.tscn" id="14"]
 [ext_resource type="Texture2D" uid="uid://wyj60w1c6a8u" path="res://icon.svg" id="15"]
-[ext_resource type="PackedScene" path="res://Scenes/Watcher.tscn" id="16"]
+[ext_resource type="PackedScene" uid="uid://yy0t7kf40cof" path="res://Scenes/Watcher.tscn" id="16"]
 [ext_resource type="PackedScene" path="res://Scenes/BreakableProp.tscn" id="17"]
 [ext_resource type="Script" uid="uid://md4m5ar0w1ly" path="res://Scripts/MapRules.gd" id="18"]
 [ext_resource type="PackedScene" path="res://UI/InteractPrompt.tscn" id="19"]
@@ -98,6 +98,7 @@ scale = Vector2(2.2406282, 2.495137)
 texture = ExtResource("19_vm6l8")
 
 [node name="GlobalDarkness" type="CanvasModulate" parent="."]
+visible = false
 color = Color(0, 0, 0, 1)
 
 [node name="MapRules" type="Node" parent="."]

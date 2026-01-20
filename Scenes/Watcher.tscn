@@ -1,10 +1,13 @@
 [gd_scene load_steps=11 format=3 uid="uid://yy0t7kf40cof"]
 
 [ext_resource type="Script" uid="uid://cq0mr6tljahd0" path="res://Scripts/Watcher.gd" id="1"]
-[ext_resource type="Texture2D" uid="uid://wyj60w1c6a8u" path="res://icon.svg" id="2"]
 [ext_resource type="Script" uid="uid://d23fs4q1yb1dt" path="res://Scripts/VisionCone.gd" id="3"]
 [ext_resource type="PackedScene" path="res://VFX/AlarmPulse.tscn" id="4"]
 [ext_resource type="Texture2D" uid="uid://bdce662ru6rct" path="res://Watcher walkprototype.png" id="4_4xleo"]
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_rridp"]
+atlas = ExtResource("4_4xleo")
+region = Rect2(0, 0, 196, 101)
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_fbgis"]
 atlas = ExtResource("4_4xleo")
@@ -22,7 +25,7 @@ region = Rect2(392, 0, 196, 101)
 animations = [{
 "frames": [{
 "duration": 1.0,
-"texture": ExtResource("2")
+"texture": SubResource("AtlasTexture_rridp")
 }],
 "loop": true,
 "name": &"idle",
@@ -59,8 +62,8 @@ alarm_vfx_scene = ExtResource("4")
 position = Vector2(-0.5, 2.3841858e-07)
 scale = Vector2(1.2295917, 1.1485149)
 sprite_frames = SubResource("1")
-animation = &"walk"
-frame_progress = 0.043101463
+animation = &"idle"
+frame_progress = 0.711112
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="."]
 shape = SubResource("2")

@@ -167,24 +167,22 @@ func _paint_tiles(floor_layer: Node, wall_layer: Node, floor_cells: Array[Vector
 		"source_id": wall_source_id,
 		"atlas": wall_atlas_coords
 	}
-	var floor_lookup := {}
+	var floor_lookup: Dictionary = {}
 	for cell in floor_cells:
 		floor_lookup[cell] = true
 
 	var floor_cells_world: Array[Vector2i] = []
-	var wall_cells_world: Array[Vector2i] = []
-	var wall_cell_lookup := {}
-	for y in range(height):
-		for x in range(width):
-			var cell := Vector2i(x, y)
-			var world_cell := cell + origin
-			if floor_lookup.has(cell):
-				floor_cells_world.append(world_cell)
-			else:
-				var wall_cell := _floor_cell_to_wall_cell(floor_layer, wall_layer, world_cell)
-				if not wall_cell_lookup.has(wall_cell):
-					wall_cell_lookup[wall_cell] = true
-					wall_cells_world.append(wall_cell)
+	for cell in floor_cells:
+		floor_cells_world.append(cell + origin)
+	var wall_cells_world: Array[Vector2i] = _collect_wall_cells(
+		floor_layer,
+		wall_layer,
+		floor_cells,
+		floor_lookup,
+		width,
+		height,
+		origin
+	)
 
 	var used_floor_terrain := use_floor_terrain and _set_terrain_cells(floor_layer, floor_cells_world, floor_terrain_set, floor_terrain)
 	if not used_floor_terrain:
@@ -217,6 +215,93 @@ func _floor_cell_to_wall_cell(floor_layer: Node, wall_layer: Node, floor_cell: V
 	var floor_global: Vector2 = floor_layer.to_global(floor_local)
 	var wall_local: Vector2 = wall_layer.to_local(floor_global)
 	return wall_layer.call("local_to_map", wall_local)
+
+func _collect_wall_cells(
+	floor_layer: Node,
+	wall_layer: Node,
+	floor_cells: Array[Vector2i],
+	floor_lookup: Dictionary,
+	width: int,
+	height: int,
+	origin: Vector2i
+) -> Array[Vector2i]:
+	var wall_cells_world: Array[Vector2i] = []
+	var wall_cell_lookup: Dictionary = {}
+	var offsets: Array[Vector2i] = [
+		Vector2i(1, 0),
+		Vector2i(-1, 0),
+		Vector2i(0, 1),
+		Vector2i(0, -1)
+	]
+	var floor_tile_size: Vector2 = _get_tile_size(floor_layer)
+	var wall_tile_size: Vector2 = _get_tile_size(wall_layer)
+	var pad: int = 1
+	var min_floor_cell_world: Vector2i = origin - Vector2i(pad, pad)
+	var max_floor_cell_world: Vector2i = origin + Vector2i(width - 1 + pad, height - 1 + pad)
+	var world_min: Vector2 = _floor_cell_to_global(floor_layer, min_floor_cell_world)
+	var world_max: Vector2 = _floor_cell_to_global(floor_layer, max_floor_cell_world) + floor_tile_size
+	var wall_min_cell: Vector2i = _world_to_wall_cell(wall_layer, world_min)
+	var wall_max_cell: Vector2i = _world_to_wall_cell(wall_layer, world_max)
+	var start_x: int = mini(wall_min_cell.x, wall_max_cell.x)
+	var end_x: int = maxi(wall_min_cell.x, wall_max_cell.x)
+	var start_y: int = mini(wall_min_cell.y, wall_max_cell.y)
+	var end_y: int = maxi(wall_min_cell.y, wall_max_cell.y)
+
+	for y in range(start_y, end_y + 1):
+		for x in range(start_x, end_x + 1):
+			var wall_cell := Vector2i(x, y)
+			var world_pos: Vector2 = _wall_cell_to_world_center(wall_layer, wall_cell, wall_tile_size)
+			var floor_cell_world: Vector2i = _world_to_floor_cell(floor_layer, world_pos)
+			var floor_cell: Vector2i = floor_cell_world - origin
+			if floor_lookup.has(floor_cell):
+				continue
+			var adjacent := false
+			for offset in offsets:
+				var neighbor: Vector2i = floor_cell + offset
+				if neighbor.x < 0 or neighbor.x >= width or neighbor.y < 0 or neighbor.y >= height:
+					continue
+				if floor_lookup.has(neighbor):
+					adjacent = true
+					break
+			if not adjacent:
+				continue
+			if wall_cell_lookup.has(wall_cell):
+				continue
+			wall_cell_lookup[wall_cell] = true
+			wall_cells_world.append(wall_cell)
+	return wall_cells_world
+
+func _get_tile_size(layer: Node) -> Vector2:
+	if layer is TileMapLayer:
+		var tile_set := (layer as TileMapLayer).tile_set
+		if tile_set != null:
+			return Vector2(tile_set.tile_size)
+	return Vector2.ONE
+
+func _floor_cell_to_global(floor_layer: Node, cell: Vector2i) -> Vector2:
+	if floor_layer is TileMapLayer:
+		var layer := floor_layer as TileMapLayer
+		return layer.to_global(layer.map_to_local(cell))
+	return Vector2(cell.x, cell.y)
+
+func _world_to_floor_cell(floor_layer: Node, world_pos: Vector2) -> Vector2i:
+	if floor_layer is TileMapLayer:
+		var layer := floor_layer as TileMapLayer
+		return layer.local_to_map(layer.to_local(world_pos))
+	return Vector2i.ZERO
+
+func _world_to_wall_cell(wall_layer: Node, world_pos: Vector2) -> Vector2i:
+	if wall_layer is TileMapLayer:
+		var layer := wall_layer as TileMapLayer
+		return layer.local_to_map(layer.to_local(world_pos))
+	return Vector2i.ZERO
+
+func _wall_cell_to_world_center(wall_layer: Node, cell: Vector2i, tile_size: Vector2) -> Vector2:
+	if wall_layer is TileMapLayer:
+		var layer := wall_layer as TileMapLayer
+		var local := layer.map_to_local(cell) + tile_size * 0.5
+		return layer.to_global(local)
+	return Vector2(cell.x, cell.y)
 
 func _set_terrain_cells(layer: Node, cells: Array[Vector2i], terrain_set: int, terrain: int) -> bool:
 	if layer == null or cells.is_empty():
