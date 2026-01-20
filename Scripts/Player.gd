@@ -48,6 +48,7 @@ signal damaged(amount: int, context: String)
 @export var sprint_sound_radius: float = 360.0
 @export var walk_sound_loudness: float = 0.35
 @export var sprint_sound_loudness: float = 0.8
+@export var hunted_noise_multiplier: float = 1.6
 @export var walk_stream: AudioStream = preload("res://Audio/player slow walk.wav")
 @export var sprint_stream: AudioStream = preload("res://Audio/Fast Runing.wav")
 @export var walk_volume_db: float = -8.0
@@ -294,12 +295,26 @@ func _try_hit_target(target: Node, aim_dir: Vector2, half_arc: float) -> void:
 func _emit_sound(sound_type: int, loudness: float, radius: float) -> void:
 	if SoundBus == null:
 		return
-	SoundBus.emit_sound_at(global_position, loudness, radius, sound_type, self)
+	var emit_type := sound_type
+	var emit_loudness := loudness
+	var emit_radius := radius
+	if _is_hunted():
+		emit_type = SoundEvent.SoundType.ANOMALOUS
+		var mult: float = max(hunted_noise_multiplier, 0.1)
+		emit_loudness *= mult
+		emit_radius *= mult
+	SoundBus.emit_sound_at(global_position, emit_loudness, emit_radius, emit_type, self)
 
 func _emit_gun_sound() -> void:
 	if SoundBus == null:
 		return
-	SoundBus.emit_sound_at(global_position, gun_shot_loudness, gun_shot_radius, SoundEvent.SoundType.ANOMALOUS, self, "gun")
+	var loudness := gun_shot_loudness
+	var radius := gun_shot_radius
+	if _is_hunted():
+		var mult: float = max(hunted_noise_multiplier, 0.1)
+		loudness *= mult
+		radius *= mult
+	SoundBus.emit_sound_at(global_position, loudness, radius, SoundEvent.SoundType.ANOMALOUS, self, "gun")
 
 func _spawn_hit_vfx(position: Vector2, is_enemy: bool) -> void:
 	if hit_vfx_scene == null:
@@ -327,6 +342,11 @@ func _update_movement_sound(delta: float, input_vector: Vector2, is_sprinting: b
 		radius = sprint_sound_radius
 		loudness = sprint_sound_loudness
 		sound_type = SoundEvent.SoundType.ANOMALOUS
+	if _is_hunted():
+		sound_type = SoundEvent.SoundType.ANOMALOUS
+		var mult: float = max(hunted_noise_multiplier, 0.1)
+		loudness *= mult
+		radius *= mult
 	_sound_timer -= delta
 	if _sound_timer > 0.0:
 		return
@@ -336,6 +356,9 @@ func _update_movement_sound(delta: float, input_vector: Vector2, is_sprinting: b
 		_play_one_shot(sprint_stream, sprint_volume_db)
 	else:
 		_play_one_shot(walk_stream, walk_volume_db)
+
+func _is_hunted() -> bool:
+	return GameState.phase_state == GameState.PhaseState.HUNTED
 
 func apply_damage(amount: int, context: String = "") -> void:
 	if is_dead:

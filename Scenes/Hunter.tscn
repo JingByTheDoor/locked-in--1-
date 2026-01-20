@@ -1,20 +1,107 @@
-[gd_scene load_steps=7 format=3]
+[gd_scene load_steps=16 format=3 uid="uid://cyruxhht66d6q"]
 
-[ext_resource type="Script" path="res://Scripts/Hunter.gd" id="1"]
-[ext_resource type="Texture2D" path="res://icon.svg" id="2"]
-[ext_resource type="Script" path="res://Scripts/VisionCone.gd" id="3"]
+[ext_resource type="Script" uid="uid://cyhoyanjl83ml" path="res://Scripts/Hunter.gd" id="1"]
+[ext_resource type="Texture2D" uid="uid://ds38b6nsmbex7" path="res://tentacle_sprite_white_grey_to_transparency.png" id="2_rbmkp"]
+[ext_resource type="Script" uid="uid://d23fs4q1yb1dt" path="res://Scripts/VisionCone.gd" id="3"]
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_ah0w8"]
+atlas = ExtResource("2_rbmkp")
+region = Rect2(0, 0, 681, 682)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_ayaxi"]
+atlas = ExtResource("2_rbmkp")
+region = Rect2(681, 0, 681, 682)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_ukkp1"]
+atlas = ExtResource("2_rbmkp")
+region = Rect2(1362, 0, 681, 682)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_1xohn"]
+atlas = ExtResource("2_rbmkp")
+region = Rect2(0, 682, 681, 682)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_827x0"]
+atlas = ExtResource("2_rbmkp")
+region = Rect2(681, 682, 681, 682)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_sd3i5"]
+atlas = ExtResource("2_rbmkp")
+region = Rect2(1362, 682, 681, 682)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_n25d4"]
+atlas = ExtResource("2_rbmkp")
+region = Rect2(0, 1364, 681, 682)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_xnhgd"]
+atlas = ExtResource("2_rbmkp")
+region = Rect2(681, 1364, 681, 682)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_8uv5v"]
+atlas = ExtResource("2_rbmkp")
+region = Rect2(1362, 1364, 681, 682)
 
 [sub_resource type="SpriteFrames" id="1"]
 animations = [{
-"frames": [ExtResource("2")],
+"frames": [],
 "loop": true,
 "name": &"idle",
 "speed": 6.0
 }, {
-"frames": [ExtResource("2")],
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_ah0w8")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_ayaxi")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_ukkp1")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_1xohn")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_827x0")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_sd3i5")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_n25d4")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_xnhgd")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_8uv5v")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_xnhgd")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_n25d4")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_sd3i5")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_827x0")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_1xohn")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_ukkp1")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_ayaxi")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_ah0w8")
+}],
 "loop": true,
 "name": &"walk",
-"speed": 8.0
+"speed": 15.0
 }]
 
 [sub_resource type="CircleShape2D" id="2"]
@@ -25,34 +112,29 @@ radius = 22.0
 
 [node name="Hunter" type="CharacterBody2D"]
 script = ExtResource("1")
+aim_rotation_offset_degrees = -90.0
 
 [node name="Visuals" type="Node2D" parent="."]
 
 [node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="Visuals"]
-sprite_frames = SubResource("1")
-animation = &"idle"
 scale = Vector2(1.6, 1.6)
-playing = true
+sprite_frames = SubResource("1")
+animation = &"walk"
+frame_progress = 0.33912465
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="."]
 shape = SubResource("2")
 
 [node name="VisionCone" type="Node2D" parent="."]
 script = ExtResource("3")
-cone_angle_degrees = 120.0
 cone_length = 520.0
 auto_length_from_viewport = false
 show_cone = false
-require_line_of_sight = true
-occlusion_mask = 1
 cone_fill_color = Color(1, 1, 1, 0.15)
 cone_outline_color = Color(1, 1, 1, 0.35)
 
 [node name="DoorSensor" type="Area2D" parent="."]
-monitoring = true
-monitorable = true
 collision_layer = 0
-collision_mask = 1
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="DoorSensor"]
 shape = SubResource("3")

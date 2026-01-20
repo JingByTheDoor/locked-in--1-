@@ -9,8 +9,8 @@ enum State {
 	CHASE
 }
 
-@export var search_speed: float = 140.0
-@export var chase_speed: float = 210.0
+@export var search_speed: float = 280.0
+@export var chase_speed: float = 420.0
 @export var attack_range: float = 26.0
 @export var attack_damage: int = 999
 @export var attack_cooldown: float = 0.7
@@ -32,6 +32,10 @@ enum State {
 @export var spotted_stream: AudioStream = preload("res://Audio/HUNTER SPOTED YOU.wav")
 @export var spotted_volume_db: float = -2.0
 @export var spotted_cooldown: float = 6.0
+@export var wall_break_delay: float = 0.05
+@export var wall_break_pass_duration: float = 0.1
+@export var wall_break_cooldown: float = 0.9
+@export var wall_break_speed_multiplier: float = 0.95
 @export var idle_animation_name: StringName = &"idle"
 @export var walk_animation_name: StringName = &"walk"
 @export var player_path: NodePath
@@ -57,6 +61,11 @@ var _hidden_check_timer: float = 0.0
 var _aim_angle: float = 0.0
 var _rng: RandomNumberGenerator = RandomNumberGenerator.new()
 var _spotted_cooldown_timer: float = 0.0
+var _wall_break_delay_timer: float = 0.0
+var _wall_break_pass_timer: float = 0.0
+var _wall_break_cooldown_timer: float = 0.0
+var _wall_break_pending: bool = false
+var _wall_break_target: Node = null
 
 func _ready() -> void:
 	add_to_group("enemy")
@@ -75,6 +84,17 @@ func _physics_process(delta: float) -> void:
 		if presence_player != null and presence_player.playing:
 			presence_player.stop()
 		return
+	_wall_break_cooldown_timer = max(0.0, _wall_break_cooldown_timer - delta)
+	if _wall_break_delay_timer > 0.0:
+		_wall_break_delay_timer = max(0.0, _wall_break_delay_timer - delta)
+		if _wall_break_delay_timer <= 0.0 and _wall_break_pending:
+			_begin_wall_break_pass()
+		velocity = Vector2.ZERO
+		move_and_slide()
+		_update_animation(Vector2.ZERO)
+		return
+	if _wall_break_pass_timer > 0.0:
+		_wall_break_pass_timer = max(0.0, _wall_break_pass_timer - delta)
 	_spotted_cooldown_timer = max(0.0, _spotted_cooldown_timer - delta)
 	_update_presence_audio()
 	_attack_timer = max(0.0, _attack_timer - delta)
@@ -130,9 +150,12 @@ func _physics_process(delta: float) -> void:
 		State.IDLE:
 			speed = 0.0
 
+	if _wall_break_pass_timer > 0.0:
+		speed *= clampf(wall_break_speed_multiplier, 0.1, 1.0)
 	velocity = move_dir * speed
 	move_and_slide()
 	_update_animation(move_dir)
+	_trigger_wall_break_if_blocked()
 
 func apply_damage(_amount: int, _context: String = "") -> void:
 	return
@@ -244,6 +267,59 @@ func _on_door_entered(node: Node) -> void:
 	elif not node.is_in_group("door"):
 		return
 	_delay_timer = max(_delay_timer, delay)
+
+func _trigger_wall_break_if_blocked() -> void:
+	if _wall_break_cooldown_timer > 0.0:
+		return
+	if _wall_break_pass_timer > 0.0:
+		return
+	if _wall_break_delay_timer > 0.0:
+		return
+	var count: int = get_slide_collision_count()
+	for i in range(count):
+		var collision := get_slide_collision(i)
+		if collision == null:
+			continue
+		var collider: Object = collision.get_collider()
+		if collider == null:
+			continue
+		if collider is StaticBody2D or collider is TileMap:
+			_wall_break_target = collider as Node
+			_start_wall_break()
+			return
+
+func _start_wall_break() -> void:
+	_wall_break_delay_timer = max(wall_break_delay, 0.0)
+	_wall_break_cooldown_timer = max(wall_break_cooldown, 0.1)
+	_wall_break_pending = true
+	if _wall_break_delay_timer <= 0.0:
+		_begin_wall_break_pass()
+
+func _begin_wall_break_pass() -> void:
+	_wall_break_pending = false
+	if wall_break_pass_duration <= 0.0:
+		return
+	_wall_break_pass_timer = max(wall_break_pass_duration, 0.05)
+	_temporarily_break_wall(_wall_break_target)
+	_wall_break_target = null
+
+func _temporarily_break_wall(target: Node) -> void:
+	if target == null:
+		return
+	if not _has_property(target, "collision_layer"):
+		return
+	if target.has_meta("wall_break_layer"):
+		return
+	var prev_layer: int = int(target.get("collision_layer"))
+	target.set_meta("wall_break_layer", prev_layer)
+	target.set("collision_layer", 0)
+
+func _has_property(obj: Object, prop: String) -> bool:
+	var list: Array = obj.get_property_list()
+	for info in list:
+		if typeof(info) == TYPE_DICTIONARY and info.has("name") and info["name"] == prop:
+			return true
+	return false
 
 func _resolve_player() -> void:
 	var node: Node = null

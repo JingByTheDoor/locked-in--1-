@@ -16,10 +16,11 @@ enum LootType {
 @export var pickup_loudness: float = 0.2
 @export var pickup_radius: float = 140.0
 @export var pickup_anomaly: bool = false
-@export var deny_when_escape_only: bool = true
+@export var deny_when_escape_only: bool = false
 @export var prompt_text: String = ""
 @export var pickup_stream: AudioStream = preload("res://Audio/pickup sound.wav")
 @export var pickup_volume_db: float = -6.0
+@export var hunted_noise_multiplier: float = 1.6
 
 func _ready() -> void:
 	add_to_group("interactable")
@@ -61,7 +62,14 @@ func _apply_pickup(player: Node) -> void:
 		var sound_type: int = SoundEvent.SoundType.EXPECTED
 		if pickup_anomaly:
 			sound_type = SoundEvent.SoundType.ANOMALOUS
-		SoundBus.emit_sound_at(global_position, pickup_loudness * noise_mult, pickup_radius * noise_mult, sound_type, self)
+		var loudness := pickup_loudness * noise_mult
+		var radius := pickup_radius * noise_mult
+		if GameState.phase_state == GameState.PhaseState.HUNTED:
+			sound_type = SoundEvent.SoundType.ANOMALOUS
+			var mult: float = max(hunted_noise_multiplier, 0.1)
+			loudness *= mult
+			radius *= mult
+		SoundBus.emit_sound_at(global_position, loudness, radius, sound_type, self)
 
 func _show_message(text: String) -> void:
 	var hud := get_tree().get_first_node_in_group("message_hud")

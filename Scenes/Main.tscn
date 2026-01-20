@@ -9,7 +9,7 @@
 [ext_resource type="PackedScene" uid="uid://dv3s6lpqlvwwb" path="res://Scenes/Guard.tscn" id="7"]
 [ext_resource type="Script" uid="uid://b2x1ys54sgisv" path="res://Scripts/Main.gd" id="8"]
 [ext_resource type="Script" uid="uid://dspas587cy1x1" path="res://Scripts/EscalationManager.gd" id="9"]
-[ext_resource type="PackedScene" path="res://Scenes/Hunter.tscn" id="10"]
+[ext_resource type="PackedScene" uid="uid://cyruxhht66d6q" path="res://Scenes/Hunter.tscn" id="10"]
 [ext_resource type="PackedScene" path="res://UI/HuntedBanner.tscn" id="11"]
 [ext_resource type="PackedScene" path="res://UI/InteractPrompt.tscn" id="12"]
 
@@ -17,7 +17,7 @@
 script = ExtResource("8")
 
 [node name="GlobalDarkness" type="CanvasModulate" parent="."]
-color = Color(0, 0, 0, 0.72156864)
+color = Color(0, 0, 0, 1)
 
 [node name="Player" parent="." instance=ExtResource("1")]
 
@@ -47,11 +47,6 @@ position = Vector2(360, -40)
 
 [node name="PointD" type="Node2D" parent="PatrolPath"]
 position = Vector2(200, -40)
-
-[node name="HatDiagonal" type="Sprite2D" parent="PatrolPath"]
-position = Vector2(-739.99994, -323.00003)
-scale = Vector2(0.5420466, 0.47966403)
-texture = ExtResource("3_50glp")
 
 [node name="PatrolPath2" type="Node2D" parent="."]
 position = Vector2(-180, 120)
@@ -110,3 +105,10 @@ hunter_scene = ExtResource("10")
 [node name="MessageHud" parent="." instance=ExtResource("2")]
 
 [node name="InteractPrompt" parent="." instance=ExtResource("12")]
+
+[node name="HatDiagonal" type="Sprite2D" parent="."]
+show_behind_parent = true
+z_index = -2
+position = Vector2(191.99988, -36.49997)
+scale = Vector2(2.7598784, 2.8868258)
+texture = ExtResource("3_50glp")
