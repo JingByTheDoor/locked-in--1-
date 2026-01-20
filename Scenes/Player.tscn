@@ -156,7 +156,7 @@ position = Vector2(2, 0)
 scale = Vector2(0.8, 1)
 sprite_frames = SubResource("1")
 animation = &"Attack"
-frame_progress = 0.19128908
+frame_progress = 0.22431752
 
 [node name="PointLight2D" type="PointLight2D" parent="Visuals"]
 position = Vector2(0.9630207, -146.99998)
@@ -175,7 +175,7 @@ texture_scale = 0.01
 shape = SubResource("2")
 
 [node name="Camera2D" type="Camera2D" parent="."]
-zoom = Vector2(0.1, 0.1)
+zoom = Vector2(0.5, 0.5)
 position_smoothing_enabled = true
 rotation_smoothing_enabled = true
 

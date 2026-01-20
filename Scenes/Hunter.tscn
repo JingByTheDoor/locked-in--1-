@@ -113,18 +113,9 @@ radius = 22.0
 
 [node name="Hunter" type="CharacterBody2D"]
 script = ExtResource("1")
-search_speed = 400.0
-chase_speed = 900.0
-search_radius = 300.0
-hearing_multiplier = 5.0
-door_delay_default = 0.0
+chase_speed = 600.0
 aim_rotation_offset_degrees = -90.0
 presence_stream = ExtResource("2_ah0w8")
-spotted_cooldown = 99999.0
-wall_break_delay = 0.0
-wall_break_pass_duration = 0.0
-wall_break_cooldown = 0.0
-wall_break_speed_multiplier = 1.0
 
 [node name="Visuals" type="Node2D" parent="."]
 
@@ -136,6 +127,7 @@ frame_progress = 0.33912465
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="."]
 shape = SubResource("2")
+disabled = true
 
 [node name="VisionCone" type="Node2D" parent="."]
 script = ExtResource("3")
@@ -150,6 +142,7 @@ collision_layer = 0
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="DoorSensor"]
 shape = SubResource("3")
+disabled = true
 
 [node name="PresenceLoop" type="AudioStreamPlayer2D" parent="."]
 volume_db = -24.0

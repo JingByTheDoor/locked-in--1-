@@ -39,13 +39,6 @@ enum State {
 @export var idle_animation_name: StringName = &"idle"
 @export var walk_animation_name: StringName = &"walk"
 @export var player_path: NodePath
-@export var pathing_enabled: bool = true
-@export var path_repath_interval: float = 0.25
-@export var path_repath_distance: float = 48.0
-@export var path_next_point_distance: float = 16.0
-@export var path_allow_direct: bool = false
-@export var path_stuck_time: float = 0.25
-@export var path_stuck_distance: float = 4.0
 
 @onready var visuals: Node2D = $Visuals
 @onready var sprite: AnimatedSprite2D = $Visuals/AnimatedSprite2D
@@ -73,20 +66,11 @@ var _wall_break_pass_timer: float = 0.0
 var _wall_break_cooldown_timer: float = 0.0
 var _wall_break_pending: bool = false
 var _wall_break_target: Node = null
-var _pathing: Node = null
-var _path_points: Array[Vector2] = []
-var _path_index: int = 0
-var _path_timer: float = 0.0
-var _path_target: Vector2 = Vector2.ZERO
-var _path_last_pos: Vector2 = Vector2.ZERO
-var _path_stuck_timer: float = 0.0
 
 func _ready() -> void:
 	add_to_group("enemy")
 	_rng.randomize()
 	_resolve_player()
-	_resolve_pathing()
-	_path_last_pos = global_position
 	_apply_presence_stream()
 	if SoundBus != null:
 		SoundBus.sound_emitted.connect(_on_sound_emitted)
@@ -139,18 +123,14 @@ func _physics_process(delta: float) -> void:
 	var target_pos: Vector2 = global_position
 	var speed: float = 0.0
 	var move_dir: Vector2 = Vector2.ZERO
-	var has_target: bool = false
 
 	match state:
 		State.CHASE:
 			speed = chase_speed
 			if _player != null:
 				target_pos = _player.global_position
-				has_target = true
-				var desired_dir := _get_path_direction(target_pos, delta)
-				if desired_dir.length_squared() > 0.001:
-					_update_facing(desired_dir)
-				move_dir = desired_dir
+				move_dir = (target_pos - global_position).normalized()
+				_update_facing(move_dir)
 				if global_position.distance_to(target_pos) <= attack_range:
 					_try_attack()
 		State.SEARCH:
@@ -159,23 +139,16 @@ func _physics_process(delta: float) -> void:
 				_search_pause_timer = max(0.0, _search_pause_timer - delta)
 			elif _search_points.size() > 0:
 				target_pos = _search_points[_search_index]
-				has_target = true
 				var to_target: Vector2 = target_pos - global_position
-				var desired_dir := _get_path_direction(target_pos, delta)
-				if desired_dir.length_squared() > 0.001:
-					_update_facing(desired_dir)
-				move_dir = desired_dir
-				var goal_dist := _get_path_goal_distance()
-				var arrival_dist := to_target.length()
-				if goal_dist >= 0.0:
-					arrival_dist = goal_dist
-				if arrival_dist <= 8.0:
+				if to_target.length() <= 8.0:
 					_advance_search()
+				else:
+					move_dir = to_target.normalized()
+					_update_facing(move_dir)
 			else:
 				state = State.IDLE
 		State.IDLE:
 			speed = 0.0
-			_clear_path()
 
 	if _wall_break_pass_timer > 0.0:
 		speed *= clampf(wall_break_speed_multiplier, 0.1, 1.0)
@@ -183,8 +156,6 @@ func _physics_process(delta: float) -> void:
 	move_and_slide()
 	_update_animation(move_dir)
 	_trigger_wall_break_if_blocked()
-	if not has_target:
-		_clear_path()
 
 func apply_damage(_amount: int, _context: String = "") -> void:
 	return
@@ -360,80 +331,6 @@ func _resolve_player() -> void:
 		node = get_tree().get_root().find_child("Player", true, false)
 	if node is Node2D:
 		_player = node as Node2D
-
-func _resolve_pathing() -> void:
-	var node := get_tree().get_first_node_in_group("map_pathing")
-	if node != null and node.has_method("get_nav_path") and node.has_method("has_line_of_sight"):
-		_pathing = node as Node
-	else:
-		_pathing = null
-
-func _clear_path() -> void:
-	_path_points.clear()
-	_path_index = 0
-	_path_timer = 0.0
-	_path_stuck_timer = 0.0
-	_path_last_pos = global_position
-
-func _get_path_direction(target_pos: Vector2, delta: float) -> Vector2:
-	var direct := target_pos - global_position
-	if direct.length_squared() < 0.001:
-		return Vector2.ZERO
-	if not pathing_enabled:
-		return direct.normalized()
-	if _pathing == null:
-		_resolve_pathing()
-	if _pathing == null:
-		return direct.normalized()
-	_update_path_stuck(delta, direct.length())
-	if path_allow_direct and bool(_pathing.call("has_line_of_sight", global_position, target_pos)):
-		_clear_path()
-		return direct.normalized()
-	_path_timer -= delta
-	var needs_repath: bool = _path_timer <= 0.0 or _path_points.is_empty() or _path_target.distance_to(target_pos) > path_repath_distance
-	if needs_repath:
-		_path_timer = max(path_repath_interval, 0.05)
-		_path_target = target_pos
-		var result: Variant = _pathing.call("get_nav_path", global_position, target_pos)
-		_path_points = result if result is Array else []
-		_path_index = 0
-		_drop_close_path_points()
-	if _path_points.is_empty():
-		return direct.normalized()
-	if _path_index >= _path_points.size():
-		_path_index = _path_points.size() - 1
-	var next_point: Vector2 = _path_points[_path_index]
-	if global_position.distance_to(next_point) <= path_next_point_distance and _path_index < _path_points.size() - 1:
-		_path_index += 1
-		next_point = _path_points[_path_index]
-	var dir := next_point - global_position
-	if dir.length_squared() < 0.001:
-		return direct.normalized()
-	return dir.normalized()
-
-func _update_path_stuck(delta: float, target_dist: float) -> void:
-	var moved := global_position.distance_to(_path_last_pos)
-	_path_last_pos = global_position
-	var needs_progress: bool = target_dist > path_next_point_distance * 1.5
-	if moved <= path_stuck_distance and needs_progress:
-		_path_stuck_timer += delta
-		if _path_stuck_timer >= path_stuck_time:
-			_path_timer = 0.0
-			_path_points.clear()
-			_path_index = 0
-			_path_stuck_timer = 0.0
-	else:
-		_path_stuck_timer = 0.0
-
-func _drop_close_path_points() -> void:
-	while _path_points.size() > 0 and global_position.distance_to(_path_points[0]) <= path_next_point_distance:
-		_path_points.remove_at(0)
-
-func _get_path_goal_distance() -> float:
-	if _path_points.is_empty():
-		return -1.0
-	var goal: Vector2 = _path_points[_path_points.size() - 1]
-	return global_position.distance_to(goal)
 
 func _update_presence_audio() -> void:
 	if presence_player == null:

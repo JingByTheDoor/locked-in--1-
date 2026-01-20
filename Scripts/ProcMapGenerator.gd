@@ -31,6 +31,8 @@ class_name ProcMapGenerator
 @export var spawn_root_path: NodePath = NodePath("../PlayerSpawns")
 @export var spawn_count: int = 4
 @export var spawn_min_floor_neighbors: int = 4
+@export var player_path: NodePath = NodePath("../Player")
+@export var place_player_on_spawn: bool = true
 @export var enemy_spawn_min_floor_neighbors: int = 3
 @export var total_enemy_count: int = 15
 @export_range(0.0, 1.0, 0.01) var watcher_chance: float = 0.2
@@ -93,6 +95,7 @@ func generate() -> void:
 
 	_spawn_markers(floor_layer, main_component, width, height, origin)
 	_spawn_enemies(floor_layer, main_component, width, height, origin)
+	_place_player_spawn(floor_layer, main_component, origin)
 	_update_pathing_bounds(floor_layer, width, height, origin)
 
 func _init_grid(width: int, height: int) -> Array:
@@ -388,6 +391,27 @@ func _spawn_markers(floor_layer: Node, floor_cells: Array[Vector2i], width: int,
 	_place_scene_instances(generated, floor_layer, floor_cells, origin, hiding_scene, hiding_count, "hiding_spot", "Hiding")
 	_place_unfair_nodes(generated, floor_layer, floor_cells, origin, unfair_count)
 
+func _place_player_spawn(floor_layer: Node, floor_cells: Array[Vector2i], origin: Vector2i) -> void:
+	if not place_player_on_spawn:
+		return
+	var player := _get_player_node()
+	if player == null:
+		return
+	var spawn_root := get_node_or_null(spawn_root_path)
+	if spawn_root != null:
+		var spawns: Array[Node2D] = []
+		for child in spawn_root.get_children():
+			if child is Node2D:
+				spawns.append(child as Node2D)
+		if not spawns.is_empty():
+			var idx: int = _rng.randi_range(0, spawns.size() - 1)
+			player.global_position = spawns[idx].global_position
+			return
+	if floor_cells.is_empty():
+		return
+	var fallback_idx: int = _rng.randi_range(0, floor_cells.size() - 1)
+	player.global_position = _cell_to_world_center(floor_layer, floor_cells[fallback_idx] + origin)
+
 func _spawn_enemies(floor_layer: Node, floor_cells: Array[Vector2i], width: int, height: int, origin: Vector2i) -> void:
 	if floor_layer == null or floor_cells.is_empty():
 		return
@@ -549,6 +573,18 @@ func _get_or_create_enemies_root() -> Node2D:
 	root.name = "Enemies"
 	get_parent().add_child(root)
 	return root
+
+func _get_player_node() -> Node2D:
+	var node: Node = null
+	if player_path != NodePath():
+		node = get_node_or_null(player_path)
+	if node == null:
+		node = get_tree().get_first_node_in_group("player")
+	if node == null:
+		node = get_tree().get_root().find_child("Player", true, false)
+	if node is Node2D:
+		return node as Node2D
+	return null
 
 func _place_scene_instances(parent: Node, floor_layer: Node, cells: Array[Vector2i], origin: Vector2i, scene: PackedScene, count: int, group: String, name_prefix: String) -> void:
 	if scene == null or parent == null:
