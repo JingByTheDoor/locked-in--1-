@@ -31,6 +31,17 @@ class_name ProcMapGenerator
 @export var spawn_root_path: NodePath = NodePath("../PlayerSpawns")
 @export var spawn_count: int = 4
 @export var spawn_min_floor_neighbors: int = 4
+@export var enemy_spawn_min_floor_neighbors: int = 3
+@export var total_enemy_count: int = 15
+@export_range(0.0, 1.0, 0.01) var watcher_chance: float = 0.2
+@export var guard_scene: PackedScene = preload("res://Scenes/Guard.tscn")
+@export var guard_count: int = 3
+@export var watcher_scene: PackedScene = preload("res://Scenes/Watcher.tscn")
+@export var watcher_count: int = 0
+@export var patrol_points_per_enemy: int = 4
+@export var patrol_radius_min: int = 3
+@export var patrol_radius_max: int = 6
+@export var remove_existing_enemies: bool = true
 
 @export var exit_scene: PackedScene = preload("res://Scenes/ExtractionZone.tscn")
 @export var hiding_scene: PackedScene = preload("res://Scenes/HidingSpot.tscn")
@@ -44,7 +55,7 @@ var _rng: RandomNumberGenerator = RandomNumberGenerator.new()
 
 func _ready() -> void:
 	if generate_on_ready:
-		generate()
+		call_deferred("generate")
 
 func generate() -> void:
 	var floor_layer := get_node_or_null(floor_layer_path)
@@ -81,6 +92,7 @@ func generate() -> void:
 	_paint_tiles(floor_layer, wall_layer, floor_cells, width, height, origin)
 
 	_spawn_markers(floor_layer, main_component, width, height, origin)
+	_spawn_enemies(floor_layer, main_component, width, height, origin)
 	_update_pathing_bounds(floor_layer, width, height, origin)
 
 func _init_grid(width: int, height: int) -> Array:
@@ -375,6 +387,168 @@ func _spawn_markers(floor_layer: Node, floor_cells: Array[Vector2i], width: int,
 	_place_scene_instances(generated, floor_layer, floor_cells, origin, exit_scene, exit_count, "exit", "Exit")
 	_place_scene_instances(generated, floor_layer, floor_cells, origin, hiding_scene, hiding_count, "hiding_spot", "Hiding")
 	_place_unfair_nodes(generated, floor_layer, floor_cells, origin, unfair_count)
+
+func _spawn_enemies(floor_layer: Node, floor_cells: Array[Vector2i], width: int, height: int, origin: Vector2i) -> void:
+	if floor_layer == null or floor_cells.is_empty():
+		return
+	if remove_existing_enemies:
+		_clear_existing_enemies()
+	var enemies_root := _get_or_create_enemies_root()
+	_clear_children(enemies_root)
+	var spawn_cells := _filter_spawn_cells(floor_cells, width, height, enemy_spawn_min_floor_neighbors)
+	if spawn_cells.is_empty():
+		spawn_cells = floor_cells
+	spawn_cells.shuffle()
+	var used: Dictionary = {}
+	for cell in _collect_player_spawn_cells(floor_layer, origin):
+		used[cell] = true
+	var total: int = maxi(total_enemy_count, 0)
+	if total == 0:
+		_spawn_enemy_group(guard_scene, guard_count, "Guard", spawn_cells, used, floor_layer, floor_cells, origin, enemies_root)
+		_spawn_enemy_group(watcher_scene, watcher_count, "Watcher", spawn_cells, used, floor_layer, floor_cells, origin, enemies_root)
+		return
+	_spawn_enemy_mix(total, spawn_cells, used, floor_layer, floor_cells, origin, enemies_root)
+
+func _spawn_enemy_mix(
+	total: int,
+	spawn_cells: Array[Vector2i],
+	used: Dictionary,
+	floor_layer: Node,
+	floor_cells: Array[Vector2i],
+	origin: Vector2i,
+	enemies_root: Node
+) -> void:
+	if total <= 0:
+		return
+	var available: Array[Vector2i] = []
+	for cell in spawn_cells:
+		if used.has(cell):
+			continue
+		available.append(cell)
+	if available.is_empty():
+		available = spawn_cells
+	var spawn_total: int = mini(total, available.size())
+	for i in range(spawn_total):
+		var cell := available[i]
+		used[cell] = true
+		var spawn_watcher: bool = watcher_scene != null and watcher_chance > 0.0 and _rng.randf() <= watcher_chance
+		var scene: PackedScene = watcher_scene if spawn_watcher else guard_scene
+		var prefix := "Watcher" if spawn_watcher else "Guard"
+		if scene == null:
+			scene = guard_scene if guard_scene != null else watcher_scene
+			prefix = "Guard" if scene == guard_scene else "Watcher"
+		if scene == null:
+			return
+		var container := Node2D.new()
+		container.name = "%s_%d" % [prefix, i]
+		enemies_root.add_child(container)
+		_build_patrol_path(container, floor_layer, floor_cells, cell, origin)
+		var enemy := scene.instantiate()
+		if enemy is Node2D:
+			(enemy as Node2D).global_position = _cell_to_world_center(floor_layer, cell + origin)
+		container.add_child(enemy)
+
+func _spawn_enemy_group(
+	scene: PackedScene,
+	count: int,
+	name_prefix: String,
+	spawn_cells: Array[Vector2i],
+	used: Dictionary,
+	floor_layer: Node,
+	floor_cells: Array[Vector2i],
+	origin: Vector2i,
+	enemies_root: Node
+) -> void:
+	if scene == null:
+		return
+	var total: int = maxi(count, 0)
+	if total == 0:
+		return
+	var available: Array[Vector2i] = []
+	for cell in spawn_cells:
+		if used.has(cell):
+			continue
+		available.append(cell)
+	if available.is_empty():
+		available = spawn_cells
+	var spawn_total: int = mini(total, available.size())
+	for i in range(spawn_total):
+		var cell := available[i]
+		used[cell] = true
+		var container := Node2D.new()
+		container.name = "%s_%d" % [name_prefix, i]
+		enemies_root.add_child(container)
+		_build_patrol_path(container, floor_layer, floor_cells, cell, origin)
+		var enemy := scene.instantiate()
+		if enemy is Node2D:
+			(enemy as Node2D).global_position = _cell_to_world_center(floor_layer, cell + origin)
+		container.add_child(enemy)
+
+func _build_patrol_path(
+	container: Node2D,
+	floor_layer: Node,
+	floor_cells: Array[Vector2i],
+	center_cell: Vector2i,
+	origin: Vector2i
+) -> void:
+	if container == null:
+		return
+	var path := Node2D.new()
+	path.name = "PatrolPath"
+	container.add_child(path)
+	var points: Array[Vector2i] = _pick_patrol_cells(floor_cells, center_cell)
+	for i in range(points.size()):
+		var point := Node2D.new()
+		point.name = "Point_%d" % i
+		point.global_position = _cell_to_world_center(floor_layer, points[i] + origin)
+		path.add_child(point)
+
+func _pick_patrol_cells(floor_cells: Array[Vector2i], center_cell: Vector2i) -> Array[Vector2i]:
+	var points: Array[Vector2i] = []
+	if floor_cells.is_empty():
+		return points
+	var min_radius: int = maxi(patrol_radius_min, 0)
+	var max_radius: int = maxi(patrol_radius_max, min_radius)
+	var candidates: Array[Vector2i] = []
+	for cell in floor_cells:
+		var dist: int = abs(cell.x - center_cell.x) + abs(cell.y - center_cell.y)
+		if dist < min_radius or dist > max_radius:
+			continue
+		candidates.append(cell)
+	candidates.shuffle()
+	var total: int = maxi(patrol_points_per_enemy, 1)
+	for i in range(mini(total, candidates.size())):
+		points.append(candidates[i])
+	while points.size() < total:
+		points.append(center_cell)
+	return points
+
+func _collect_player_spawn_cells(floor_layer: Node, origin: Vector2i) -> Array[Vector2i]:
+	var results: Array[Vector2i] = []
+	var spawn_root := get_node_or_null(spawn_root_path)
+	if spawn_root == null:
+		return results
+	var children: Array = spawn_root.get_children()
+	for child in children:
+		if child is Node2D:
+			var world_cell: Vector2i = _world_to_floor_cell(floor_layer, (child as Node2D).global_position)
+			results.append(world_cell - origin)
+	return results
+
+func _clear_existing_enemies() -> void:
+	var enemies: Array = get_tree().get_nodes_in_group("enemy")
+	for enemy in enemies:
+		if enemy is Node:
+			(enemy as Node).queue_free()
+
+func _get_or_create_enemies_root() -> Node2D:
+	var node := get_node_or_null("Enemies")
+	if node is Node2D:
+		return node as Node2D
+	var root := Node2D.new()
+	root.name = "Enemies"
+	get_parent().add_child(root)
+	return root
 
 func _place_scene_instances(parent: Node, floor_layer: Node, cells: Array[Vector2i], origin: Vector2i, scene: PackedScene, count: int, group: String, name_prefix: String) -> void:
 	if scene == null or parent == null:

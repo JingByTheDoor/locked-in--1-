@@ -1,4 +1,4 @@
-[gd_scene load_steps=16 format=3 uid="uid://cv0kmglile0l7"]
+[gd_scene load_steps=15 format=3 uid="uid://cv0kmglile0l7"]
 
 [ext_resource type="PackedScene" uid="uid://x4khlkw6qu05" path="res://Scenes/Player.tscn" id="1"]
 [ext_resource type="PackedScene" path="res://UI/MessageHud.tscn" id="2"]
@@ -6,7 +6,6 @@
 [ext_resource type="PackedScene" path="res://VFX/ReadabilityOverlay.tscn" id="4"]
 [ext_resource type="PackedScene" path="res://UI/ExitSignLayer.tscn" id="5"]
 [ext_resource type="PackedScene" path="res://VFX/SoundRippleManager.tscn" id="6"]
-[ext_resource type="PackedScene" uid="uid://dv3s6lpqlvwwb" path="res://Scenes/Guard.tscn" id="7"]
 [ext_resource type="Script" uid="uid://b2x1ys54sgisv" path="res://Scripts/Main.gd" id="8"]
 [ext_resource type="Script" uid="uid://dspas587cy1x1" path="res://Scripts/EscalationManager.gd" id="9"]
 [ext_resource type="PackedScene" uid="uid://cyruxhht66d6q" path="res://Scenes/Hunter.tscn" id="10"]
@@ -35,69 +34,16 @@ script = ExtResource("14")
 map_width = 80
 map_height = 60
 room_attempts = 24
+enemy_spawn_min_floor_neighbors = 40
+total_enemy_count = 40
+remove_existing_enemies = false
 
 [node name="GlobalDarkness" type="CanvasModulate" parent="."]
+visible = false
 color = Color(0, 0, 0, 1)
 
 [node name="Player" parent="." instance=ExtResource("1")]
 position = Vector2(-82, -58)
-
-[node name="Guard" parent="." instance=ExtResource("7")]
-position = Vector2(240, 40)
-
-[node name="Guard2" parent="." instance=ExtResource("7")]
-position = Vector2(-140, 140)
-patrol_path = NodePath("../PatrolPath2")
-
-[node name="Guard3" parent="." instance=ExtResource("7")]
-position = Vector2(520, -120)
-patrol_path = NodePath("../PatrolPath3")
-
-[node name="PatrolPath" type="Node2D" parent="."]
-position = Vector2(68, 0)
-
-[node name="PointA" type="Node2D" parent="PatrolPath"]
-modulate = Color(0, 1, 1, 1)
-position = Vector2(200, 80)
-
-[node name="PointB" type="Node2D" parent="PatrolPath"]
-position = Vector2(360, 80)
-
-[node name="PointC" type="Node2D" parent="PatrolPath"]
-position = Vector2(360, -40)
-
-[node name="PointD" type="Node2D" parent="PatrolPath"]
-position = Vector2(200, -40)
-
-[node name="PatrolPath2" type="Node2D" parent="."]
-position = Vector2(-180, 120)
-
-[node name="PointA2" type="Node2D" parent="PatrolPath2"]
-position = Vector2(-40, 40)
-
-[node name="PointB2" type="Node2D" parent="PatrolPath2"]
-position = Vector2(60, 40)
-
-[node name="PointC2" type="Node2D" parent="PatrolPath2"]
-position = Vector2(60, -60)
-
-[node name="PointD2" type="Node2D" parent="PatrolPath2"]
-position = Vector2(-40, -60)
-
-[node name="PatrolPath3" type="Node2D" parent="."]
-position = Vector2(520, -120)
-
-[node name="PointA3" type="Node2D" parent="PatrolPath3"]
-position = Vector2(-80, 0)
-
-[node name="PointB3" type="Node2D" parent="PatrolPath3"]
-position = Vector2(80, 0)
-
-[node name="PointC3" type="Node2D" parent="PatrolPath3"]
-position = Vector2(80, -120)
-
-[node name="PointD3" type="Node2D" parent="PatrolPath3"]
-position = Vector2(-80, -120)
 
 [node name="SoundRippleManager" parent="." instance=ExtResource("6")]
 

@@ -1,8 +1,29 @@
-[gd_scene load_steps=9 format=3 uid="uid://dv3s6lpqlvwwb"]
+[gd_scene load_steps=15 format=3 uid="uid://dv3s6lpqlvwwb"]
 
 [ext_resource type="Script" uid="uid://doy6ompjq3yv" path="res://Scripts/Guard.gd" id="1"]
 [ext_resource type="Texture2D" uid="uid://cl0ww7ibv6td7" path="res://guard walk prototype - Edited.png" id="2_gtyxt"]
+[ext_resource type="Texture2D" uid="uid://coftsok1dea5d" path="res://Guard attack no bg.png" id="2_qym4e"]
 [ext_resource type="Script" uid="uid://d23fs4q1yb1dt" path="res://Scripts/VisionCone.gd" id="3"]
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_v25yl"]
+atlas = ExtResource("2_qym4e")
+region = Rect2(0, 0, 234, 210)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_52a71"]
+atlas = ExtResource("2_qym4e")
+region = Rect2(234, 0, 234, 210)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_3odou"]
+atlas = ExtResource("2_qym4e")
+region = Rect2(468, 210, 234, 210)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_epbi3"]
+atlas = ExtResource("2_qym4e")
+region = Rect2(234, 210, 234, 210)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_aptjx"]
+atlas = ExtResource("2_qym4e")
+region = Rect2(0, 210, 234, 210)
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_qym4e"]
 atlas = ExtResource("2_gtyxt")
@@ -18,6 +39,29 @@ region = Rect2(384, 0, 192, 99)
 
 [sub_resource type="SpriteFrames" id="1"]
 animations = [{
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_v25yl")
+}, {
+"duration": 0.31,
+"texture": SubResource("AtlasTexture_52a71")
+}, {
+"duration": 0.71,
+"texture": SubResource("AtlasTexture_3odou")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_3odou")
+}, {
+"duration": 0.41,
+"texture": SubResource("AtlasTexture_epbi3")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_aptjx")
+}],
+"loop": true,
+"name": &"attack",
+"speed": 5.0
+}, {
 "frames": [{
 "duration": 1.0,
 "texture": SubResource("AtlasTexture_qym4e")
@@ -55,8 +99,8 @@ aim_rotation_offset_degrees = -90.0
 
 [node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="Visuals"]
 sprite_frames = SubResource("1")
-animation = &"walk"
-frame_progress = 0.20229626
+animation = &"attack"
+frame_progress = 0.6213586
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="."]
 shape = SubResource("2")

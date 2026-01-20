@@ -40,6 +40,7 @@ extends Node2D
 @export var hunter_spawn_min_distance: float = 320.0
 @export var hunter_spawn_radius: float = 640.0
 @export var hunter_spawn_attempts: int = 6
+@export var hunter_floor_layer_path: NodePath = NodePath("../Floor")
 
 @export var alarm_message: String = "Alarm raised — pressure surges."
 @export var callout_message: String = "Callout heard — pressure rises."
@@ -361,6 +362,33 @@ func _notify_hunter_arrived(hunter: Node2D) -> void:
 			node.call("flee_and_despawn", hunter)
 
 func _pick_spawn_position(origin: Vector2) -> Vector2:
+	var floor_layer := _get_hunter_floor_layer()
+	if floor_layer != null:
+		var used_cells: Array[Vector2i] = floor_layer.get_used_cells()
+		if not used_cells.is_empty():
+			var best_pos: Vector2 = origin
+			var best_dist: float = -1.0
+			var attempts: int = max(hunter_spawn_attempts, 1)
+			for i in range(attempts):
+				var idx: int = _rng.randi_range(0, used_cells.size() - 1)
+				var cell: Vector2i = used_cells[idx]
+				var candidate := _floor_cell_to_world_center(floor_layer, cell)
+				var dist: float = origin.distance_to(candidate)
+				if dist < hunter_spawn_min_distance or dist > hunter_spawn_radius:
+					continue
+				if dist > best_dist:
+					best_dist = dist
+					best_pos = candidate
+			if best_dist >= 0.0:
+				return best_pos
+			for cell in used_cells:
+				var candidate := _floor_cell_to_world_center(floor_layer, cell)
+				var dist: float = origin.distance_to(candidate)
+				if dist > best_dist:
+					best_dist = dist
+					best_pos = candidate
+			if best_dist >= 0.0:
+				return best_pos
 	var best_pos: Vector2 = origin + Vector2.RIGHT * hunter_spawn_min_distance
 	var best_dist: float = 0.0
 	var attempts: int = max(hunter_spawn_attempts, 1)
@@ -372,6 +400,26 @@ func _pick_spawn_position(origin: Vector2) -> Vector2:
 			best_dist = dist
 			best_pos = candidate
 	return best_pos
+
+func _get_hunter_floor_layer() -> TileMapLayer:
+	if hunter_floor_layer_path != NodePath():
+		var node := get_node_or_null(hunter_floor_layer_path)
+		if node is TileMapLayer:
+			return node as TileMapLayer
+	var parent := get_parent()
+	if parent != null:
+		var node := parent.get_node_or_null("Floor")
+		if node is TileMapLayer:
+			return node as TileMapLayer
+	return null
+
+func _floor_cell_to_world_center(layer: TileMapLayer, cell: Vector2i) -> Vector2:
+	var tile_size := Vector2.ONE
+	var tile_set := layer.tile_set
+	if tile_set != null:
+		tile_size = Vector2(tile_set.tile_size)
+	var local := layer.map_to_local(cell) + tile_size * 0.5
+	return layer.to_global(local)
 
 func _apply_audio_streams() -> void:
 	if _tension_player != null and _tension_player.stream == null and tension_stream != null:
