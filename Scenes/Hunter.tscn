@@ -1,6 +1,7 @@
-[gd_scene load_steps=16 format=3 uid="uid://cyruxhht66d6q"]
+[gd_scene load_steps=17 format=3 uid="uid://cyruxhht66d6q"]
 
 [ext_resource type="Script" uid="uid://cyhoyanjl83ml" path="res://Scripts/Hunter.gd" id="1"]
+[ext_resource type="AudioStream" uid="uid://dh170ckjy5ea5" path="res://Audio/pREDETOR CLOSE.wav" id="2_ah0w8"]
 [ext_resource type="Texture2D" uid="uid://ds38b6nsmbex7" path="res://tentacle_sprite_white_grey_to_transparency.png" id="2_rbmkp"]
 [ext_resource type="Script" uid="uid://d23fs4q1yb1dt" path="res://Scripts/VisionCone.gd" id="3"]
 
@@ -112,7 +113,10 @@ radius = 22.0
 
 [node name="Hunter" type="CharacterBody2D"]
 script = ExtResource("1")
+search_radius = 300.0
+hearing_multiplier = 5.0
 aim_rotation_offset_degrees = -90.0
+presence_stream = ExtResource("2_ah0w8")
 
 [node name="Visuals" type="Node2D" parent="."]
 

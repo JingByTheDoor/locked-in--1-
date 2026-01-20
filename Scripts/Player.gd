@@ -5,6 +5,7 @@ signal damaged(amount: int, context: String)
 
 @export var move_speed: float = 180.0
 @export var sprint_multiplier: float = 1.5
+@export var sprint_anim_speed_multiplier: float = 1.4
 @export var interact_radius: float = 48.0
 @export var idle_animation_name: StringName = &"Idle"
 @export var walk_animation_name: StringName = &"Walk"
@@ -147,7 +148,7 @@ func _physics_process(delta: float) -> void:
 		speed *= sprint_multiplier
 	velocity = input_vector * speed
 	move_and_slide()
-	_update_animation(input_vector)
+	_update_animation(input_vector, is_sprinting)
 	_update_aim()
 	_update_attack(delta)
 	_update_movement_sound(delta, input_vector, is_sprinting)
@@ -177,7 +178,7 @@ func _update_aim() -> void:
 	if vision_light != null:
 		vision_light.global_rotation = _aim_angle + deg_to_rad(vision_light_rotation_offset_degrees)
 
-func _update_animation(input_vector: Vector2) -> void:
+func _update_animation(input_vector: Vector2, is_sprinting: bool = false) -> void:
 	if sprite == null:
 		return
 	var frames := sprite.sprite_frames
@@ -186,11 +187,15 @@ func _update_animation(input_vector: Vector2) -> void:
 	var anim_name := idle_animation_name
 	if input_vector.length() > 0.1:
 		anim_name = walk_animation_name
+	var speed_scale := 1.0
+	if is_sprinting and input_vector.length() > 0.1:
+		speed_scale = max(sprint_anim_speed_multiplier, 1.0)
 	if frames.has_animation(anim_name):
 		if sprite.animation != anim_name or not sprite.is_playing():
 			sprite.play(anim_name)
 	elif not sprite.is_playing():
 		sprite.play()
+	sprite.speed_scale = speed_scale
 
 func _setup_attack_area() -> void:
 	if attack_area == null:
