@@ -8,16 +8,16 @@ This project is configured for easy deployment to Vercel. Because this is a Godo
     *   Open your project in Godot.
     *   Go to **Project > Export**.
     *   Add a **Web** preset.
-    *   Set the **Export Path** to `public/index.html`.
+    *   Set the **Export Path** to `index.html` (in the root directory).
     *   Ensure **Export With Debug** is off for production.
     *   Click **Export Project**.
 
 2.  **Vercel Configuration:**
-    *   Push your code to GitHub (including the `public` folder and `vercel.json`).
+    *   Push your code to GitHub (including the `index.html`, `index.js`, and `index.wasm` files).
     *   Connect your repository to Vercel.
-    *   Vercel should automatically detect the settings.
-    *   **Framework Preset:** Other (or let it auto-detect).
-    *   **Output Directory:** `public`
+    *   In the Vercel Dashboard, go to **Settings > General**.
+    *   **Output Directory:** Change this to `.` (just a period, which means "root folder").
+    *   Click **Save** and redeploy.
 
 3.  **Manual Upload (Optional):**
     *   If you have the Vercel CLI, run `vercel` in the project root.

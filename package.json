@@ -3,6 +3,6 @@
   "version": "1.0.0",
   "description": "Godot 4 game deployment to Vercel",
   "scripts": {
-    "build": "echo 'Please export your Godot game to the public folder' && exit 0"
+    "build": "echo 'Skipping build, using exported files' && exit 0"
   }
 }
