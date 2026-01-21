@@ -335,10 +335,7 @@ func _set_terrain_cells(layer: Node, cells: Array[Vector2i], terrain_set: int, t
 		return false
 	if not layer.has_method("set_cells_terrain_connect"):
 		return false
-	var args := _build_terrain_connect_args(layer, cells, terrain_set, terrain)
-	if args.is_empty():
-		return false
-	layer.callv("set_cells_terrain_connect", args)
+	layer.callv("set_cells_terrain_connect", [cells, terrain_set, terrain, false])
 	return true
 
 func _build_terrain_connect_args(layer: Node, cells: Array[Vector2i], terrain_set: int, terrain: int) -> Array:
