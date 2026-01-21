@@ -32,6 +32,8 @@ enum State {
 @export var player_path: NodePath
 @export var idle_animation_name: StringName = &"idle"
 @export var walk_animation_name: StringName = &"walk"
+@export var attack_animation_name: StringName = &"attack"
+@export var attack_animation_time: float = 0.4
 @export var aim_rotation_offset_degrees: float = 0.0
 @export var debug_state_colors: bool = true
 @export var pathing_enabled: bool = true
@@ -84,6 +86,7 @@ var has_last_seen: bool = false
 
 var _player: Node2D
 var _attack_timer: float = 0.0
+var _attack_anim_timer: float = 0.0
 var _lose_timer: float = 0.0
 var _aim_angle: float = 0.0
 var _current_alert_hp: int = 3
@@ -127,6 +130,7 @@ func _physics_process(delta: float) -> void:
 		_update_flee(delta)
 		return
 	_attack_timer = max(0.0, _attack_timer - delta)
+	_attack_anim_timer = max(0.0, _attack_anim_timer - delta)
 	_callout_timer = max(0.0, _callout_timer - delta)
 	_callout_pause_timer = max(0.0, _callout_pause_timer - delta)
 	if _callout_pause_timer > 0.0:
@@ -266,7 +270,9 @@ func _update_animation(move_dir: Vector2) -> void:
 	if frames == null:
 		return
 	var anim_name := idle_animation_name
-	if move_dir.length() > 0.1:
+	if _attack_anim_timer > 0.0 and frames.has_animation(attack_animation_name):
+		anim_name = attack_animation_name
+	elif move_dir.length() > 0.1:
 		anim_name = walk_animation_name
 	if frames.has_animation(anim_name):
 		if sprite.animation != anim_name or not sprite.is_playing():
@@ -298,6 +304,7 @@ func _try_attack() -> void:
 	attacked.emit(_player, attack_damage)
 	_play_random_one_shot(attack_hit_streams, attack_hit_volume_db)
 	_attack_timer = attack_cooldown
+	_attack_anim_timer = max(attack_animation_time, 0.05)
 
 func _try_callout() -> void:
 	if not callout_enabled:

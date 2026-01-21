@@ -27,6 +27,8 @@ enum State {
 @export var player_path: NodePath
 @export var idle_animation_name: StringName = &"idle"
 @export var walk_animation_name: StringName = &"walk"
+@export var attack_animation_name: StringName = &"attack"
+@export var attack_animation_time: float = 0.4
 @export var aim_rotation_offset_degrees: float = 0.0
 @export var debug_state_colors: bool = true
 @export var pathing_enabled: bool = true
@@ -71,6 +73,7 @@ var _player: Node2D
 var _lose_timer: float = 0.0
 var _aim_angle: float = 0.0
 var _alarm_timer: float = 0.0
+var _attack_anim_timer: float = 0.0
 var _footstep_timer: float = 0.0
 var _current_alert_hp: int = 3
 var _rng: RandomNumberGenerator = RandomNumberGenerator.new()
@@ -111,6 +114,7 @@ func _physics_process(delta: float) -> void:
 		return
 	_alarm_timer = max(0.0, _alarm_timer - delta)
 	_alarm_pause_timer = max(0.0, _alarm_pause_timer - delta)
+	_attack_anim_timer = max(0.0, _attack_anim_timer - delta)
 	if _alarm_pause_timer > 0.0:
 		velocity = Vector2.ZERO
 		move_and_slide()
@@ -218,7 +222,9 @@ func _update_animation(move_dir: Vector2) -> void:
 	if frames == null:
 		return
 	var anim_name := idle_animation_name
-	if move_dir.length() > 0.1:
+	if _attack_anim_timer > 0.0 and frames.has_animation(attack_animation_name):
+		anim_name = attack_animation_name
+	elif move_dir.length() > 0.1:
 		anim_name = walk_animation_name
 	if frames.has_animation(anim_name):
 		if sprite.animation != anim_name or not sprite.is_playing():
@@ -262,6 +268,7 @@ func _try_alarm() -> void:
 	_play_one_shot(alarm_stream, alarm_volume_db)
 	_alarm_timer = max(alarm_cooldown, 0.1)
 	_alarm_pause_timer = max(alarm_pause_time, 0.0)
+	_attack_anim_timer = max(attack_animation_time, 0.05)
 
 func _die() -> void:
 	queue_free()

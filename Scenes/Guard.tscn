@@ -43,13 +43,13 @@ animations = [{
 "duration": 1.0,
 "texture": SubResource("AtlasTexture_v25yl")
 }, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_v25yl")
+}, {
 "duration": 0.31,
 "texture": SubResource("AtlasTexture_52a71")
 }, {
-"duration": 0.71,
-"texture": SubResource("AtlasTexture_3odou")
-}, {
-"duration": 1.0,
+"duration": 0.91,
 "texture": SubResource("AtlasTexture_3odou")
 }, {
 "duration": 0.41,
@@ -93,6 +93,7 @@ radius = 12.0
 
 [node name="Guard" type="CharacterBody2D"]
 script = ExtResource("1")
+attack_range = 50.0
 aim_rotation_offset_degrees = -90.0
 
 [node name="Visuals" type="Node2D" parent="."]
@@ -100,7 +101,7 @@ aim_rotation_offset_degrees = -90.0
 [node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="Visuals"]
 sprite_frames = SubResource("1")
 animation = &"attack"
-frame_progress = 0.6213586
+frame_progress = 0.46602893
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="."]
 shape = SubResource("2")

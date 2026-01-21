@@ -1,9 +1,30 @@
-[gd_scene load_steps=11 format=3 uid="uid://yy0t7kf40cof"]
+[gd_scene load_steps=17 format=3 uid="uid://yy0t7kf40cof"]
 
 [ext_resource type="Script" uid="uid://cq0mr6tljahd0" path="res://Scripts/Watcher.gd" id="1"]
 [ext_resource type="Script" uid="uid://d23fs4q1yb1dt" path="res://Scripts/VisionCone.gd" id="3"]
+[ext_resource type="Texture2D" uid="uid://c7e7mvnl5qe5u" path="res://816802bd-490e-4450-9bdc-221863868e12.png" id="3_4xleo"]
 [ext_resource type="PackedScene" path="res://VFX/AlarmPulse.tscn" id="4"]
 [ext_resource type="Texture2D" uid="uid://bdce662ru6rct" path="res://Watcher walkprototype.png" id="4_4xleo"]
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_rpuuc"]
+atlas = ExtResource("3_4xleo")
+region = Rect2(0, 0, 235, 211)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_fj371"]
+atlas = ExtResource("3_4xleo")
+region = Rect2(235, 0, 235, 211)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_j6bou"]
+atlas = ExtResource("3_4xleo")
+region = Rect2(470, 211, 235, 211)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_pvy0c"]
+atlas = ExtResource("3_4xleo")
+region = Rect2(235, 211, 235, 211)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_q3nkv"]
+atlas = ExtResource("3_4xleo")
+region = Rect2(0, 211, 235, 211)
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_rridp"]
 atlas = ExtResource("4_4xleo")
@@ -23,6 +44,29 @@ region = Rect2(392, 0, 196, 101)
 
 [sub_resource type="SpriteFrames" id="1"]
 animations = [{
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_rpuuc")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_rpuuc")
+}, {
+"duration": 0.31,
+"texture": SubResource("AtlasTexture_fj371")
+}, {
+"duration": 0.91,
+"texture": SubResource("AtlasTexture_j6bou")
+}, {
+"duration": 0.41,
+"texture": SubResource("AtlasTexture_pvy0c")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_q3nkv")
+}],
+"loop": false,
+"name": &"attack",
+"speed": 5.0
+}, {
 "frames": [{
 "duration": 1.0,
 "texture": SubResource("AtlasTexture_rridp")
@@ -59,11 +103,12 @@ alarm_vfx_scene = ExtResource("4")
 [node name="Visuals" type="Node2D" parent="."]
 
 [node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="Visuals"]
-position = Vector2(-0.5, 2.3841858e-07)
+position = Vector2(2, -3)
 scale = Vector2(1.2295917, 1.1485149)
 sprite_frames = SubResource("1")
-animation = &"idle"
-frame_progress = 0.711112
+animation = &"attack"
+frame = 4
+frame_progress = 1.0
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="."]
 shape = SubResource("2")
