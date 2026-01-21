@@ -42,7 +42,6 @@ total_enemy_count = 40
 remove_existing_enemies = false
 
 [node name="GlobalDarkness" type="CanvasModulate" parent="."]
-visible = false
 color = Color(0, 0, 0, 1)
 
 [node name="Player" parent="." instance=ExtResource("1")]

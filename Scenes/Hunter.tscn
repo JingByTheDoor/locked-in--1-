@@ -113,7 +113,8 @@ radius = 22.0
 
 [node name="Hunter" type="CharacterBody2D"]
 script = ExtResource("1")
-chase_speed = 600.0
+search_speed = 600.0
+chase_speed = 450.0
 aim_rotation_offset_degrees = -90.0
 presence_stream = ExtResource("2_ah0w8")
 
