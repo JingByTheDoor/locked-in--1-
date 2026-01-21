@@ -19,7 +19,7 @@
 script = ExtResource("8")
 
 [node name="HatDiagonal" type="Sprite2D" parent="."]
-position = Vector2(3364.5002, 1227.4998)
+position = Vector2(3748.9998, 1099)
 scale = Vector2(14.177812, 12.536694)
 texture = ExtResource("15_h1m7h")
 
@@ -39,7 +39,6 @@ total_enemy_count = 40
 remove_existing_enemies = false
 
 [node name="GlobalDarkness" type="CanvasModulate" parent="."]
-visible = false
 color = Color(0, 0, 0, 1)
 
 [node name="Player" parent="." instance=ExtResource("1")]

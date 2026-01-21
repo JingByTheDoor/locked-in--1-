@@ -28,6 +28,14 @@ text = "New Run"
 custom_minimum_size = Vector2(240, 36)
 text = "Continue"
 
+[node name="SoundToggle" type="CheckButton" parent="CenterContainer/VBoxContainer"]
+custom_minimum_size = Vector2(240, 32)
+text = "Sound: On"
+
+[node name="MusicToggle" type="CheckButton" parent="CenterContainer/VBoxContainer"]
+custom_minimum_size = Vector2(240, 32)
+text = "Music: On"
+
 [node name="QuitButton" type="Button" parent="CenterContainer/VBoxContainer"]
 custom_minimum_size = Vector2(240, 36)
 text = "Quit"

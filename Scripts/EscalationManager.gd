@@ -195,6 +195,10 @@ func _apply_audio_player(player: AudioStreamPlayer, intensity: float) -> void:
 		return
 	if player.stream == null:
 		return
+	if not GameState.music_enabled:
+		if player.playing:
+			player.stop()
+		return
 	if not player.playing:
 		player.play()
 	var clamped: float = clampf(intensity, 0.0, 1.0)

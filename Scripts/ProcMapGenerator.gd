@@ -33,6 +33,9 @@ class_name ProcMapGenerator
 @export var spawn_min_floor_neighbors: int = 4
 @export var player_path: NodePath = NodePath("../Player")
 @export var place_player_on_spawn: bool = true
+@export var door_enabled: bool = true
+@export var door_scene: PackedScene = preload("res://Scenes/ProcDoor.tscn")
+@export var door_hallway_clear_length: int = 2
 @export var enemy_spawn_min_floor_neighbors: int = 3
 @export var total_enemy_count: int = 15
 @export_range(0.0, 1.0, 0.01) var watcher_chance: float = 0.2
@@ -76,6 +79,7 @@ func generate() -> void:
 	var rooms := _carve_rooms(grid, width, height)
 	_connect_rooms(grid, rooms)
 	_ensure_connected(grid, width, height)
+	var doors := _build_doors(grid, rooms, width, height)
 
 	var components: Array = _collect_floor_components(grid, width, height)
 	var main_component: Array[Vector2i] = _select_main_component(components)
@@ -95,6 +99,7 @@ func generate() -> void:
 
 	_spawn_markers(floor_layer, main_component, width, height, origin)
 	_spawn_enemies(floor_layer, main_component, width, height, origin)
+	_spawn_doors(floor_layer, doors, origin)
 	_place_player_spawn(floor_layer, main_component, origin)
 	_update_pathing_bounds(floor_layer, width, height, origin)
 
@@ -614,6 +619,204 @@ func _place_unfair_nodes(parent: Node, floor_layer: Node, cells: Array[Vector2i]
 		node.add_to_group("unfair_room")
 		parent.add_child(node)
 		used += 1
+
+func _build_doors(grid: Array, rooms: Array[Rect2i], width: int, height: int) -> Array:
+	var doors: Array = []
+	if not door_enabled or door_scene == null:
+		return doors
+	if corridor_width < 2:
+		return doors
+	if rooms.is_empty():
+		return doors
+	var room_lookup := _build_room_lookup(rooms)
+	var door_keys: Dictionary = {}
+	var clear_len: int = maxi(door_hallway_clear_length, 1)
+	for room in rooms:
+		_collect_room_side_doors(grid, room_lookup, width, height, room, Vector2i(0, -1), true, clear_len, doors, door_keys)
+		_collect_room_side_doors(grid, room_lookup, width, height, room, Vector2i(0, 1), true, clear_len, doors, door_keys)
+		_collect_room_side_doors(grid, room_lookup, width, height, room, Vector2i(-1, 0), false, clear_len, doors, door_keys)
+		_collect_room_side_doors(grid, room_lookup, width, height, room, Vector2i(1, 0), false, clear_len, doors, door_keys)
+	return doors
+
+func _collect_room_side_doors(
+	grid: Array,
+	room_lookup: Dictionary,
+	width: int,
+	height: int,
+	room: Rect2i,
+	dir_out: Vector2i,
+	horizontal: bool,
+	clear_len: int,
+	doors: Array,
+	door_keys: Dictionary
+) -> void:
+	if dir_out == Vector2i(0, -1) or dir_out == Vector2i(0, 1):
+		var y := room.position.y + (room.size.y if dir_out.y > 0 else -1)
+		if y < 0 or y >= height:
+			return
+		var segment: Array[Vector2i] = []
+		for x in range(room.position.x, room.position.x + room.size.x):
+			var cell := Vector2i(x, y)
+			if _is_door_candidate(grid, room_lookup, width, height, cell, dir_out, clear_len):
+				segment.append(cell)
+			else:
+				_finalize_door_segment(grid, segment, horizontal, doors, door_keys)
+				segment.clear()
+		_finalize_door_segment(grid, segment, horizontal, doors, door_keys)
+	else:
+		var x := room.position.x + (room.size.x if dir_out.x > 0 else -1)
+		if x < 0 or x >= width:
+			return
+		var segment: Array[Vector2i] = []
+		for y in range(room.position.y, room.position.y + room.size.y):
+			var cell := Vector2i(x, y)
+			if _is_door_candidate(grid, room_lookup, width, height, cell, dir_out, clear_len):
+				segment.append(cell)
+			else:
+				_finalize_door_segment(grid, segment, horizontal, doors, door_keys)
+				segment.clear()
+		_finalize_door_segment(grid, segment, horizontal, doors, door_keys)
+
+func _is_door_candidate(
+	grid: Array,
+	room_lookup: Dictionary,
+	width: int,
+	height: int,
+	cell: Vector2i,
+	dir_out: Vector2i,
+	clear_len: int
+) -> bool:
+	if not _is_corridor_cell(grid, room_lookup, width, height, cell):
+		return false
+	var inside := cell - dir_out
+	if not room_lookup.has(inside):
+		return false
+	for i in range(1, clear_len + 1):
+		var check := cell + dir_out * i
+		if not _is_corridor_cell(grid, room_lookup, width, height, check):
+			return false
+	return true
+
+func _finalize_door_segment(
+	grid: Array,
+	segment: Array[Vector2i],
+	horizontal: bool,
+	doors: Array,
+	door_keys: Dictionary
+) -> void:
+	if segment.is_empty():
+		return
+	if segment.size() < 2:
+		return
+	var max_len: int = mini(maxi(corridor_width, 2), 3)
+	if segment.size() > max_len:
+		return
+	var door := _build_door_from_segment(grid, segment, horizontal)
+	if door.is_empty():
+		return
+	var key := _door_key(door["cells"], horizontal)
+	if door_keys.has(key):
+		return
+	door_keys[key] = true
+	doors.append(door)
+
+func _build_door_from_segment(grid: Array, segment: Array[Vector2i], horizontal: bool) -> Dictionary:
+	if segment.size() < 2:
+		return {}
+	var door_cells: Array[Vector2i] = []
+	if segment.size() == 2:
+		door_cells = segment.duplicate()
+	else:
+		var remove_first: bool = _rng.randf() < 0.5
+		if remove_first:
+			door_cells = [segment[1], segment[2]]
+			_remove_floor_cell(grid, segment[0])
+		else:
+			door_cells = [segment[0], segment[1]]
+			_remove_floor_cell(grid, segment[2])
+	return {
+		"cells": door_cells,
+		"horizontal": horizontal
+	}
+
+func _remove_floor_cell(grid: Array, cell: Vector2i) -> void:
+	if cell.y < 0 or cell.y >= grid.size():
+		return
+	if cell.x < 0 or cell.x >= grid[cell.y].size():
+		return
+	grid[cell.y][cell.x] = false
+
+func _door_key(cells: Array[Vector2i], horizontal: bool) -> String:
+	if cells.size() < 2:
+		return ""
+	var a: Vector2i = cells[0]
+	var b: Vector2i = cells[1]
+	if a.x > b.x or (a.x == b.x and a.y > b.y):
+		var tmp := a
+		a = b
+		b = tmp
+	return "%d,%d;%d,%d;%s" % [a.x, a.y, b.x, b.y, "h" if horizontal else "v"]
+
+func _is_corridor_cell(
+	grid: Array,
+	room_lookup: Dictionary,
+	width: int,
+	height: int,
+	cell: Vector2i
+) -> bool:
+	if cell.x < 0 or cell.x >= width or cell.y < 0 or cell.y >= height:
+		return false
+	if not grid[cell.y][cell.x]:
+		return false
+	if room_lookup.has(cell):
+		return false
+	return true
+
+func _build_room_lookup(rooms: Array[Rect2i]) -> Dictionary:
+	var lookup: Dictionary = {}
+	for room in rooms:
+		for y in range(room.position.y, room.position.y + room.size.y):
+			for x in range(room.position.x, room.position.x + room.size.x):
+				lookup[Vector2i(x, y)] = true
+	return lookup
+
+func _spawn_doors(floor_layer: Node, doors: Array, origin: Vector2i) -> void:
+	if not door_enabled or door_scene == null:
+		return
+	if floor_layer == null:
+		return
+	if doors.is_empty():
+		return
+	var doors_root := _get_or_create_doors_root()
+	_clear_children(doors_root)
+	var tile_size := _get_tile_size(floor_layer)
+	for i in range(doors.size()):
+		var info: Dictionary = doors[i]
+		if not info.has("cells"):
+			continue
+		var cells: Array = info["cells"]
+		if cells.size() < 2:
+			continue
+		var door := door_scene.instantiate()
+		if door == null:
+			continue
+		doors_root.add_child(door)
+		if door is Node2D:
+			var world_a := _cell_to_world_center(floor_layer, (cells[0] as Vector2i) + origin)
+			var world_b := _cell_to_world_center(floor_layer, (cells[1] as Vector2i) + origin)
+			(door as Node2D).global_position = (world_a + world_b) * 0.5
+		if door.has_method("configure"):
+			door.call("configure", tile_size, bool(info.get("horizontal", true)))
+		door.name = "Door_%d" % i
+
+func _get_or_create_doors_root() -> Node2D:
+	var node := get_node_or_null("Doors")
+	if node is Node2D:
+		return node as Node2D
+	var root := Node2D.new()
+	root.name = "Doors"
+	get_parent().add_child(root)
+	return root
 
 func _cell_to_world(floor_layer: Node, cell: Vector2i) -> Vector2:
 	if floor_layer.has_method("map_to_local"):

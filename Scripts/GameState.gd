@@ -66,6 +66,8 @@ var tutorial_flags: Dictionary = {}
 var debug_show_vision: bool = false
 var debug_show_sound: bool = false
 var debug_print_pressure: bool = false
+var sound_enabled: bool = true
+var music_enabled: bool = true
 var _generator_drain_timer: float = 0.0
 
 func _ready() -> void:
@@ -73,6 +75,7 @@ func _ready() -> void:
 	_ensure_resource_defaults()
 	_normalize_carry_rank()
 	_normalize_generator()
+	_apply_audio_settings()
 	set_process(true)
 
 func _process(delta: float) -> void:
@@ -275,6 +278,7 @@ func reset_run() -> void:
 	_ensure_resource_defaults()
 	_normalize_carry_rank()
 	_normalize_generator()
+	_apply_audio_settings()
 
 func load_run() -> bool:
 	if not FileAccess.file_exists(SAVE_PATH):
@@ -432,3 +436,15 @@ func _has_mouse_event(events: Array[InputEvent], button: int) -> bool:
 func _grade_key(grade: int) -> String:
 	var clamped := clampi(grade, GRADE_MIN, GRADE_MAX)
 	return str(clamped)
+
+func set_sound_enabled(enabled: bool) -> void:
+	sound_enabled = enabled
+	_apply_audio_settings()
+
+func set_music_enabled(enabled: bool) -> void:
+	music_enabled = enabled
+
+func _apply_audio_settings() -> void:
+	var master_idx := AudioServer.get_bus_index("Master")
+	if master_idx >= 0:
+		AudioServer.set_bus_mute(master_idx, not sound_enabled)

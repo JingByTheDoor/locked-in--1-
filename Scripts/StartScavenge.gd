@@ -2,10 +2,9 @@ extends Area2D
 class_name StartScavenge
 
 @export var scavenge_scene_paths: Array[String] = [
-	"res://Scenes/ScavengeRun.tscn",
-	"res://Scenes/ScavengeRun_B.tscn"
+	"res://Scenes/Main.tscn"
 ]
-@export var randomize_scene: bool = true
+@export var randomize_scene: bool = false
 @export var start_message: String = "Scavenge begins..."
 @export var start_message_duration: float = 1.6
 @export var prompt_text: String = "Press E to scavenge"
