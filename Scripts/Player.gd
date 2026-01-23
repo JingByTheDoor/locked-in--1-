@@ -114,7 +114,8 @@ var _attack_state: AttackState = AttackState.IDLE
 var _attack_timer: float = 0.0
 var _attack_cooldown_timer: float = 0.0
 var _current_attack_animation: StringName
-var _combo_timer: float = 0.0
+var _combo_window_timer: float = 0.0
+var _combo_pending: bool = false
 var _attack_hit_ids: Dictionary = {}
 var _attack_hit_enemy: bool = false
 var _attack_hit_wall: bool = false
@@ -140,7 +141,10 @@ func _physics_process(delta: float) -> void:
 	if is_dead:
 		velocity = Vector2.ZERO
 		return
-	_combo_timer = max(0.0, _combo_timer - delta)
+	if _combo_window_timer > 0.0:
+		_combo_window_timer = max(0.0, _combo_window_timer - delta)
+		if _combo_window_timer <= 0.0:
+			_combo_pending = false
 	_gun_cooldown_timer = max(0.0, _gun_cooldown_timer - delta)
 	if _repair_locked:
 		velocity = Vector2.ZERO
@@ -168,6 +172,11 @@ func _unhandled_input(event: InputEvent) -> void:
 	if event.is_action_pressed("interact"):
 		_try_interact()
 	elif event.is_action_pressed("attack"):
+		if _attack_state != AttackState.IDLE:
+			_combo_pending = true
+			return
+		var combo_request := _combo_pending or _combo_window_timer > 0.0
+		_combo_pending = combo_request
 		_start_attack()
 	elif event.is_action_pressed("gun_fire"):
 		_try_fire_gun()
@@ -237,7 +246,7 @@ func _start_attack() -> void:
 		return
 	if _attack_cooldown_timer > 0.0:
 		return
-	var use_combo_animation: bool = _combo_timer > 0.0
+	var use_combo_animation: bool = _combo_pending
 	var frames: SpriteFrames = null
 	if sprite != null:
 		frames = sprite.sprite_frames
@@ -245,7 +254,8 @@ func _start_attack() -> void:
 		_current_attack_animation = attack_combo_animation_name
 	else:
 		_current_attack_animation = attack_animation_name
-	_combo_timer = 0.0
+	_combo_pending = false
+	_combo_window_timer = 0.0
 	_attack_state = AttackState.WINDUP
 	_attack_timer = max(attack_windup, 0.0)
 	_attack_hit_ids.clear()
@@ -264,7 +274,7 @@ func _end_attack() -> void:
 		_emit_sound(SoundEvent.SoundType.EXPECTED, air_swing_loudness, air_swing_radius)
 	_attack_state = AttackState.IDLE
 	_attack_cooldown_timer = max(attack_cooldown, 0.0)
-	_combo_timer = attack_combo_window
+	_combo_window_timer = attack_combo_window
 
 func _set_attack_monitoring(enabled: bool) -> void:
 	if attack_area == null:
