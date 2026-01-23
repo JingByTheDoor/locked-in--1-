@@ -10,7 +10,7 @@ enum LootType {
 }
 
 var _loot_type_value: LootType = LootType.SCRAP
-@export var loot_type: LootType = LootType.SCRAP setget _apply_loot_type, _get_loot_type
+@export var loot_type: LootType = LootType.SCRAP
 @export var amount: int = 1
 @export var grade: int = 1
 @export var carry_rank_add: int = 1
@@ -46,15 +46,13 @@ func _ready() -> void:
 	_apply_loot_type(loot_type)
 
 func set_loot_type(value: int) -> void:
+	loot_type = LootType(value)
 	_apply_loot_type(value)
 
 func _apply_loot_type(value: int) -> void:
 	_loot_type_value = LootType(value)
 	_update_sprite_animation()
 	_update_light_color()
-
-func _get_loot_type() -> int:
-	return int(_loot_type_value)
 
 func interact(player: Node) -> void:
 	if deny_when_escape_only and GameState.escape_only:
