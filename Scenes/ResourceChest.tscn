@@ -1,7 +1,7 @@
 [gd_scene load_steps=3 format=3]
 
 [ext_resource type="Script" path="res://Scripts/ResourceChest.gd" id="1"]
-[ext_resource type="Texture2D" path="res://icon.svg" id="2"]
+[ext_resource type="Texture2D" path="res://Item Icon.png" id="2"]
 
 [sub_resource type="RectangleShape2D" id="1"]
 size = Vector2(42, 28)
@@ -9,10 +9,14 @@ size = Vector2(42, 28)
 [node name="ResourceChest" type="Area2D"]
 script = ExtResource("1")
 
+[sub_resource type="AtlasTexture" id="2"]
+atlas = ExtResource("2")
+region = Rect2(46, 0, 46, 40)
+
 [node name="Sprite2D" type="Sprite2D" parent="."]
-texture = ExtResource("2")
-modulate = Color(0.5, 0.35, 0.2, 1)
-scale = Vector2(0.18, 0.12)
+texture = SubResource("2")
+modulate = Color(0.6, 0.45, 0.3, 1)
+scale = Vector2(0.2, 0.2)
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="."]
 shape = SubResource("1")

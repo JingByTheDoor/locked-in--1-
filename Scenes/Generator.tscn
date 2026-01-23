@@ -1,10 +1,14 @@
 [gd_scene load_steps=3 format=3]
 
 [ext_resource type="Script" path="res://Scripts/BaseGenerator.gd" id="1"]
-[ext_resource type="Texture2D" path="res://icon.svg" id="2"]
+[ext_resource type="Texture2D" path="res://Bed + Generator.png" id="2"]
 
 [sub_resource type="CircleShape2D" id="1"]
 radius = 24.0
+
+[sub_resource type="AtlasTexture" id="2"]
+atlas = ExtResource("2")
+region = Rect2(388, 0, 388, 228)
 
 [node name="Generator" type="Area2D"]
 script = ExtResource("1")
@@ -13,8 +17,8 @@ script = ExtResource("1")
 shape = SubResource("1")
 
 [node name="Sprite2D" type="Sprite2D" parent="."]
-texture = ExtResource("2")
-scale = Vector2(0.55, 0.55)
-modulate = Color(0.6, 1, 0.6, 1)
+texture = SubResource("2")
+scale = Vector2(0.22, 0.22)
+modulate = Color(0.75, 0.75, 0.75, 1)
 
 [node name="HumLoop" type="AudioStreamPlayer2D" parent="."]

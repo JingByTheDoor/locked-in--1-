@@ -16,7 +16,7 @@ class_name ProcDoor
 @export var icon_modulate: Color = Color(0.75, 0.75, 0.75, 1.0)
 
 @onready var collision_shape: CollisionShape2D = $CollisionShape2D
-@onready var sprite: SpriteBase2D = _find_sprite()
+@onready var sprite: Node2D = _find_sprite()
 
 var _is_open: bool = false
 var _is_opening: bool = false
@@ -111,37 +111,67 @@ func _scale_sprite(size: Vector2) -> void:
 func _apply_sprite_defaults() -> void:
 	if sprite == null:
 		return
-	if sprite.texture == null and icon_texture != null and sprite is Sprite2D:
-		(sprite as Sprite2D).texture = icon_texture
+	if sprite is Sprite2D:
+		var sprite2d: Sprite2D = sprite as Sprite2D
+		if sprite2d.texture == null and icon_texture != null:
+			sprite2d.texture = icon_texture
 	sprite.modulate = icon_modulate
 
-func _find_sprite() -> SpriteBase2D:
+func _find_sprite() -> Node2D:
 	var node := get_node_or_null("AnimatedSprite2D")
-	if node is SpriteBase2D:
-		return node as SpriteBase2D
+	if node is Node2D:
+		return node as Node2D
 	node = get_node_or_null("Sprite2D")
-	if node is SpriteBase2D:
-		return node as SpriteBase2D
+	if node is Node2D:
+		return node as Node2D
 	return null
 
 func _get_sprite_texture_size() -> Vector2:
 	if sprite == null:
 		return Vector2.ZERO
-	var tex := sprite.texture
-	if tex != null:
-		var size := tex.get_size()
-		if size.x > 0.0 and size.y > 0.0:
+	if sprite is Sprite2D:
+		var sprite2d: Sprite2D = sprite as Sprite2D
+		var tex: Texture2D = sprite2d.texture
+		var size := _get_valid_texture_size(tex)
+		if size != Vector2.ZERO:
 			return size
 	if sprite is AnimatedSprite2D:
-		var anim := sprite as AnimatedSprite2D
-		var frames := anim.sprite_frames
+		var anim: AnimatedSprite2D = sprite as AnimatedSprite2D
+		var tex: Texture2D = anim.texture
+		var size := _get_valid_texture_size(tex)
+		if size != Vector2.ZERO:
+			return size
+		var frames: SpriteFrames = anim.sprite_frames
 		if frames != null and anim.animation != "":
-			var frame := frames.get_frame(anim.animation, 0)
-			if frame != null:
-				var size := frame.get_size()
-				if size.x > 0.0 and size.y > 0.0:
-					return size
+			var frame_tex: Texture2D = _get_frame_texture(frames, anim.animation)
+			size = _get_valid_texture_size(frame_tex)
+			if size != Vector2.ZERO:
+				return size
 	return Vector2.ZERO
+
+func _get_valid_texture_size(tex: Texture2D) -> Vector2:
+	if tex == null:
+		return Vector2.ZERO
+	var size: Vector2 = tex.get_size()
+	if size.x > 0.0 and size.y > 0.0:
+		return size
+	return Vector2.ZERO
+
+func _get_frame_texture(frames: SpriteFrames, animation_name: StringName) -> Texture2D:
+	if frames == null:
+		return null
+	var animations := frames.get("animations")
+	if animations is Array:
+		for anim in animations:
+			if anim is Dictionary and anim.has("name") and anim["name"] == animation_name:
+				var frame_list := anim.get("frames")
+				if frame_list is Array and frame_list.size() > 0:
+					var entry := frame_list[0]
+					if entry is Dictionary:
+						var tex := entry.get("texture")
+						if tex is Texture2D:
+							return tex as Texture2D
+	return null
 
 func _play_open_animation(duration: float) -> void:
 	if sprite == null:

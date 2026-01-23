@@ -13,9 +13,6 @@
 [ext_resource type="PackedScene" path="res://Scenes/StartScavenge.tscn" id="11"]
 [ext_resource type="PackedScene" path="res://UI/InteractPrompt.tscn" id="12"]
 [ext_resource type="PackedScene" path="res://Scenes/ResourceChest.tscn" id="13"]
-[ext_resource type="Texture2D" uid="uid://bdyk47wgikleo" path="res://Door + window.png" id="14_ao7t0"]
-[ext_resource type="Texture2D" uid="uid://dwnlxdhhsmycp" path="res://Bed + Generator.png" id="15_2l6ga"]
-[ext_resource type="Texture2D" uid="uid://bafw3ynj58ric" path="res://Item Icon.png" id="16_2l6ga"]
 
 [sub_resource type="RectangleShape2D" id="1"]
 size = Vector2(840, 40)
@@ -26,110 +23,6 @@ size = Vector2(40, 520)
 [sub_resource type="RectangleShape2D" id="3"]
 size = Vector2(120, 40)
 
-[sub_resource type="AtlasTexture" id="AtlasTexture_i13kd"]
-atlas = ExtResource("14_ao7t0")
-region = Rect2(64, 0, 64, 35)
-
-[sub_resource type="AtlasTexture" id="AtlasTexture_pii1q"]
-atlas = ExtResource("14_ao7t0")
-region = Rect2(0, 0, 64, 35)
-
-[sub_resource type="SpriteFrames" id="SpriteFrames_00u7g"]
-animations = [{
-"frames": [{
-"duration": 1.0,
-"texture": SubResource("AtlasTexture_i13kd")
-}],
-"loop": true,
-"name": &"Door",
-"speed": 5.0
-}, {
-"frames": [{
-"duration": 1.0,
-"texture": SubResource("AtlasTexture_pii1q")
-}],
-"loop": true,
-"name": &"Window",
-"speed": 5.0
-}]
-
-[sub_resource type="AtlasTexture" id="AtlasTexture_npp2p"]
-atlas = ExtResource("15_2l6ga")
-region = Rect2(0, 0, 388, 228)
-
-[sub_resource type="AtlasTexture" id="AtlasTexture_ryx0w"]
-atlas = ExtResource("15_2l6ga")
-region = Rect2(388, 0, 388, 228)
-
-[sub_resource type="SpriteFrames" id="SpriteFrames_pppw0"]
-animations = [{
-"frames": [{
-"duration": 1.0,
-"texture": SubResource("AtlasTexture_npp2p")
-}],
-"loop": true,
-"name": &"Bed",
-"speed": 5.0
-}, {
-"frames": [{
-"duration": 1.0,
-"texture": SubResource("AtlasTexture_ryx0w")
-}],
-"loop": true,
-"name": &"Generator",
-"speed": 5.0
-}]
-
-[sub_resource type="AtlasTexture" id="AtlasTexture_00u7g"]
-atlas = ExtResource("16_2l6ga")
-region = Rect2(92, 0, 46, 40)
-
-[sub_resource type="AtlasTexture" id="AtlasTexture_pppw0"]
-atlas = ExtResource("16_2l6ga")
-region = Rect2(138, 0, 46, 40)
-
-[sub_resource type="AtlasTexture" id="AtlasTexture_12vds"]
-atlas = ExtResource("16_2l6ga")
-region = Rect2(0, 0, 46, 40)
-
-[sub_resource type="AtlasTexture" id="AtlasTexture_66e50"]
-atlas = ExtResource("16_2l6ga")
-region = Rect2(46, 0, 46, 40)
-
-[sub_resource type="SpriteFrames" id="SpriteFrames_xsobc"]
-animations = [{
-"frames": [{
-"duration": 1.0,
-"texture": SubResource("AtlasTexture_00u7g")
-}],
-"loop": true,
-"name": &"Food Icon",
-"speed": 5.0
-}, {
-"frames": [{
-"duration": 1.0,
-"texture": SubResource("AtlasTexture_pppw0")
-}],
-"loop": true,
-"name": &"Fuel Icon",
-"speed": 5.0
-}, {
-"frames": [{
-"duration": 1.0,
-"texture": SubResource("AtlasTexture_12vds")
-}],
-"loop": true,
-"name": &"Plank Icon",
-"speed": 5.0
-}, {
-"frames": [{
-"duration": 1.0,
-"texture": SubResource("AtlasTexture_66e50")
-}],
-"loop": true,
-"name": &"Scrap Icon",
-"speed": 5.0
-}]
 
 [node name="Base" type="Node2D"]
 script = ExtResource("1")
@@ -249,16 +142,3 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 mouse_filter = 2
 color = Color(0, 0, 0, 0.55)
-
-[node name="Door + Window" type="AnimatedSprite2D" parent="."]
-sprite_frames = SubResource("SpriteFrames_00u7g")
-animation = &"Window"
-
-[node name="Generator + Bed" type="AnimatedSprite2D" parent="."]
-position = Vector2(-210, -9)
-sprite_frames = SubResource("SpriteFrames_pppw0")
-animation = &"Generator"
-
-[node name="Item Icons" type="AnimatedSprite2D" parent="."]
-sprite_frames = SubResource("SpriteFrames_xsobc")
-animation = &"Food Icon"
