@@ -1,18 +1,21 @@
-[gd_scene load_steps=21 format=3]
+[gd_scene load_steps=31 format=3 uid="uid://djlh60em0why2"]
 
-[ext_resource type="Script" path="res://Scripts/Base.gd" id="1"]
-[ext_resource type="PackedScene" path="res://Scenes/Player.tscn" id="2"]
+[ext_resource type="Script" uid="uid://bumjfk3n46tw5" path="res://Scripts/Base.gd" id="1"]
+[ext_resource type="PackedScene" uid="uid://x4khlkw6qu05" path="res://Scenes/Player.tscn" id="2"]
 [ext_resource type="PackedScene" path="res://Scenes/RepairableDoor.tscn" id="3"]
 [ext_resource type="PackedScene" path="res://Scenes/RepairableWindow.tscn" id="4"]
 [ext_resource type="PackedScene" path="res://Scenes/Generator.tscn" id="5"]
 [ext_resource type="PackedScene" path="res://Scenes/FoodStation.tscn" id="6"]
 [ext_resource type="PackedScene" path="res://UI/BaseHud.tscn" id="7"]
 [ext_resource type="PackedScene" path="res://UI/MessageHud.tscn" id="8"]
-[ext_resource type="Texture2D" path="res://icon.svg" id="9"]
+[ext_resource type="Texture2D" uid="uid://wyj60w1c6a8u" path="res://icon.svg" id="9"]
 [ext_resource type="PackedScene" path="res://Scenes/StartNight.tscn" id="10"]
 [ext_resource type="PackedScene" path="res://Scenes/StartScavenge.tscn" id="11"]
 [ext_resource type="PackedScene" path="res://UI/InteractPrompt.tscn" id="12"]
 [ext_resource type="PackedScene" path="res://Scenes/ResourceChest.tscn" id="13"]
+[ext_resource type="Texture2D" uid="uid://bdyk47wgikleo" path="res://Door + window.png" id="14_ao7t0"]
+[ext_resource type="Texture2D" uid="uid://dwnlxdhhsmycp" path="res://Bed + Generator.png" id="15_2l6ga"]
+[ext_resource type="Texture2D" uid="uid://bafw3ynj58ric" path="res://Item Icon.png" id="16_2l6ga"]
 
 [sub_resource type="RectangleShape2D" id="1"]
 size = Vector2(840, 40)
@@ -22,6 +25,111 @@ size = Vector2(40, 520)
 
 [sub_resource type="RectangleShape2D" id="3"]
 size = Vector2(120, 40)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_i13kd"]
+atlas = ExtResource("14_ao7t0")
+region = Rect2(64, 0, 64, 35)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_pii1q"]
+atlas = ExtResource("14_ao7t0")
+region = Rect2(0, 0, 64, 35)
+
+[sub_resource type="SpriteFrames" id="SpriteFrames_00u7g"]
+animations = [{
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_i13kd")
+}],
+"loop": true,
+"name": &"Door",
+"speed": 5.0
+}, {
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_pii1q")
+}],
+"loop": true,
+"name": &"Window",
+"speed": 5.0
+}]
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_npp2p"]
+atlas = ExtResource("15_2l6ga")
+region = Rect2(0, 0, 388, 228)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_ryx0w"]
+atlas = ExtResource("15_2l6ga")
+region = Rect2(388, 0, 388, 228)
+
+[sub_resource type="SpriteFrames" id="SpriteFrames_pppw0"]
+animations = [{
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_npp2p")
+}],
+"loop": true,
+"name": &"Bed",
+"speed": 5.0
+}, {
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_ryx0w")
+}],
+"loop": true,
+"name": &"Generator",
+"speed": 5.0
+}]
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_00u7g"]
+atlas = ExtResource("16_2l6ga")
+region = Rect2(92, 0, 46, 40)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_pppw0"]
+atlas = ExtResource("16_2l6ga")
+region = Rect2(138, 0, 46, 40)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_12vds"]
+atlas = ExtResource("16_2l6ga")
+region = Rect2(0, 0, 46, 40)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_66e50"]
+atlas = ExtResource("16_2l6ga")
+region = Rect2(46, 0, 46, 40)
+
+[sub_resource type="SpriteFrames" id="SpriteFrames_xsobc"]
+animations = [{
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_00u7g")
+}],
+"loop": true,
+"name": &"Food Icon",
+"speed": 5.0
+}, {
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_pppw0")
+}],
+"loop": true,
+"name": &"Fuel Icon",
+"speed": 5.0
+}, {
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_12vds")
+}],
+"loop": true,
+"name": &"Plank Icon",
+"speed": 5.0
+}, {
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_66e50")
+}],
+"loop": true,
+"name": &"Scrap Icon",
+"speed": 5.0
+}]
 
 [node name="Base" type="Node2D"]
 script = ExtResource("1")
@@ -36,9 +144,9 @@ position = Vector2(0, -260)
 shape = SubResource("1")
 
 [node name="Sprite2D" type="Sprite2D" parent="Map/WallTop"]
-texture = ExtResource("9")
-scale = Vector2(4.2, 0.25)
 modulate = Color(0.18, 0.18, 0.2, 1)
+scale = Vector2(4.2, 0.25)
+texture = ExtResource("9")
 
 [node name="WallBottom" type="StaticBody2D" parent="Map"]
 position = Vector2(0, 260)
@@ -47,9 +155,9 @@ position = Vector2(0, 260)
 shape = SubResource("1")
 
 [node name="Sprite2D" type="Sprite2D" parent="Map/WallBottom"]
-texture = ExtResource("9")
-scale = Vector2(4.2, 0.25)
 modulate = Color(0.18, 0.18, 0.2, 1)
+scale = Vector2(4.2, 0.25)
+texture = ExtResource("9")
 
 [node name="WallLeft" type="StaticBody2D" parent="Map"]
 position = Vector2(-420, 0)
@@ -58,9 +166,9 @@ position = Vector2(-420, 0)
 shape = SubResource("2")
 
 [node name="Sprite2D" type="Sprite2D" parent="Map/WallLeft"]
-texture = ExtResource("9")
-scale = Vector2(0.25, 2.6)
 modulate = Color(0.18, 0.18, 0.2, 1)
+scale = Vector2(0.25, 2.6)
+texture = ExtResource("9")
 
 [node name="WallRight" type="StaticBody2D" parent="Map"]
 position = Vector2(420, 0)
@@ -69,9 +177,9 @@ position = Vector2(420, 0)
 shape = SubResource("2")
 
 [node name="Sprite2D" type="Sprite2D" parent="Map/WallRight"]
-texture = ExtResource("9")
-scale = Vector2(0.25, 2.6)
 modulate = Color(0.18, 0.18, 0.2, 1)
+scale = Vector2(0.25, 2.6)
+texture = ExtResource("9")
 
 [node name="Table" type="StaticBody2D" parent="Map"]
 position = Vector2(0, 80)
@@ -80,15 +188,11 @@ position = Vector2(0, 80)
 shape = SubResource("3")
 
 [node name="Sprite2D" type="Sprite2D" parent="Map/Table"]
-texture = ExtResource("9")
-scale = Vector2(0.9, 0.25)
 modulate = Color(0.25, 0.2, 0.18, 1)
+scale = Vector2(0.9, 0.25)
+texture = ExtResource("9")
 
 [node name="Player" parent="." instance=ExtResource("2")]
-position = Vector2(0, 0)
-
-[node name="VisionCone" parent="Player"]
-show_cone = false
 
 [node name="DoorA" parent="." instance=ExtResource("3")]
 position = Vector2(-200, 210)
@@ -140,13 +244,21 @@ position = Vector2(-80, -120)
 layer = 12
 
 [node name="ColorRect" type="ColorRect" parent="LightsOut"]
-anchor_left = 0.0
-anchor_top = 0.0
+anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
-offset_left = 0.0
-offset_top = 0.0
-offset_right = 0.0
-offset_bottom = 0.0
 mouse_filter = 2
 color = Color(0, 0, 0, 0.55)
+
+[node name="Door + Window" type="AnimatedSprite2D" parent="."]
+sprite_frames = SubResource("SpriteFrames_00u7g")
+animation = &"Window"
+
+[node name="Generator + Bed" type="AnimatedSprite2D" parent="."]
+position = Vector2(-210, -9)
+sprite_frames = SubResource("SpriteFrames_pppw0")
+animation = &"Generator"
+
+[node name="Item Icons" type="AnimatedSprite2D" parent="."]
+sprite_frames = SubResource("SpriteFrames_xsobc")
+animation = &"Food Icon"
