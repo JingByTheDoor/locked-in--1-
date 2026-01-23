@@ -28,13 +28,22 @@ enum LootType {
 	LootType.FOOD: "Food",
 	LootType.AMMO: "Ammo"
 }
+@export var light_colors: Dictionary = {
+	LootType.SCRAP: Color(0.6, 0.6, 0.6, 1.0),
+	LootType.WOOD: Color(0.4, 0.2, 0.1, 1.0),
+	LootType.FUEL: Color(1.0, 0.1, 0.1, 1.0),
+	LootType.FOOD: Color(0.3, 1.0, 0.3, 1.0),
+	LootType.AMMO: Color(0.7, 0.7, 1.0, 1.0)
+}
 
 @onready var sprite: AnimatedSprite2D = $AnimatedSprite2D
+@onready var light: Light2D = $Light2D
 
 func _ready() -> void:
 	add_to_group("interactable")
 	add_to_group("loot")
 	_update_sprite_animation()
+	_update_light_color()
 
 func interact(player: Node) -> void:
 	if deny_when_escape_only and GameState.escape_only:
@@ -132,3 +141,15 @@ func _play_pickup_audio() -> void:
 	if pickup_stream == null:
 		return
 	AudioOneShot.play_2d(pickup_stream, global_position, get_tree().current_scene, pickup_volume_db)
+
+func _update_light_color() -> void:
+	if light == null:
+		return
+	var color := _light_color()
+	if color != null:
+		light.color = color
+
+func _light_color() -> Color:
+	if light_colors.has(loot_type):
+		return light_colors[loot_type]
+	return Color(1, 1, 1, 1)

@@ -66,3 +66,8 @@ shape = SubResource("1")
 [node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="."]
 sprite_frames = SubResource("SpriteFrames_mjxdh")
 animation = &"Food"
+
+[node name="Light2D" type="Light2D" parent="."]
+color = Color(0.6, 0.6, 0.6, 1)
+energy = 0.75
+range = 90
