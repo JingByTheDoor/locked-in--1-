@@ -98,7 +98,6 @@ scale = Vector2(2.2406282, 2.495137)
 texture = ExtResource("19_vm6l8")
 
 [node name="GlobalDarkness" type="CanvasModulate" parent="."]
-visible = false
 color = Color(0, 0, 0, 1)
 
 [node name="MapRules" type="Node" parent="."]
