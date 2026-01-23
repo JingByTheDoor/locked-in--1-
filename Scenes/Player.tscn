@@ -57,10 +57,13 @@ animations = [{
 }, {
 "duration": 1.0,
 "texture": SubResource("AtlasTexture_glx4g")
+}, {
+"duration": 0.21,
+"texture": SubResource("AtlasTexture_glx4g")
 }],
-"loop": true,
+"loop": false,
 "name": &"Attack",
-"speed": 4.0
+"speed": 13.0
 }, {
 "frames": [{
 "duration": 1.0,
@@ -132,6 +135,7 @@ ambient_light_enabled = true
 ambient_light_energy = 5.0
 ambient_light_texture_scale = 0.5
 attack_windup = 0.1
+attack_cooldown = 0.1
 hit_vfx_scene = ExtResource("4")
 gun_muzzle_flash_scene = ExtResource("5")
 
@@ -190,5 +194,5 @@ cone_fill_color = Color(0.3, 0.9, 1, 0.12)
 cone_outline_color = Color(0.3, 0.9, 1, 0.35)
 
 [node name="Arean light" type="PointLight2D" parent="."]
-position = Vector2(-2, 35)
+position = Vector2(-2, 19)
 texture = ExtResource("6_52ee3")

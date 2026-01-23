@@ -33,6 +33,21 @@ class_name ProcMapGenerator
 @export var spawn_min_floor_neighbors: int = 4
 @export var player_path: NodePath = NodePath("../Player")
 @export var place_player_on_spawn: bool = true
+@export var loot_scene: PackedScene = preload("res://Scenes/LootPickup.tscn")
+@export var loot_min_count: int = 8
+@export var loot_max_count: int = 16
+@export var loot_min_spacing: float = 64.0
+@export var loot_type_weights: Dictionary = {
+	LootPickup.LootType.SCRAP: 40,
+	LootPickup.LootType.WOOD: 20,
+	LootPickup.LootType.FUEL: 10,
+	LootPickup.LootType.FOOD: 20,
+	LootPickup.LootType.AMMO: 10
+}
+@export var loot_vein_chance: float = 0.25
+@export var loot_vein_size_min: int = 2
+@export var loot_vein_size_max: int = 4
+@export var loot_vein_spacing: float = 32.0
 @export var door_enabled: bool = true
 @export var door_scene: PackedScene = preload("res://Scenes/ProcDoor.tscn")
 @export var door_hallway_clear_length: int = 2
@@ -55,6 +70,8 @@ class_name ProcMapGenerator
 @export var unfair_count: int = 1
 
 @export var map_pathing_path: NodePath = NodePath("../MapPathing")
+
+const LootPickup = preload("res://Scripts/LootPickup.gd")
 
 var _rng: RandomNumberGenerator = RandomNumberGenerator.new()
 
@@ -98,6 +115,7 @@ func generate() -> void:
 	_paint_tiles(floor_layer, wall_layer, floor_cells, width, height, origin)
 
 	_spawn_markers(floor_layer, main_component, width, height, origin)
+	_spawn_loot(floor_layer, main_component, origin)
 	_spawn_enemies(floor_layer, main_component, width, height, origin)
 	_spawn_doors(floor_layer, doors, origin)
 	_place_player_spawn(floor_layer, main_component, origin)
@@ -435,6 +453,27 @@ func _spawn_enemies(floor_layer: Node, floor_cells: Array[Vector2i], width: int,
 		return
 	_spawn_enemy_mix(total, spawn_cells, used, floor_layer, floor_cells, origin, enemies_root)
 
+func _spawn_loot(floor_layer: Node, floor_cells: Array[Vector2i], origin: Vector2i) -> void:
+	if floor_layer == null or floor_cells.is_empty():
+		return
+	if loot_scene == null:
+		return
+	var loot_root := _get_or_create_loot_root()
+	_clear_children(loot_root)
+	var count := _pick_loot_count(floor_cells.size())
+	if count <= 0:
+		return
+	var cells := _pick_loot_cells(floor_layer, floor_cells, origin, count)
+	for cell in cells:
+		var loot := loot_scene.instantiate()
+		if loot == null:
+			continue
+		loot_root.add_child(loot)
+		if loot is Node2D:
+			(loot as Node2D).global_position = _cell_to_world_center(floor_layer, cell + origin)
+		if loot.has_method("set"):
+			loot.set("loot_type", _pick_loot_type())
+
 func _spawn_enemy_mix(
 	total: int,
 	spawn_cells: Array[Vector2i],
@@ -616,6 +655,114 @@ func _place_unfair_nodes(parent: Node, floor_layer: Node, cells: Array[Vector2i]
 		node.add_to_group("unfair_room")
 		parent.add_child(node)
 		used += 1
+
+func _pick_loot_count(max_cells: int) -> int:
+	var min_count: int = maxi(loot_min_count, 0)
+	var max_count: int = maxi(loot_max_count, min_count)
+	if max_cells <= 0:
+		return 0
+	var total: int = _rng.randi_range(min_count, max_count)
+	return mini(total, max_cells)
+
+func _pick_loot_cells(floor_layer: Node, floor_cells: Array[Vector2i], origin: Vector2i, target_count: int) -> Array[Vector2i]:
+	var selected: Array = []
+	var spacing_sq: float = pow(max(loot_min_spacing, 0.0), 2)
+	var available := floor_cells.duplicate()
+	available.shuffle()
+	var lookup := _build_cell_lookup(floor_cells)
+	for cell in available:
+		if selected.size() >= target_count:
+			break
+		var world := _cell_to_world_center(floor_layer, cell + origin)
+		if _is_too_close_world(world, selected, spacing_sq):
+			continue
+		selected.append({"cell": cell, "world": world})
+		if _rng.randf() <= clampf(loot_vein_chance, 0.0, 1.0):
+			var vein_cells := _build_loot_vein(cell, lookup, origin, floor_layer, target_count - selected.size())
+			for vein_cell in vein_cells:
+				if selected.size() >= target_count:
+					break
+				var vein_world := _cell_to_world_center(floor_layer, vein_cell + origin)
+				if _is_too_close_world(vein_world, selected, spacing_sq):
+					continue
+				selected.append({"cell": vein_cell, "world": vein_world})
+	var result: Array[Vector2i] = []
+	for info in selected:
+		if info is Dictionary and info.has("cell"):
+			result.append(info["cell"])
+	return result
+
+func _is_too_close_world(world: Vector2, selected: Array, min_distance_sq: float) -> bool:
+	if min_distance_sq <= 0.0:
+		return false
+	for info in selected:
+		if info is Dictionary and info.has("world"):
+			var existing := info["world"]
+			if existing is Vector2:
+				if world.distance_squared_to(existing) < min_distance_sq:
+					return true
+	return false
+
+func _build_loot_vein(center: Vector2i, lookup: Dictionary, origin: Vector2i, floor_layer: Node, limit: int) -> Array[Vector2i]:
+	var offsets := [
+		Vector2i(1, 0),
+		Vector2i(-1, 0),
+		Vector2i(0, 1),
+		Vector2i(0, -1)
+	]
+	var candidates: Array[Vector2i] = []
+	for offset in offsets:
+		var neighbor := center + offset
+		if lookup.has(neighbor):
+			candidates.append(neighbor)
+	candidates.shuffle()
+	if limit <= 0:
+		return []
+	var min_size: int = maxi(loot_vein_size_min, 1)
+	var max_size: int = maxi(loot_vein_size_max, min_size)
+	var effective_limit: int = maxi(limit, min_size)
+	var target: int = maxi(mini(effective_limit, max_size), min_size)
+	var results: Array[Vector2i] = []
+	for cell in candidates:
+		if results.size() >= target:
+			break
+		results.append(cell)
+	return results
+
+func _build_cell_lookup(cells: Array[Vector2i]) -> Dictionary:
+	var lookup: Dictionary = {}
+	for cell in cells:
+		lookup[cell] = true
+	return lookup
+
+func _pick_loot_type() -> int:
+	if loot_type_weights.is_empty():
+		return LootPickup.LootType.SCRAP
+	var total: float = 0.0
+	for weight in loot_type_weights.values():
+		total += float(weight)
+	if total <= 0.0:
+		return LootPickup.LootType.SCRAP
+	var target: float = _rng.randf_range(0.0, total)
+	var running: float = 0.0
+	for key in loot_type_weights.keys():
+		var weight := float(loot_type_weights[key])
+		running += weight
+		if target <= running:
+			if typeof(key) == TYPE_INT:
+				return int(key)
+			elif key is LootPickup:
+				return int(key)
+	return LootPickup.LootType.SCRAP
+
+func _get_or_create_loot_root() -> Node2D:
+	var node := get_node_or_null("Loot")
+	if node is Node2D:
+		return node as Node2D
+	var root := Node2D.new()
+	root.name = "Loot"
+	get_parent().add_child(root)
+	return root
 
 func _build_doors(grid: Array, rooms: Array[Rect2i], width: int, height: int) -> Array:
 	var doors: Array = []
