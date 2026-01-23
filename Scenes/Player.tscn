@@ -19,11 +19,11 @@ region = Rect2(714, 0, 238, 138)
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_miouo"]
 atlas = ExtResource("4_bhhdu")
-region = Rect2(476, 0, 238, 138)
+region = Rect2(238, 0, 238, 138)
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_o3h8g"]
 atlas = ExtResource("4_bhhdu")
-region = Rect2(714, 0, 238, 138)
+region = Rect2(0, 0, 238, 138)
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_yoq75"]
 atlas = ExtResource("2_kyqiw")
@@ -161,7 +161,7 @@ gun_muzzle_flash_scene = ExtResource("5")
 position = Vector2(2, 0)
 scale = Vector2(0.8, 1)
 sprite_frames = SubResource("1")
-animation = &"Attack 2"
+animation = &"Attack"
 
 [node name="PointLight2D" type="PointLight2D" parent="Visuals"]
 position = Vector2(0.9630207, -146.99998)
