@@ -236,11 +236,11 @@ func _start_attack() -> void:
 		return
 	if _attack_cooldown_timer > 0.0:
 		return
-	var current_time := OS.get_ticks_msec() / 1000.0
+	var current_time: float = Engine.get_time_since_startup()
 	var use_combo_animation: bool = false
 	if _last_attack_start_time >= 0.0 and (current_time - _last_attack_start_time) <= attack_combo_window:
 		use_combo_animation = true
-	var frames := null
+	var frames: SpriteFrames = null
 	if sprite != null:
 		frames = sprite.sprite_frames
 	if use_combo_animation and frames != null and frames.has_animation(attack_combo_animation_name):
