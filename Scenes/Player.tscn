@@ -1,4 +1,4 @@
-[gd_scene load_steps=23 format=3 uid="uid://x4khlkw6qu05"]
+[gd_scene load_steps=25 format=3 uid="uid://x4khlkw6qu05"]
 
 [ext_resource type="Script" uid="uid://btcv2iprnmnd4" path="res://Scripts/Player.gd" id="1"]
 [ext_resource type="Texture2D" uid="uid://cx1pbb1jbp3uf" path="res://Guy Walking COMPLETE.png" id="2_kyqiw"]
@@ -14,6 +14,14 @@ atlas = ExtResource("4_bhhdu")
 region = Rect2(476, 0, 238, 138)
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_glx4g"]
+atlas = ExtResource("4_bhhdu")
+region = Rect2(714, 0, 238, 138)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_miouo"]
+atlas = ExtResource("4_bhhdu")
+region = Rect2(476, 0, 238, 138)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_o3h8g"]
 atlas = ExtResource("4_bhhdu")
 region = Rect2(714, 0, 238, 138)
 
@@ -57,12 +65,20 @@ animations = [{
 }, {
 "duration": 1.0,
 "texture": SubResource("AtlasTexture_glx4g")
-}, {
-"duration": 0.21,
-"texture": SubResource("AtlasTexture_glx4g")
 }],
 "loop": false,
 "name": &"Attack",
+"speed": 13.0
+}, {
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_miouo")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_o3h8g")
+}],
+"loop": true,
+"name": &"Attack 2",
 "speed": 13.0
 }, {
 "frames": [{
@@ -145,8 +161,7 @@ gun_muzzle_flash_scene = ExtResource("5")
 position = Vector2(2, 0)
 scale = Vector2(0.8, 1)
 sprite_frames = SubResource("1")
-animation = &"Attack"
-frame_progress = 0.40123346
+animation = &"Attack 2"
 
 [node name="PointLight2D" type="PointLight2D" parent="Visuals"]
 position = Vector2(0.9630207, -146.99998)

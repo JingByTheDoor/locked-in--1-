@@ -697,7 +697,7 @@ func _is_too_close_world(world: Vector2, selected: Array, min_distance_sq: float
 		return false
 	for info in selected:
 		if info is Dictionary and info.has("world"):
-			var existing := info["world"]
+			var existing: Vector2 = info["world"]
 			if existing is Vector2:
 				if world.distance_squared_to(existing) < min_distance_sq:
 					return true
@@ -712,7 +712,7 @@ func _build_loot_vein(center: Vector2i, lookup: Dictionary, origin: Vector2i, fl
 	]
 	var candidates: Array[Vector2i] = []
 	for offset in offsets:
-		var neighbor := center + offset
+		var neighbor: Vector2i = center + offset
 		if lookup.has(neighbor):
 			candidates.append(neighbor)
 	candidates.shuffle()
