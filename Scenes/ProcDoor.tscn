@@ -28,8 +28,6 @@ script = ExtResource("1")
 position = Vector2(2, -5.5)
 shape = SubResource("1")
 
-[node name="Sprite2D" type="Sprite2D" parent="."]
-
 [node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="."]
 position = Vector2(-3, -4)
 scale = Vector2(3.09375, 3.7)

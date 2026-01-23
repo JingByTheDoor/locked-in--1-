@@ -46,11 +46,11 @@ func _ready() -> void:
 	_apply_loot_type(loot_type)
 
 func set_loot_type(value: int) -> void:
-	loot_type = LootType(value)
+	loot_type = value
 	_apply_loot_type(value)
 
 func _apply_loot_type(value: int) -> void:
-	_loot_type_value = LootType(value)
+	_loot_type_value = int(value)
 	_update_sprite_animation()
 	_update_light_color()
 
