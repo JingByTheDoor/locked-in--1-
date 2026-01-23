@@ -114,7 +114,7 @@ var _attack_state: AttackState = AttackState.IDLE
 var _attack_timer: float = 0.0
 var _attack_cooldown_timer: float = 0.0
 var _current_attack_animation: StringName
-var _last_attack_start_time: float = -1.0
+var _combo_timer: float = 0.0
 var _attack_hit_ids: Dictionary = {}
 var _attack_hit_enemy: bool = false
 var _attack_hit_wall: bool = false
@@ -140,6 +140,7 @@ func _physics_process(delta: float) -> void:
 	if is_dead:
 		velocity = Vector2.ZERO
 		return
+	_combo_timer = max(0.0, _combo_timer - delta)
 	_gun_cooldown_timer = max(0.0, _gun_cooldown_timer - delta)
 	if _repair_locked:
 		velocity = Vector2.ZERO
@@ -236,10 +237,7 @@ func _start_attack() -> void:
 		return
 	if _attack_cooldown_timer > 0.0:
 		return
-	var current_time: float = Engine.get_time_since_startup()
-	var use_combo_animation: bool = false
-	if _last_attack_start_time >= 0.0 and (current_time - _last_attack_start_time) <= attack_combo_window:
-		use_combo_animation = true
+	var use_combo_animation: bool = _combo_timer > 0.0
 	var frames: SpriteFrames = null
 	if sprite != null:
 		frames = sprite.sprite_frames
@@ -247,7 +245,7 @@ func _start_attack() -> void:
 		_current_attack_animation = attack_combo_animation_name
 	else:
 		_current_attack_animation = attack_animation_name
-	_last_attack_start_time = current_time
+	_combo_timer = 0.0
 	_attack_state = AttackState.WINDUP
 	_attack_timer = max(attack_windup, 0.0)
 	_attack_hit_ids.clear()
@@ -266,6 +264,7 @@ func _end_attack() -> void:
 		_emit_sound(SoundEvent.SoundType.EXPECTED, air_swing_loudness, air_swing_radius)
 	_attack_state = AttackState.IDLE
 	_attack_cooldown_timer = max(attack_cooldown, 0.0)
+	_combo_timer = attack_combo_window
 
 func _set_attack_monitoring(enabled: bool) -> void:
 	if attack_area == null:
