@@ -180,7 +180,6 @@ texture_scale = 0.01
 shape = SubResource("2")
 
 [node name="Camera2D" type="Camera2D" parent="."]
-zoom = Vector2(1.5, 1.5)
 position_smoothing_enabled = true
 rotation_smoothing_enabled = true
 
