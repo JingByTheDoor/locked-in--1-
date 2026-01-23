@@ -16,7 +16,7 @@ class_name ProcDoor
 @export var icon_modulate: Color = Color(0.75, 0.75, 0.75, 1.0)
 
 @onready var collision_shape: CollisionShape2D = $CollisionShape2D
-@onready var sprite: Sprite2D = $Sprite2D
+@onready var sprite: SpriteBase2D = _find_sprite()
 
 var _is_open: bool = false
 var _is_opening: bool = false
@@ -101,12 +101,8 @@ func _set_shape_size(size: Vector2) -> void:
 func _scale_sprite(size: Vector2) -> void:
 	if sprite == null:
 		return
-	if icon_texture != null:
-		sprite.texture = icon_texture
-	if sprite.texture == null:
-		return
-	var tex_size := sprite.texture.get_size()
-	if tex_size.x <= 0.0 or tex_size.y <= 0.0:
+	var tex_size := _get_sprite_texture_size()
+	if tex_size == Vector2.ZERO:
 		return
 	var ratio := clampf(icon_fill_ratio, 0.05, 1.0)
 	sprite.scale = Vector2(size.x / tex_size.x, size.y / tex_size.y) * ratio
@@ -115,9 +111,37 @@ func _scale_sprite(size: Vector2) -> void:
 func _apply_sprite_defaults() -> void:
 	if sprite == null:
 		return
-	if sprite.texture == null and icon_texture != null:
-		sprite.texture = icon_texture
+	if sprite.texture == null and icon_texture != null and sprite is Sprite2D:
+		(sprite as Sprite2D).texture = icon_texture
 	sprite.modulate = icon_modulate
+
+func _find_sprite() -> SpriteBase2D:
+	var node := get_node_or_null("AnimatedSprite2D")
+	if node is SpriteBase2D:
+		return node as SpriteBase2D
+	node = get_node_or_null("Sprite2D")
+	if node is SpriteBase2D:
+		return node as SpriteBase2D
+	return null
+
+func _get_sprite_texture_size() -> Vector2:
+	if sprite == null:
+		return Vector2.ZERO
+	var tex := sprite.texture
+	if tex != null:
+		var size := tex.get_size()
+		if size.x > 0.0 and size.y > 0.0:
+			return size
+	if sprite is AnimatedSprite2D:
+		var anim := sprite as AnimatedSprite2D
+		var frames := anim.sprite_frames
+		if frames != null and anim.animation != "":
+			var frame := frames.get_frame(anim.animation, 0)
+			if frame != null:
+				var size := frame.get_size()
+				if size.x > 0.0 and size.y > 0.0:
+					return size
+	return Vector2.ZERO
 
 func _play_open_animation(duration: float) -> void:
 	if sprite == null:

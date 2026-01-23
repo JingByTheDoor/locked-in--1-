@@ -10,6 +10,8 @@ signal damaged(amount: int, context: String)
 @export var idle_animation_name: StringName = &"Idle"
 @export var walk_animation_name: StringName = &"Walk"
 @export var attack_animation_name: StringName = &"Attack"
+@export var attack_combo_window: float = 0.4
+@export var attack_combo_animation_name: StringName = &"Attack 2"
 @export var aim_rotation_offset_degrees: float = 0.0
 @export var vision_light_enabled: bool = true
 @export var vision_light_energy: float = 1.4
@@ -111,6 +113,8 @@ enum AttackState {
 var _attack_state: AttackState = AttackState.IDLE
 var _attack_timer: float = 0.0
 var _attack_cooldown_timer: float = 0.0
+var _current_attack_animation: StringName
+var _last_attack_start_time: float = -1.0
 var _attack_hit_ids: Dictionary = {}
 var _attack_hit_enemy: bool = false
 var _attack_hit_wall: bool = false
@@ -129,6 +133,7 @@ func _ready() -> void:
 	_sync_carry_rank()
 	_apply_interact_radius()
 	_setup_attack_area()
+	_current_attack_animation = attack_animation_name
 	_update_animation(Vector2.ZERO)
 
 func _physics_process(delta: float) -> void:
@@ -187,8 +192,11 @@ func _update_animation(input_vector: Vector2, is_sprinting: bool = false) -> voi
 		return
 	var anim_name := idle_animation_name
 	var speed_scale := 1.0
-	if _attack_state != AttackState.IDLE and frames.has_animation(attack_animation_name):
-		anim_name = attack_animation_name
+	if _attack_state != AttackState.IDLE:
+		if frames.has_animation(_current_attack_animation):
+			anim_name = _current_attack_animation
+		elif frames.has_animation(attack_animation_name):
+			anim_name = attack_animation_name
 	else:
 		if input_vector.length() > 0.1:
 			anim_name = walk_animation_name
@@ -228,6 +236,18 @@ func _start_attack() -> void:
 		return
 	if _attack_cooldown_timer > 0.0:
 		return
+	var current_time := OS.get_ticks_msec() / 1000.0
+	var use_combo_animation: bool = false
+	if _last_attack_start_time >= 0.0 and (current_time - _last_attack_start_time) <= attack_combo_window:
+		use_combo_animation = true
+	var frames := null
+	if sprite != null:
+		frames = sprite.sprite_frames
+	if use_combo_animation and frames != null and frames.has_animation(attack_combo_animation_name):
+		_current_attack_animation = attack_combo_animation_name
+	else:
+		_current_attack_animation = attack_animation_name
+	_last_attack_start_time = current_time
 	_attack_state = AttackState.WINDUP
 	_attack_timer = max(attack_windup, 0.0)
 	_attack_hit_ids.clear()
