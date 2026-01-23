@@ -116,6 +116,7 @@ var _attack_cooldown_timer: float = 0.0
 var _current_attack_animation: StringName
 var _combo_window_timer: float = 0.0
 var _combo_pending: bool = false
+var _last_attack_was_combo: bool = false
 var _attack_hit_ids: Dictionary = {}
 var _attack_hit_enemy: bool = false
 var _attack_hit_wall: bool = false
@@ -175,7 +176,7 @@ func _unhandled_input(event: InputEvent) -> void:
 		if _attack_state != AttackState.IDLE:
 			_combo_pending = true
 			return
-		var combo_request := _combo_pending or _combo_window_timer > 0.0
+		var combo_request := _combo_pending or (_combo_window_timer > 0.0 and not _last_attack_was_combo)
 		_combo_pending = combo_request
 		_start_attack()
 	elif event.is_action_pressed("gun_fire"):
@@ -250,12 +251,14 @@ func _start_attack() -> void:
 	var frames: SpriteFrames = null
 	if sprite != null:
 		frames = sprite.sprite_frames
-	if use_combo_animation and frames != null and frames.has_animation(attack_combo_animation_name):
+	var used_combo_animation: bool = use_combo_animation and frames != null and frames.has_animation(attack_combo_animation_name)
+	if used_combo_animation:
 		_current_attack_animation = attack_combo_animation_name
 	else:
 		_current_attack_animation = attack_animation_name
 	_combo_pending = false
 	_combo_window_timer = 0.0
+	_last_attack_was_combo = used_combo_animation
 	_attack_state = AttackState.WINDUP
 	_attack_timer = max(attack_windup, 0.0)
 	_attack_hit_ids.clear()
@@ -274,7 +277,10 @@ func _end_attack() -> void:
 		_emit_sound(SoundEvent.SoundType.EXPECTED, air_swing_loudness, air_swing_radius)
 	_attack_state = AttackState.IDLE
 	_attack_cooldown_timer = max(attack_cooldown, 0.0)
-	_combo_window_timer = attack_combo_window
+	if _last_attack_was_combo:
+		_combo_window_timer = 0.0
+	else:
+		_combo_window_timer = attack_combo_window
 
 func _set_attack_monitoring(enabled: bool) -> void:
 	if attack_area == null:
