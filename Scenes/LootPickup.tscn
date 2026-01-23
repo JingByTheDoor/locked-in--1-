@@ -1,26 +1,26 @@
 [gd_scene load_steps=9 format=3 uid="uid://cq3ywixhnpnpw"]
 
 [ext_resource type="Script" uid="uid://dom0ngdghu1vw" path="res://Scripts/LootPickup.gd" id="1"]
-[ext_resource type="Texture2D" uid="uid://cum1nwplud6av" path="res://items grounded.png" id="2_d3sty"]
+[ext_resource type="Texture2D" uid="uid://c5g7661qgnlbg" path="res://Items grounded.png" id="2_d3sty"]
 
 [sub_resource type="CircleShape2D" id="1"]
 radius = 18.0
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_rr2bf"]
 atlas = ExtResource("2_d3sty")
-region = Rect2(97, 0, 97, 76)
+region = Rect2(94, 0, 94, 74)
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_fjj4e"]
 atlas = ExtResource("2_d3sty")
-region = Rect2(291, 0, 97, 76)
+region = Rect2(282, 0, 94, 74)
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_is2e4"]
 atlas = ExtResource("2_d3sty")
-region = Rect2(0, 0, 97, 76)
+region = Rect2(0, 0, 94, 74)
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_3315m"]
 atlas = ExtResource("2_d3sty")
-region = Rect2(194, 0, 97, 76)
+region = Rect2(188, 0, 94, 74)
 
 [sub_resource type="SpriteFrames" id="SpriteFrames_mjxdh"]
 animations = [{
@@ -65,4 +65,4 @@ shape = SubResource("1")
 
 [node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="."]
 sprite_frames = SubResource("SpriteFrames_mjxdh")
-animation = &"Scrap"
+animation = &"Food"

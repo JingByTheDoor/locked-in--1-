@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://cum1nwplud6av"
-path="res://.godot/imported/items grounded.png-1b421183e55aef6bd1385027e619f53f.ctex"
+uid="uid://c5g7661qgnlbg"
+path="res://.godot/imported/Items grounded.png-ec410eef3717e0e83df851f065d6ddfb.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://items grounded.png"
-dest_files=["res://.godot/imported/items grounded.png-1b421183e55aef6bd1385027e619f53f.ctex"]
+source_file="res://Items grounded.png"
+dest_files=["res://.godot/imported/Items grounded.png-ec410eef3717e0e83df851f065d6ddfb.ctex"]
 
 [params]
 

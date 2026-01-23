@@ -21,10 +21,20 @@ enum LootType {
 @export var pickup_stream: AudioStream = preload("res://Audio/pickup sound.wav")
 @export var pickup_volume_db: float = -6.0
 @export var hunted_noise_multiplier: float = 1.6
+@export var animation_overrides: Dictionary = {
+	LootType.SCRAP: "Scrap",
+	LootType.WOOD: "Plank",
+	LootType.FUEL: "Fuel",
+	LootType.FOOD: "Food",
+	LootType.AMMO: "Ammo"
+}
+
+@onready var sprite: AnimatedSprite2D = $AnimatedSprite2D
 
 func _ready() -> void:
 	add_to_group("interactable")
 	add_to_group("loot")
+	_update_sprite_animation()
 
 func interact(player: Node) -> void:
 	if deny_when_escape_only and GameState.escape_only:
@@ -76,6 +86,17 @@ func _show_message(text: String) -> void:
 	if hud != null and hud.has_method("show_message"):
 		hud.call("show_message", text, 1.5)
 
+func _update_sprite_animation() -> void:
+	if sprite == null:
+		return
+	var anim_name := _animation_name()
+	if anim_name == "":
+		return
+	if sprite.animation != anim_name:
+		sprite.animation = anim_name
+	if not sprite.is_playing():
+		sprite.play(anim_name)
+
 func _loot_name() -> String:
 	match loot_type:
 		LootType.SCRAP:
@@ -90,6 +111,22 @@ func _loot_name() -> String:
 			return "ammo"
 		_:
 			return "item"
+
+func _animation_name() -> String:
+	if animation_overrides.has(loot_type):
+		return str(animation_overrides[loot_type])
+	match loot_type:
+		LootType.SCRAP:
+			return "Scrap"
+		LootType.WOOD:
+			return "Plank"
+		LootType.FUEL:
+			return "Fuel"
+		LootType.FOOD:
+			return "Food"
+		LootType.AMMO:
+			return "Ammo"
+	return ""
 
 func _play_pickup_audio() -> void:
 	if pickup_stream == null:
