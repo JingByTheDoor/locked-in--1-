@@ -721,12 +721,12 @@ func _get_floor_tile_id(layer: Node, cell: Vector2i) -> int:
 	if layer == null:
 		return -1
 	if layer.has_method("get_cell"):
-		var result := layer.call("get_cell", cell)
+		var result: Variant = layer.call("get_cell", cell)
 		if typeof(result) == TYPE_NIL:
 			return -1
 		return int(result)
 	if layer.has_method("get_cellv"):
-		var result := layer.call("get_cellv", cell)
+		var result: Variant = layer.call("get_cellv", cell)
 		if typeof(result) == TYPE_NIL:
 			return -1
 		return int(result)
@@ -737,7 +737,7 @@ func _is_too_close_world(world: Vector2, selected: Array, min_distance_sq: float
 		return false
 	for info in selected:
 		if info is Dictionary and info.has("world"):
-			var world_data := info["world"]
+			var world_data: Variant = info["world"]
 			if world_data is Vector2:
 				var existing: Vector2 = world_data
 				if world.distance_squared_to(existing) < min_distance_sq:
