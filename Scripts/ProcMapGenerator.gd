@@ -471,8 +471,11 @@ func _spawn_loot(floor_layer: Node, floor_cells: Array[Vector2i], origin: Vector
 		loot_root.add_child(loot)
 		if loot is Node2D:
 			(loot as Node2D).global_position = _cell_to_world_center(floor_layer, cell + origin)
-		if loot.has_method("set"):
-			loot.set("loot_type", _pick_loot_type())
+		var loot_type_value := _pick_loot_type()
+		if loot.has_method("set_loot_type"):
+			loot.call("set_loot_type", loot_type_value)
+		elif loot.has_method("set"):
+			loot.set("loot_type", loot_type_value)
 
 func _spawn_enemy_mix(
 	total: int,
@@ -667,9 +670,11 @@ func _pick_loot_count(max_cells: int) -> int:
 func _pick_loot_cells(floor_layer: Node, floor_cells: Array[Vector2i], origin: Vector2i, target_count: int) -> Array[Vector2i]:
 	var selected: Array = []
 	var spacing_sq: float = pow(max(loot_min_spacing, 0.0), 2)
-	var available := floor_cells.duplicate()
+	var available := _filter_floor_cells_for_loot(floor_layer, floor_cells, origin)
+	if available.is_empty():
+		return selected
 	available.shuffle()
-	var lookup := _build_cell_lookup(floor_cells)
+	var lookup := _build_cell_lookup(available)
 	for cell in available:
 		if selected.size() >= target_count:
 			break
@@ -692,13 +697,49 @@ func _pick_loot_cells(floor_layer: Node, floor_cells: Array[Vector2i], origin: V
 			result.append(info["cell"])
 	return result
 
+func _filter_floor_cells_for_loot(floor_layer: Node, floor_cells: Array[Vector2i], origin: Vector2i) -> Array[Vector2i]:
+	if floor_layer == null or floor_cells.is_empty():
+		return []
+	if not _floor_layer_has_tile_info(floor_layer):
+		return floor_cells.duplicate()
+	var filtered: Array[Vector2i] = []
+	for cell in floor_cells:
+		if _floor_cell_has_tile(floor_layer, cell + origin):
+			filtered.append(cell)
+	return filtered
+
+func _floor_layer_has_tile_info(layer: Node) -> bool:
+	if layer == null:
+		return false
+	return layer.has_method("get_cell") or layer.has_method("get_cellv")
+
+func _floor_cell_has_tile(layer: Node, cell: Vector2i) -> bool:
+	var tile_id := _get_floor_tile_id(layer, cell)
+	return tile_id >= 0
+
+func _get_floor_tile_id(layer: Node, cell: Vector2i) -> int:
+	if layer == null:
+		return -1
+	if layer.has_method("get_cell"):
+		var result := layer.call("get_cell", cell)
+		if typeof(result) == TYPE_NIL:
+			return -1
+		return int(result)
+	if layer.has_method("get_cellv"):
+		var result := layer.call("get_cellv", cell)
+		if typeof(result) == TYPE_NIL:
+			return -1
+		return int(result)
+	return -1
+
 func _is_too_close_world(world: Vector2, selected: Array, min_distance_sq: float) -> bool:
 	if min_distance_sq <= 0.0:
 		return false
 	for info in selected:
 		if info is Dictionary and info.has("world"):
-			var existing: Vector2 = info["world"]
-			if existing is Vector2:
+			var world_data := info["world"]
+			if world_data is Vector2:
+				var existing: Vector2 = world_data
 				if world.distance_squared_to(existing) < min_distance_sq:
 					return true
 	return false

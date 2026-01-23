@@ -9,7 +9,8 @@ enum LootType {
 	AMMO
 }
 
-@export var loot_type: LootType = LootType.SCRAP
+var _loot_type_value: LootType = LootType.SCRAP
+@export var loot_type: LootType = LootType.SCRAP setget _apply_loot_type, _get_loot_type
 @export var amount: int = 1
 @export var grade: int = 1
 @export var carry_rank_add: int = 1
@@ -42,8 +43,18 @@ enum LootType {
 func _ready() -> void:
 	add_to_group("interactable")
 	add_to_group("loot")
+	_apply_loot_type(loot_type)
+
+func set_loot_type(value: int) -> void:
+	_apply_loot_type(value)
+
+func _apply_loot_type(value: int) -> void:
+	_loot_type_value = LootType(value)
 	_update_sprite_animation()
 	_update_light_color()
+
+func _get_loot_type() -> int:
+	return int(_loot_type_value)
 
 func interact(player: Node) -> void:
 	if deny_when_escape_only and GameState.escape_only:
@@ -61,7 +72,7 @@ func get_interact_prompt(_player: Node) -> String:
 	return "Press E to collect " + _loot_name()
 
 func _apply_pickup(player: Node) -> void:
-	match loot_type:
+	match _loot_type_value:
 		LootType.SCRAP:
 			GameState.add_resource("scrap", amount)
 		LootType.WOOD:
@@ -107,7 +118,7 @@ func _update_sprite_animation() -> void:
 		sprite.play(anim_name)
 
 func _loot_name() -> String:
-	match loot_type:
+	match _loot_type_value:
 		LootType.SCRAP:
 			return "scrap"
 		LootType.WOOD:
@@ -122,9 +133,9 @@ func _loot_name() -> String:
 			return "item"
 
 func _animation_name() -> String:
-	if animation_overrides.has(loot_type):
-		return str(animation_overrides[loot_type])
-	match loot_type:
+	if animation_overrides.has(_loot_type_value):
+		return str(animation_overrides[_loot_type_value])
+	match _loot_type_value:
 		LootType.SCRAP:
 			return "Scrap"
 		LootType.WOOD:
@@ -150,6 +161,6 @@ func _update_light_color() -> void:
 		light.color = color
 
 func _light_color() -> Color:
-	if light_colors.has(loot_type):
-		return light_colors[loot_type]
+	if light_colors.has(_loot_type_value):
+		return light_colors[_loot_type_value]
 	return Color(1, 1, 1, 1)
